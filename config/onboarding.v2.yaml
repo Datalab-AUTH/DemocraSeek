@@ -1,0 +1,719 @@
+# DemocraSeek onboarding and response-policy configuration.
+#
+# This file is the single source of truth for onboarding wording, answer codes
+# and personalisation policy fragments. The frontend renders it through the
+# backend API and does not duplicate its questions or choices.
+#
+# Coverage: 7 roles x 6 intents x 6 support needs x 5 modes = 1,260 profiles,
+# expressed as 24 reusable fragments plus 5 global guardrails and the
+# deterministic compiler in app/onboarding/compiler.py.
+
+policy_version: "2.0"
+
+# Language changes presentation only. The stable R/I/S/M codes and their
+# English policy instructions below remain identical in every locale.
+default_locale: "en"
+locales:
+  - code: "en"
+    display_name: "English"
+    native_name: "English"
+  - code: "el"
+    display_name: "Greek"
+    native_name: "Ελληνικά"
+  - code: "fr"
+    display_name: "French"
+    native_name: "Français"
+  - code: "es"
+    display_name: "Spanish"
+    native_name: "Español"
+  - code: "nl-BE"
+    display_name: "Dutch (Belgium)"
+    native_name: "Nederlands (België)"
+
+onboarding_ui:
+  language_label: "Choose your language"
+  progress: "Step {current} of {total}"
+  not_chosen: "Not chosen yet"
+  choose_option_error: "Please choose one option to continue."
+  back: "Back"
+  cancel: "Cancel"
+  next: "Next"
+  finish: "Start using DemocraSeek"
+  no_questions: "No onboarding questions are configured."
+  step_titles:
+    role: "Who you are"
+    intent: "What you need"
+    support: "Support"
+    mode: "Answer style"
+
+precedence_note: >-
+  Global grounding and safety rules are absolute and can never be relaxed by a
+  personalisation preference. When personalisation instructions conflict, apply
+  them in this priority order: Support first, then Intent, then Role, then
+  Presentation mode. Support determines the adaptation needed for the response
+  to remain accessible and useful; Mode shapes its final presentation without
+  overriding that support need or the user's intent.
+
+global_guardrails:
+  - "G1 - Source-grounded only: substantive answers must be grounded only in the retrieved INNOVADE Digital Democracy Knowledge Base evidence, with citations and provenance. If that evidence is insufficient, say so. Consortium-curated external resources may appear only when the application explicitly supplies them; label them as Further reading, distinguish them from INNOVADE evidence, and never invent or present them as part of the knowledge base."
+  - "G2 - Support-aware explanation: adapt the response to the selected role, intent, support need and mode without framing the user as deficient or inferring any unselected personal characteristic."
+  - "G3 - Clear, concise and accessible by default: keep every response intuitive and well structured, including in detailed mode, using adapted language and relevant examples where the evidence supports them."
+  - "G4 - Practical and reflective where relevant: when the topic concerns participation, trust, risks, inclusion or other democratic implications, combine practical information with the relevant wider implications supported by the evidence."
+  - "G5 - Avoid impersonal dead ends: when the user needs support with a digital process or institutional procedure, state what is known, what remains unknown and the next realistic step supported by the evidence rather than ending with an impersonal or bureaucratic response."
+
+questions:
+  # ------------------------------------------------------------------ role
+  - id: q_role
+    dimension: role
+    order: 1
+    required: true
+    prompt: "Which best describes your role in relation to digital democracy?"
+    help_text: "This changes the relevance and framing of explanations, never what the evidence says."
+    choices:
+      - code: "R1"
+        label: "Citizen / resident"
+        description: "I am exploring what digital democracy means for me or my community."
+        instructions:
+          - "Use plain language and minimal jargon."
+          - "Focus on what the information means for the user or their community."
+          - "Use everyday examples supported by the evidence."
+          - "Prefer practical implications over theory-first framing."
+      - code: "R2"
+        label: "Public official / policymaker"
+        description: "I work in or with public administration or policymaking."
+        instructions:
+          - "Use governance and public-administration framing."
+          - "Emphasise implementation, institutional feasibility, participation design, transparency and responsiveness."
+          - "Highlight public-administration implications where the evidence supports them."
+      - code: "R3"
+        label: "Researcher / student"
+        description: "I am studying or researching digital democracy."
+        instructions:
+          - "Use higher conceptual precision."
+          - "Make distinctions between related concepts explicit."
+          - "Use greater citation and provenance density where the claims require it."
+          - "Include relevant caveats and interpretation notes."
+      - code: "R4"
+        label: "Digital democracy project manager / technology developer"
+        description: "I design, manage, procure or deploy digital democracy solutions."
+        instructions:
+          - "Use implementation and solution-design framing."
+          - "Emphasise technical feasibility, user requirements, interoperability, accessibility, usability, data governance and integration with institutional workflows."
+          - "Link concepts to design choices, system features, deployment conditions and stakeholder needs."
+          - "Avoid purely academic discussion unless requested, while retaining enough conceptual precision to support responsible design."
+      - code: "R5"
+        label: "Civil society / community organisation"
+        description: "I work with or represent a community, association or NGO."
+        instructions:
+          - "Use inclusion and community framing."
+          - "Emphasise outreach, participation challenges, support mechanisms, collective action and local engagement."
+          - "Link knowledge to facilitation and mobilisation where the evidence supports it."
+      - code: "R6"
+        label: "Business / professional"
+        description: "I am exploring the topic in a commercial or professional capacity."
+        instructions:
+          - "Use concise strategic framing."
+          - "Focus on applicability, ecosystem relevance, stakeholder value and institutional context."
+          - "Avoid academic overload unless requested."
+      - code: "R7"
+        label: "Other / not sure"
+        description: "None of these fits, or I am not sure."
+        instructions:
+          - "Use a balanced, citizen-friendly default."
+          - "Use moderate jargon and define unfamiliar terminology."
+          - "Give a short explanation first and make deeper exploration available."
+
+  # ---------------------------------------------------------------- intent
+  - id: q_intent
+    dimension: intent
+    order: 2
+    required: true
+    prompt: "What would you like to do?"
+    help_text: "This determines what the answer is trying to help you accomplish."
+    choices:
+      - code: "I1"
+        label: "Understand a concept or topic"
+        description: "Explain what something means and why it matters."
+        instructions:
+          - "Start with a definition or direct explanation."
+          - "Clarify adjacent concepts where necessary."
+          - "Explain why the topic matters."
+          - "Connect it to digital democracy and participation where relevant and supported by the evidence."
+      - code: "I2"
+        label: "Find evidence, examples, or sources"
+        description: "Show me what the knowledge base says and where it comes from."
+        instructions:
+          - "Prioritise evidence extraction."
+          - "Lead with cited findings, examples and provenance."
+          - "Minimise broad interpretation unless requested."
+      - code: "I3"
+        label: "Plan a decision, policy, action, or engagement activity"
+        description: "Help me assess options and plan a grounded next move."
+        instructions:
+          - "Structure the response around options, implications, trade-offs, risks and enabling conditions."
+          - "For public officials, include implementation and stakeholder-engagement considerations supported by the evidence."
+          - "For citizens and civil society, include actionable participation pathways supported by the evidence."
+          - "Where relevant, include outreach, inclusion, facilitation and participation-design considerations."
+      - code: "I4"
+        label: "Learn how to participate or use a digital service"
+        description: "Help me understand a participation or digital-service process."
+        instructions:
+          - "Prefer procedural, stepwise and practical guidance."
+          - "Explain terminology only where it is needed."
+          - "Include common pitfalls and confidence-building support where the evidence provides them."
+      - code: "I5"
+        label: "Explore risks, participation challenges, or inclusion issues"
+        description: "Examine what can obstruct or weaken inclusive participation."
+        instructions:
+          - "Foreground structural, institutional, cultural and user-profile dimensions."
+          - "Do not reduce the issue to technical access alone."
+      - code: "I6"
+        label: "Browse / discover relevant knowledge"
+        description: "Give me an overview of relevant topics in the knowledge base."
+        instructions:
+          - "Provide a curated overview organised into themed clusters."
+          - "Suggest relevant follow-up prompts only about subjects present in the retrieved evidence."
+          - "Keep the initial answer light and make deeper exploration available."
+
+  # --------------------------------------------------------------- support
+  - id: q_support
+    dimension: support
+    order: 3
+    required: true
+    prompt: "What would support you most while exploring the knowledge base?"
+    help_text: "This determines the adaptation that will make answers most useful to you."
+    choices:
+      - code: "S1"
+        label: "Understanding unfamiliar terms or concepts"
+        description: "Help me build up unfamiliar ideas clearly."
+        instructions:
+          - "Use clear and accessible language."
+          - "Define unfamiliar terms inline and avoid unnecessary jargon."
+          - "Break complex ideas into understandable components."
+          - "Build explanations progressively from basic to more advanced concepts."
+      - code: "S2"
+        label: "Navigating digital tools or online participation processes"
+        description: "Make digital actions, stages and requirements easier to follow."
+        instructions:
+          - "Use a practical and supportive tone."
+          - "Do not assume prior experience with digital tools."
+          - "Make actions, stages and requirements explicit."
+          - "Distinguish clearly between receiving information and taking action."
+          - "Include practical cues and confidence-building guidance where useful and supported."
+      - code: "S3"
+        label: "Assessing whether information and sources are reliable"
+        description: "Make the evidence basis, provenance and limitations clear."
+        instructions:
+          - "Make source provenance clearly visible."
+          - "Explain the evidence basis of important claims."
+          - "Distinguish evidence from interpretation."
+          - "State uncertainty and limitations clearly."
+          - "Where relevant and supported, flag misinformation, bias, data-handling or platform-trust concerns."
+          - "Clearly distinguish INNOVADE knowledge-base sources from any explicitly supplied consortium-curated external resources."
+      - code: "S4"
+        label: "Connecting the topic to my local or community context"
+        description: "Relate the topic to local participation and community needs."
+        instructions:
+          - "Use community, municipal and local-governance framing."
+          - "Prioritise place-based evidence and examples where available."
+          - "Emphasise relevance to local participation, community needs and everyday civic life."
+          - "Connect broader concepts to possible local implications without inventing local evidence."
+      - code: "S5"
+        label: "Understanding institutional roles, procedures, or responsibilities"
+        description: "Clarify who is responsible, how processes connect and what may happen next."
+        instructions:
+          - "Translate institutional terminology into clear language."
+          - "Explain relevant actors, roles and responsibilities."
+          - "Clarify procedural relationships and sequences."
+          - "Highlight relevant decision points, responsibilities and possible next steps supported by the evidence."
+          - "Do not assume that institutional or digital administrative processes are self-explanatory."
+      - code: "S6"
+        label: "No specific support needed"
+        description: "Use standard clarity without additional support-specific adaptation."
+        instructions:
+          - "Apply no additional support-specific adaptation."
+          - "Do not oversimplify or add unnecessary guidance."
+          - "Let the selected role, intent and answer mode primarily determine the response."
+          - "Maintain the global requirements for clarity, accessibility and source grounding."
+
+  # ------------------------------------------------------------------ mode
+  - id: q_mode
+    dimension: mode
+    order: 4
+    required: true
+    prompt: "How would you like the answers to be presented?"
+    help_text: "This controls the structure and presentation, without reducing evidence requirements."
+    choices:
+      - code: "M1"
+        label: "Simple summary"
+        description: "A short overview followed by the key points."
+        instructions:
+          - "Start with a short overview."
+          - "Present three to five key points where the evidence supports that many."
+          - "Keep citations visible but unobtrusive."
+          - "Allow deeper exploration through follow-up."
+      - code: "M2"
+        label: "Step-by-step guidance"
+        description: "Numbered, action-oriented steps or stages."
+        instructions:
+          - "Use numbered steps."
+          - "Use action-oriented phrasing."
+          - "Keep each step focused on one action or stage."
+          - "Explain why a step matters only where useful."
+          - "Do not add an action or stage that is not supported by the retrieved evidence."
+      - code: "M3"
+        label: "Detailed explanation"
+        description: "A structured synthesis with context, implications and caveats."
+        instructions:
+          - "Cover the concept, context, implications and relevant caveats."
+          - "Provide a more complete synthesis."
+          - "Use clear sections rather than an essay-like structure."
+          - "Preserve accessibility despite the greater level of detail."
+      - code: "M4"
+        label: "Evidence with citations"
+        description: "An evidence-first answer with prominent sources."
+        instructions:
+          - "Lead with evidence and source-grounded findings."
+          - "Use frequent inline citations."
+          - "Make provenance and the source basis explicit."
+          - "Clearly distinguish evidence, interpretation and uncertainty."
+      - code: "M5"
+        label: "Examples from real life / practice"
+        description: "Concrete, scenario-led examples that show practical relevance."
+        instructions:
+          - "Use scenario-based explanations."
+          - "Prioritise concrete cases and practical examples supported by the retrieved evidence."
+          - "Relate concepts to participation, administration, community or governance practice."
+          - "Explain what each example illustrates and why it is relevant."
+
+# Complete presentation translations. They deliberately contain no policy
+# instructions: language must never change the meaning of a selected profile.
+translations:
+  - locale: "el"
+    ui:
+      language_label: "Επιλέξτε γλώσσα"
+      progress: "Βήμα {current} από {total}"
+      not_chosen: "Δεν έχει επιλεγεί ακόμη"
+      choose_option_error: "Επιλέξτε μία επιλογή για να συνεχίσετε."
+      back: "Πίσω"
+      cancel: "Ακύρωση"
+      next: "Επόμενο"
+      finish: "Έναρξη χρήσης του DemocraSeek"
+      no_questions: "Δεν έχουν ρυθμιστεί ερωτήσεις onboarding."
+      step_titles:
+        role: "Ο ρόλος σας"
+        intent: "Τι χρειάζεστε"
+        support: "Υποστήριξη"
+        mode: "Μορφή απάντησης"
+    questions:
+      q_role:
+        prompt: "Ποια επιλογή περιγράφει καλύτερα τον ρόλο σας σε σχέση με την ψηφιακή δημοκρατία;"
+        help_text: "Η επιλογή αλλάζει τη συνάφεια και την οπτική των εξηγήσεων, ποτέ όμως το περιεχόμενο των τεκμηρίων."
+        choices:
+          R1:
+            label: "Πολίτης / κάτοικος"
+            description: "Εξερευνώ τι σημαίνει η ψηφιακή δημοκρατία για εμένα ή την κοινότητά μου."
+          R2:
+            label: "Δημόσιος λειτουργός / υπεύθυνος χάραξης πολιτικής"
+            description: "Εργάζομαι στη δημόσια διοίκηση ή στη χάραξη πολιτικής, ή συνεργάζομαι με αυτές."
+          R3:
+            label: "Ερευνητής / φοιτητής"
+            description: "Μελετώ ή ερευνώ την ψηφιακή δημοκρατία."
+          R4:
+            label: "Υπεύθυνος έργου ψηφιακής δημοκρατίας / προγραμματιστής τεχνολογίας"
+            description: "Σχεδιάζω, διαχειρίζομαι, προμηθεύομαι ή αναπτύσσω λύσεις ψηφιακής δημοκρατίας."
+          R5:
+            label: "Οργάνωση της κοινωνίας των πολιτών / κοινότητας"
+            description: "Εργάζομαι με ή εκπροσωπώ μια κοινότητα, ένωση ή ΜΚΟ."
+          R6:
+            label: "Επιχείρηση / επαγγελματίας"
+            description: "Εξερευνώ το θέμα στο πλαίσιο εμπορικής ή επαγγελματικής δραστηριότητας."
+          R7:
+            label: "Άλλο / δεν είμαι βέβαιος"
+            description: "Καμία επιλογή δεν με περιγράφει ή δεν είμαι βέβαιος."
+      q_intent:
+        prompt: "Τι θα θέλατε να κάνετε;"
+        help_text: "Η επιλογή καθορίζει τι προσπαθεί να σας βοηθήσει να πετύχετε η απάντηση."
+        choices:
+          I1:
+            label: "Να κατανοήσω μια έννοια ή ένα θέμα"
+            description: "Εξηγήστε τι σημαίνει κάτι και γιατί έχει σημασία."
+          I2:
+            label: "Να βρω τεκμήρια, παραδείγματα ή πηγές"
+            description: "Δείξτε μου τι αναφέρει η βάση γνώσης και από πού προέρχεται."
+          I3:
+            label: "Να σχεδιάσω μια απόφαση, πολιτική, δράση ή δραστηριότητα συμμετοχής"
+            description: "Βοηθήστε με να αξιολογήσω επιλογές και να σχεδιάσω ένα τεκμηριωμένο επόμενο βήμα."
+          I4:
+            label: "Να μάθω πώς να συμμετέχω ή να χρησιμοποιώ μια ψηφιακή υπηρεσία"
+            description: "Βοηθήστε με να κατανοήσω μια διαδικασία συμμετοχής ή ψηφιακής υπηρεσίας."
+          I5:
+            label: "Να εξερευνήσω κινδύνους, προκλήσεις συμμετοχής ή ζητήματα ένταξης"
+            description: "Εξετάστε τι μπορεί να εμποδίσει ή να αποδυναμώσει τη συμπεριληπτική συμμετοχή."
+          I6:
+            label: "Να περιηγηθώ / να ανακαλύψω σχετικές γνώσεις"
+            description: "Δώστε μου μια επισκόπηση σχετικών θεμάτων της βάσης γνώσης."
+      q_support:
+        prompt: "Τι θα σας υποστήριζε περισσότερο κατά την εξερεύνηση της βάσης γνώσης;"
+        help_text: "Η επιλογή καθορίζει την προσαρμογή που θα κάνει τις απαντήσεις πιο χρήσιμες για εσάς."
+        choices:
+          S1:
+            label: "Κατανόηση άγνωστων όρων ή εννοιών"
+            description: "Βοηθήστε με να κατανοήσω άγνωστες ιδέες με σαφή τρόπο."
+          S2:
+            label: "Πλοήγηση σε ψηφιακά εργαλεία ή διαδικασίες διαδικτυακής συμμετοχής"
+            description: "Κάντε τις ψηφιακές ενέργειες, τα στάδια και τις απαιτήσεις πιο εύκολα κατανοητά."
+          S3:
+            label: "Αξιολόγηση της αξιοπιστίας πληροφοριών και πηγών"
+            description: "Κάντε σαφή τη βάση των τεκμηρίων, την προέλευση και τους περιορισμούς τους."
+          S4:
+            label: "Σύνδεση του θέματος με το τοπικό ή κοινοτικό μου πλαίσιο"
+            description: "Συσχετίστε το θέμα με την τοπική συμμετοχή και τις ανάγκες της κοινότητας."
+          S5:
+            label: "Κατανόηση θεσμικών ρόλων, διαδικασιών ή αρμοδιοτήτων"
+            description: "Διευκρινίστε ποιος είναι υπεύθυνος, πώς συνδέονται οι διαδικασίες και τι μπορεί να ακολουθήσει."
+          S6:
+            label: "Δεν χρειάζομαι συγκεκριμένη υποστήριξη"
+            description: "Χρησιμοποιήστε τη συνήθη σαφήνεια χωρίς πρόσθετη ειδική προσαρμογή."
+      q_mode:
+        prompt: "Πώς θα θέλατε να παρουσιάζονται οι απαντήσεις;"
+        help_text: "Η επιλογή ελέγχει τη δομή και την παρουσίαση, χωρίς να μειώνει τις απαιτήσεις τεκμηρίωσης."
+        choices:
+          M1:
+            label: "Απλή περίληψη"
+            description: "Μια σύντομη επισκόπηση και στη συνέχεια τα βασικά σημεία."
+          M2:
+            label: "Καθοδήγηση βήμα προς βήμα"
+            description: "Αριθμημένα βήματα ή στάδια με προσανατολισμό στη δράση."
+          M3:
+            label: "Αναλυτική εξήγηση"
+            description: "Μια δομημένη σύνθεση με πλαίσιο, επιπτώσεις και επιφυλάξεις."
+          M4:
+            label: "Τεκμήρια με παραπομπές"
+            description: "Μια απάντηση που ξεκινά από τα τεκμήρια και προβάλλει εμφανώς τις πηγές."
+          M5:
+            label: "Παραδείγματα από την πραγματική ζωή / πράξη"
+            description: "Συγκεκριμένα παραδείγματα βασισμένα σε σενάρια που δείχνουν την πρακτική συνάφεια."
+
+  - locale: "fr"
+    ui:
+      language_label: "Choisissez votre langue"
+      progress: "Étape {current} sur {total}"
+      not_chosen: "Pas encore sélectionné"
+      choose_option_error: "Veuillez choisir une option pour continuer."
+      back: "Retour"
+      cancel: "Annuler"
+      next: "Suivant"
+      finish: "Commencer à utiliser DemocraSeek"
+      no_questions: "Aucune question d’onboarding n’est configurée."
+      step_titles:
+        role: "Votre rôle"
+        intent: "Votre objectif"
+        support: "Soutien"
+        mode: "Format de réponse"
+    questions:
+      q_role:
+        prompt: "Laquelle de ces options décrit le mieux votre rôle par rapport à la démocratie numérique ?"
+        help_text: "Ce choix modifie la pertinence et l’angle des explications, jamais le contenu des éléments probants."
+        choices:
+          R1:
+            label: "Citoyen / résident"
+            description: "J’explore ce que la démocratie numérique signifie pour moi ou ma communauté."
+          R2:
+            label: "Agent public / décideur politique"
+            description: "Je travaille dans ou avec l’administration publique ou l’élaboration des politiques."
+          R3:
+            label: "Chercheur / étudiant"
+            description: "J’étudie ou je mène des recherches sur la démocratie numérique."
+          R4:
+            label: "Chef de projet en démocratie numérique / développeur technologique"
+            description: "Je conçois, gère, achète ou déploie des solutions de démocratie numérique."
+          R5:
+            label: "Organisation de la société civile / communautaire"
+            description: "Je travaille avec ou représente une communauté, une association ou une ONG."
+          R6:
+            label: "Entreprise / professionnel"
+            description: "J’explore ce sujet dans un cadre commercial ou professionnel."
+          R7:
+            label: "Autre / je ne sais pas"
+            description: "Aucune de ces options ne me correspond, ou je ne sais pas."
+      q_intent:
+        prompt: "Que souhaitez-vous faire ?"
+        help_text: "Ce choix détermine ce que la réponse cherche à vous aider à accomplir."
+        choices:
+          I1:
+            label: "Comprendre un concept ou un sujet"
+            description: "Expliquez ce que cela signifie et pourquoi c’est important."
+          I2:
+            label: "Trouver des éléments probants, des exemples ou des sources"
+            description: "Montrez-moi ce que dit la base de connaissances et d’où cela vient."
+          I3:
+            label: "Planifier une décision, une politique, une action ou une activité d’engagement"
+            description: "Aidez-moi à évaluer les options et à planifier une prochaine étape fondée sur des éléments probants."
+          I4:
+            label: "Apprendre à participer ou à utiliser un service numérique"
+            description: "Aidez-moi à comprendre un processus de participation ou de service numérique."
+          I5:
+            label: "Explorer les risques, les difficultés de participation ou les enjeux d’inclusion"
+            description: "Examinez ce qui peut entraver ou affaiblir une participation inclusive."
+          I6:
+            label: "Parcourir / découvrir des connaissances pertinentes"
+            description: "Donnez-moi un aperçu des sujets pertinents dans la base de connaissances."
+      q_support:
+        prompt: "Quel type de soutien vous serait le plus utile pour explorer la base de connaissances ?"
+        help_text: "Ce choix détermine l’adaptation qui rendra les réponses les plus utiles pour vous."
+        choices:
+          S1:
+            label: "Comprendre des termes ou concepts inconnus"
+            description: "Aidez-moi à comprendre clairement des idées qui ne me sont pas familières."
+          S2:
+            label: "Naviguer dans des outils numériques ou des processus de participation en ligne"
+            description: "Rendez les actions, les étapes et les exigences numériques plus faciles à suivre."
+          S3:
+            label: "Évaluer la fiabilité des informations et des sources"
+            description: "Clarifiez la base factuelle, la provenance et les limites des informations."
+          S4:
+            label: "Relier le sujet à mon contexte local ou communautaire"
+            description: "Reliez le sujet à la participation locale et aux besoins de la communauté."
+          S5:
+            label: "Comprendre les rôles, procédures ou responsabilités institutionnels"
+            description: "Précisez qui est responsable, comment les processus s’articulent et ce qui peut suivre."
+          S6:
+            label: "Aucun soutien particulier nécessaire"
+            description: "Utilisez un niveau de clarté standard sans adaptation supplémentaire spécifique."
+      q_mode:
+        prompt: "Comment souhaitez-vous que les réponses soient présentées ?"
+        help_text: "Ce choix contrôle la structure et la présentation, sans réduire les exigences en matière de preuves."
+        choices:
+          M1:
+            label: "Résumé simple"
+            description: "Un bref aperçu suivi des points clés."
+          M2:
+            label: "Guide étape par étape"
+            description: "Des étapes numérotées, orientées vers l’action."
+          M3:
+            label: "Explication détaillée"
+            description: "Une synthèse structurée avec contexte, implications et réserves."
+          M4:
+            label: "Éléments probants avec citations"
+            description: "Une réponse qui commence par les éléments probants et met les sources en évidence."
+          M5:
+            label: "Exemples tirés de la vie réelle / de la pratique"
+            description: "Des exemples concrets fondés sur des scénarios qui montrent la pertinence pratique."
+
+  - locale: "es"
+    ui:
+      language_label: "Elija su idioma"
+      progress: "Paso {current} de {total}"
+      not_chosen: "Aún no seleccionado"
+      choose_option_error: "Seleccione una opción para continuar."
+      back: "Atrás"
+      cancel: "Cancelar"
+      next: "Siguiente"
+      finish: "Empezar a usar DemocraSeek"
+      no_questions: "No hay preguntas de onboarding configuradas."
+      step_titles:
+        role: "Su perfil"
+        intent: "Su objetivo"
+        support: "Apoyo"
+        mode: "Formato de respuesta"
+    questions:
+      q_role:
+        prompt: "¿Cuál de estas opciones describe mejor su papel en relación con la democracia digital?"
+        help_text: "Esta elección cambia la relevancia y el enfoque de las explicaciones, pero nunca lo que dicen las pruebas."
+        choices:
+          R1:
+            label: "Ciudadano / residente"
+            description: "Estoy explorando qué significa la democracia digital para mí o para mi comunidad."
+          R2:
+            label: "Empleado público / responsable de políticas"
+            description: "Trabajo en la administración pública o la formulación de políticas, o colaboro con ellas."
+          R3:
+            label: "Investigador / estudiante"
+            description: "Estudio o investigo la democracia digital."
+          R4:
+            label: "Responsable de proyectos de democracia digital / desarrollador tecnológico"
+            description: "Diseño, gestiono, adquiero o implemento soluciones de democracia digital."
+          R5:
+            label: "Organización de la sociedad civil / comunitaria"
+            description: "Trabajo con una comunidad, asociación u ONG, o la represento."
+          R6:
+            label: "Empresa / profesional"
+            description: "Exploro el tema desde una perspectiva comercial o profesional."
+          R7:
+            label: "Otro / no estoy seguro"
+            description: "Ninguna opción encaja conmigo o no estoy seguro."
+      q_intent:
+        prompt: "¿Qué le gustaría hacer?"
+        help_text: "Esta elección determina lo que la respuesta intentará ayudarle a conseguir."
+        choices:
+          I1:
+            label: "Comprender un concepto o tema"
+            description: "Explique qué significa algo y por qué es importante."
+          I2:
+            label: "Encontrar pruebas, ejemplos o fuentes"
+            description: "Muéstreme qué dice la base de conocimientos y de dónde procede."
+          I3:
+            label: "Planificar una decisión, política, acción o actividad de participación"
+            description: "Ayúdeme a evaluar opciones y a planificar un siguiente paso fundamentado."
+          I4:
+            label: "Aprender a participar o utilizar un servicio digital"
+            description: "Ayúdeme a comprender un proceso de participación o de servicio digital."
+          I5:
+            label: "Explorar riesgos, dificultades de participación o cuestiones de inclusión"
+            description: "Examine qué puede impedir o debilitar una participación inclusiva."
+          I6:
+            label: "Explorar / descubrir conocimientos relevantes"
+            description: "Ofrézcame una visión general de los temas pertinentes de la base de conocimientos."
+      q_support:
+        prompt: "¿Qué tipo de apoyo le resultaría más útil al explorar la base de conocimientos?"
+        help_text: "Esta elección determina la adaptación que hará que las respuestas le resulten más útiles."
+        choices:
+          S1:
+            label: "Comprender términos o conceptos desconocidos"
+            description: "Ayúdeme a entender con claridad ideas que no conozco."
+          S2:
+            label: "Navegar por herramientas digitales o procesos de participación en línea"
+            description: "Haga que las acciones, etapas y requisitos digitales sean más fáciles de seguir."
+          S3:
+            label: "Evaluar la fiabilidad de la información y las fuentes"
+            description: "Aclare la base de las pruebas, su procedencia y sus limitaciones."
+          S4:
+            label: "Relacionar el tema con mi contexto local o comunitario"
+            description: "Relacione el tema con la participación local y las necesidades de la comunidad."
+          S5:
+            label: "Comprender funciones, procedimientos o responsabilidades institucionales"
+            description: "Aclare quién es responsable, cómo se relacionan los procesos y qué puede ocurrir después."
+          S6:
+            label: "No necesito apoyo específico"
+            description: "Utilice una claridad estándar sin una adaptación específica adicional."
+      q_mode:
+        prompt: "¿Cómo le gustaría que se presentaran las respuestas?"
+        help_text: "Esta elección controla la estructura y la presentación sin reducir los requisitos de pruebas."
+        choices:
+          M1:
+            label: "Resumen sencillo"
+            description: "Una breve visión general seguida de los puntos clave."
+          M2:
+            label: "Guía paso a paso"
+            description: "Pasos o etapas numerados y orientados a la acción."
+          M3:
+            label: "Explicación detallada"
+            description: "Una síntesis estructurada con contexto, implicaciones y matices."
+          M4:
+            label: "Pruebas con citas"
+            description: "Una respuesta centrada primero en las pruebas, con las fuentes destacadas."
+          M5:
+            label: "Ejemplos de la vida real / la práctica"
+            description: "Ejemplos concretos basados en situaciones que muestran su relevancia práctica."
+
+  - locale: "nl-BE"
+    ui:
+      language_label: "Kies uw taal"
+      progress: "Stap {current} van {total}"
+      not_chosen: "Nog niet gekozen"
+      choose_option_error: "Kies één optie om verder te gaan."
+      back: "Terug"
+      cancel: "Annuleren"
+      next: "Volgende"
+      finish: "DemocraSeek beginnen gebruiken"
+      no_questions: "Er zijn geen onboardingvragen ingesteld."
+      step_titles:
+        role: "Uw rol"
+        intent: "Wat u nodig hebt"
+        support: "Ondersteuning"
+        mode: "Antwoordstijl"
+    questions:
+      q_role:
+        prompt: "Welke optie beschrijft het best uw rol in verband met digitale democratie?"
+        help_text: "Deze keuze verandert de relevantie en invalshoek van de uitleg, maar nooit wat het bewijsmateriaal zegt."
+        choices:
+          R1:
+            label: "Burger / inwoner"
+            description: "Ik verken wat digitale democratie betekent voor mij of mijn gemeenschap."
+          R2:
+            label: "Overheidsmedewerker / beleidsmaker"
+            description: "Ik werk binnen of met de overheid of beleidsvorming."
+          R3:
+            label: "Onderzoeker / student"
+            description: "Ik bestudeer of onderzoek digitale democratie."
+          R4:
+            label: "Projectmanager digitale democratie / technologieontwikkelaar"
+            description: "Ik ontwerp, beheer, koop of implementeer oplossingen voor digitale democratie."
+          R5:
+            label: "Middenveld- / gemeenschapsorganisatie"
+            description: "Ik werk met of vertegenwoordig een gemeenschap, vereniging of ngo."
+          R6:
+            label: "Onderneming / professional"
+            description: "Ik verken het onderwerp vanuit een commercieel of professioneel perspectief."
+          R7:
+            label: "Andere / niet zeker"
+            description: "Geen van deze opties past, of ik ben niet zeker."
+      q_intent:
+        prompt: "Wat wilt u doen?"
+        help_text: "Deze keuze bepaalt wat het antwoord u probeert te helpen bereiken."
+        choices:
+          I1:
+            label: "Een begrip of onderwerp begrijpen"
+            description: "Leg uit wat iets betekent en waarom het belangrijk is."
+          I2:
+            label: "Bewijs, voorbeelden of bronnen vinden"
+            description: "Toon me wat de kennisbank zegt en waar de informatie vandaan komt."
+          I3:
+            label: "Een beslissing, beleid, actie of participatieactiviteit plannen"
+            description: "Help me opties beoordelen en een onderbouwde volgende stap plannen."
+          I4:
+            label: "Leren deelnemen of een digitale dienst gebruiken"
+            description: "Help me een participatieproces of digitale dienstverlening begrijpen."
+          I5:
+            label: "Risico’s, participatieproblemen of inclusievraagstukken verkennen"
+            description: "Onderzoek wat inclusieve participatie kan belemmeren of verzwakken."
+          I6:
+            label: "Relevante kennis verkennen / ontdekken"
+            description: "Geef me een overzicht van relevante onderwerpen in de kennisbank."
+      q_support:
+        prompt: "Welke ondersteuning zou u het meest helpen bij het verkennen van de kennisbank?"
+        help_text: "Deze keuze bepaalt de aanpassing die de antwoorden voor u het nuttigst maakt."
+        choices:
+          S1:
+            label: "Onbekende termen of begrippen begrijpen"
+            description: "Help me onbekende ideeën helder op te bouwen."
+          S2:
+            label: "Digitale tools of online participatieprocessen gebruiken"
+            description: "Maak digitale acties, stappen en vereisten gemakkelijker te volgen."
+          S3:
+            label: "Beoordelen of informatie en bronnen betrouwbaar zijn"
+            description: "Maak de bewijsbasis, herkomst en beperkingen duidelijk."
+          S4:
+            label: "Het onderwerp verbinden met mijn lokale of gemeenschapscontext"
+            description: "Koppel het onderwerp aan lokale participatie en behoeften van de gemeenschap."
+          S5:
+            label: "Institutionele rollen, procedures of verantwoordelijkheden begrijpen"
+            description: "Verduidelijk wie verantwoordelijk is, hoe processen samenhangen en wat er daarna kan gebeuren."
+          S6:
+            label: "Geen specifieke ondersteuning nodig"
+            description: "Gebruik standaardduidelijkheid zonder extra specifieke aanpassing."
+      q_mode:
+        prompt: "Hoe wilt u dat antwoorden worden voorgesteld?"
+        help_text: "Deze keuze bepaalt de structuur en presentatie zonder de bewijsvereisten te verminderen."
+        choices:
+          M1:
+            label: "Eenvoudige samenvatting"
+            description: "Een kort overzicht gevolgd door de belangrijkste punten."
+          M2:
+            label: "Stapsgewijze begeleiding"
+            description: "Genummerde, actiegerichte stappen of fasen."
+          M3:
+            label: "Gedetailleerde uitleg"
+            description: "Een gestructureerde synthese met context, gevolgen en nuances."
+          M4:
+            label: "Bewijs met bronverwijzingen"
+            description: "Een antwoord dat met het bewijs begint en de bronnen duidelijk toont."
+          M5:
+            label: "Voorbeelden uit het echte leven / de praktijk"
+            description: "Concrete, scenariogestuurde voorbeelden die de praktische relevantie tonen."
+
+# Targeted combination overrides remain available for evaluated conflicts. No
+# override is currently needed because the explicit precedence resolves the
+# documented examples.
+overrides: []

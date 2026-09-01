@@ -1,0 +1,31 @@
+# Repository metadata and local configuration never enter an image.
+.git
+.gitignore
+.env
+.env.*
+
+# Generated Python and frontend artefacts.
+**/__pycache__
+**/*.py[cod]
+.venv
+venv
+*.egg-info
+frontend/node_modules
+frontend/dist
+frontend/coverage
+node_modules
+
+# Corpus, indexes and reports are mounted at runtime.
+data
+
+# Operator documentation and host-only helpers are not image inputs.
+README.md
+scripts
+start-demo.cmd
+stop-demo.cmd
+
+# Editor and operating-system noise.
+.idea
+.vscode
+.DS_Store
+Thumbs.db

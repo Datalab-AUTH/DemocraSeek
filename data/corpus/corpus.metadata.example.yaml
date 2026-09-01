@@ -1,0 +1,18 @@
+# Optional per-document metadata for the approved corpus.
+#
+# Copy to `corpus.metadata.yaml` next to the approved PDFs and fill in only what
+# you can confirm from the documents themselves. Anything omitted stays empty in
+# the index. The pipeline never guesses a deliverable id or a publication date -
+# an invented one would misrepresent provenance in a citation.
+#
+# Keys are exact filenames inside CORPUS_PATH.
+
+documents:
+  "D5.1 Example Deliverable.pdf":
+    document_title: "Exact title as printed on the document"
+    deliverable_id: "D5.1"
+    publication_date: "2025-11-30"
+
+  "Another Approved Report.pdf":
+    document_title: "Exact title as printed on the document"
+    # deliverable_id and publication_date omitted: not confirmed, so left empty.

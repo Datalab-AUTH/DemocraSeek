@@ -1,0 +1,39 @@
+# --- secrets -----------------------------------------------------------------
+.env
+.env.*
+!.env.example
+
+# --- approved corpus (source of truth, distributed out of band) ---------------
+data/corpus/*
+!data/corpus/.gitkeep
+!data/corpus/corpus.metadata.example.yaml
+
+# --- derived ingestion artefacts (reproducible via `ingest`) ------------------
+data/index/*
+!data/index/.gitkeep
+data/reports/*
+!data/reports/.gitkeep
+data/fixtures/generated/
+
+# --- python ------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+
+# --- node --------------------------------------------------------------------
+node_modules/
+frontend/dist/
+frontend/coverage/
+
+# --- runtime noise -----------------------------------------------------------
+*.log
+
+# --- editors / os ------------------------------------------------------------
+.DS_Store
+.idea/
+.vscode/

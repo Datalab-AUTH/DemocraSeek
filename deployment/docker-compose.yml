@@ -1,0 +1,66 @@
+# All operator-controlled values come from the root .env file.
+
+name: democraseek
+
+services:
+  db:
+    build:
+      context: ..
+      dockerfile: deployment/Dockerfile.database
+    image: democraseek-database:pg18-pgvector0.8.6-pgtextsearch1.4.0
+    command: ["postgres", "-c", "shared_preload_libraries=pg_textsearch"]
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - pgdata18:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    ports:
+      - "127.0.0.1:${POSTGRES_HOST_PORT}:5432"
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ..
+      dockerfile: deployment/Dockerfile.backend
+    env_file:
+      - ../.env
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ${CORPUS_HOST_PATH}:${CORPUS_PATH}:ro
+      - ingestdata18:${INDEX_PATH}
+      - ${REPORT_HOST_PATH}:${REPORT_PATH}
+      - modelcache:/home/democraseek/.cache/huggingface
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "127.0.0.1:${BACKEND_HOST_PORT}:8000"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: deployment/Dockerfile.frontend
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL}
+        VITE_APP_NAME: ${VITE_APP_NAME}
+        VITE_PROJECT_NAME: ${VITE_PROJECT_NAME}
+        VITE_LOGO_URL: ${VITE_LOGO_URL}
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${FRONTEND_HOST_PORT}:8080"
+    restart: unless-stopped
+
+volumes:
+  pgdata18:
+  ingestdata18:
+  modelcache:

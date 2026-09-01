@@ -1,0 +1,173 @@
+"""Health, readiness and provider configuration."""
+
+from __future__ import annotations
+
+import logging
+
+from fastapi import APIRouter, Depends, Response
+
+from app.api.deps import ApplicationContext, get_context
+from app.schemas.chunks import DocumentRecord
+
+logger = logging.getLogger(__name__)
+
+router = APIRouter(prefix="/api", tags=["operations"])
+
+
+@router.get("/health")
+def health(context: ApplicationContext = Depends(get_context)) -> dict[str, str]:
+    """Liveness. Touches no external dependency on purpose."""
+    return {"status": "ok", "app": context.settings.app_name}
+
+
+@router.get("/ready")
+def ready(
+    response: Response, context: ApplicationContext = Depends(get_context)
+) -> dict[str, object]:
+    """Readiness: can this instance actually answer a question right now?"""
+    settings = context.settings
+    checks: dict[str, str] = {}
+    ok = True
+
+    try:
+        context.vector_store.health_check()
+        checks["vector_store"] = "ok"
+    except Exception as exc:
+        checks["vector_store"] = f"unavailable: {type(exc).__name__}"
+        ok = False
+
+    index_metadata = None
+    try:
+        index_metadata = context.vector_store.get_index_metadata(settings.vector_store_collection)
+        if index_metadata is None:
+            checks["index"] = "missing: run `python -m app.cli ingest`"
+            ok = False
+        elif (
+            index_metadata.embedding_model != context.embeddings.model_name
+            or index_metadata.embedding_dimensions != context.embeddings.dimensions
+            or index_metadata.chunk_size != settings.chunk_size
+            or index_metadata.chunk_overlap != settings.chunk_overlap
+            or index_metadata.index_version != settings.index_version
+        ):
+            checks["index"] = "incompatible with current configuration: re-index required"
+            ok = False
+        else:
+            checks["index"] = "ok"
+    except Exception as exc:
+        checks["index"] = f"unreadable: {type(exc).__name__}"
+        ok = False
+
+    try:
+        document_count = len(context.registry.load())
+        checks["corpus_registry"] = "ok" if document_count else "empty: no documents ingested"
+        ok = ok and document_count > 0
+    except Exception as exc:
+        checks["corpus_registry"] = f"unreadable: {type(exc).__name__}"
+        document_count = 0
+        ok = False
+
+    # Not a readiness failure - the instance can still answer from what it has -
+    # but an operator needs to see it, because "I added a file and nothing
+    # happened" is otherwise indistinguishable from a broken system.
+    try:
+        pending = context.registry.pending_files()
+    except Exception:
+        pending = []
+    if pending:
+        checks["corpus_files"] = (
+            f"{len(pending)} file(s) in the corpus directory are not indexed: "
+            f"run `python -m app.cli ingest`"
+        )
+
+    if not ok:
+        response.status_code = 503
+
+    return {
+        "status": "ready" if ok else "not_ready",
+        "checks": checks,
+        "pending_files": pending,
+        "documents": document_count,
+        "chunks": (
+            context.vector_store.count(settings.vector_store_collection)
+            if checks.get("vector_store") == "ok"
+            else 0
+        ),
+        "corpus_version": settings.corpus_version,
+        "index_version": settings.index_version,
+    }
+
+
+@router.get("/corpus")
+def corpus_contents(context: ApplicationContext = Depends(get_context)) -> dict[str, object]:
+    """What the knowledge base actually holds.
+
+    The interface shows this before the first question. Telling someone what is
+    in the corpus is the difference between a blank box and a usable tool - and
+    it is derived from the registry, so it can never overstate what is indexed.
+    """
+    documents = context.registry.load()
+    ordered = sorted(documents.values(), key=lambda r: r.document_title)
+    return {
+        "corpus_version": context.settings.corpus_version,
+        # Files present but not yet ingested, so the interface can say so rather
+        # than silently behave as if they do not exist.
+        "pending_files": context.registry.pending_files(),
+        "documents": [
+            {
+                "document_id": record.document_id,
+                "document_title": record.document_title,
+                "deliverable_id": record.deliverable_id,
+                "page_count": record.page_count,
+                "figure_count": record.figure_count,
+            }
+            for record in ordered
+        ],
+        "suggested_questions": suggested_questions(ordered),
+    }
+
+
+#: Wrapped around a detected section heading. Neutral on purpose: the question
+#: should not imply an answer the corpus may not contain.
+_QUESTION_TEMPLATE = "What does the evidence say about {topic}?"
+MAX_SUGGESTIONS = 4
+
+
+def _as_question(topic: str) -> str:
+    """Turn a section heading into a readable question.
+
+    A heading that is already a question is used as it stands - wrapping
+    "What is Digital Democracy?" in the template produced "What does the
+    evidence say about what is Digital Democracy??". The topic keeps its own
+    capitalisation for the same reason: lower-casing it gave "digital Democracy".
+    """
+    cleaned = topic.strip()
+    if cleaned.endswith("?"):
+        return cleaned
+    return _QUESTION_TEMPLATE.format(topic=cleaned)
+
+
+def suggested_questions(records: list[DocumentRecord]) -> list[str]:
+    """Starter questions for the empty chat screen.
+
+    Derived from section headings found in the indexed documents, so they stay
+    relevant to whatever corpus is loaded instead of going stale the moment the
+    documents change.
+
+    Topics are taken one document at a time in rotation, so a single long report
+    cannot fill every slot.
+    """
+    questions: list[str] = []
+    seen: set[str] = set()
+    for index in range(max((len(record.topics) for record in records), default=0)):
+        for record in records:
+            if index >= len(record.topics):
+                continue
+            topic = record.topics[index]
+            key = topic.lower()
+            if key in seen:
+                continue
+            seen.add(key)
+            questions.append(_as_question(topic))
+            if len(questions) >= MAX_SUGGESTIONS:
+                return questions
+    return questions

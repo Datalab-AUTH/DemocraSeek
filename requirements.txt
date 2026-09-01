@@ -1,0 +1,16 @@
+fastapi==0.141.1
+uvicorn[standard]==0.34.0
+pydantic==2.10.4
+pydantic-settings==2.7.0
+httpx==0.28.1
+pypdf==6.16.2
+PyYAML==6.0.2
+psycopg[binary,pool]==3.2.3
+typer==0.19.2
+# Pinned explicitly: typer's help rendering broke against click 8.2's changed
+# Parameter.make_metavar signature. A transitive dependency left unpinned is not
+# actually a pinned build.
+click==8.4.2
+pillow==12.3.0
+# Required by the shipped hybrid_rerank retrieval strategy.
+sentence-transformers==6.0.0
