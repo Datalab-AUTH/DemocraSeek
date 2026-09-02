@@ -113,12 +113,20 @@ def validate_and_build_citations(
             excerpt, excerpt_source = _build_excerpt(
                 item.retrieved.chunk.chunk_text, raw_citation.supporting_quote
             )
+        # External text supports validation but is never returned to the browser.
+        if metadata.source_type == "external":
+            excerpt = ""
         citations.append(
             Citation(
                 citation_id=new_id,
                 evidence_id=raw_citation.evidence_id,
                 document_id=metadata.document_id,
                 document_title=metadata.document_title,
+                source_type=metadata.source_type,
+                authors=metadata.authors,
+                publishers=metadata.publishers,
+                publication_date=metadata.publication_date,
+                external_url=metadata.external_url,
                 deliverable_id=metadata.deliverable_id,
                 page_number=metadata.page_number,
                 chunk_id=metadata.chunk_id,

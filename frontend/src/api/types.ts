@@ -95,6 +95,11 @@ export interface Citation {
   evidence_id: string;
   document_id: string;
   document_title: string;
+  source_type: "internal" | "external";
+  authors: string[];
+  publishers: string[];
+  publication_date: string;
+  external_url: string;
   deliverable_id: string;
   page_number: number;
   chunk_id: string;
@@ -142,6 +147,10 @@ export interface SourceResponse {
   document_id: string;
   document_title: string;
   filename: string;
+  source_type: "internal" | "external";
+  authors: string[];
+  publishers: string[];
+  external_url: string;
   /** "image" documents are a single picture with no text layer. */
   document_type: "pdf" | "image";
   deliverable_id: string;
@@ -149,12 +158,13 @@ export interface SourceResponse {
   page_count: number;
   corpus_version: string;
   page: SourcePage | null;
-  file_url: string;
+  file_url: string | null;
 }
 
 export interface CorpusDocument {
   document_id: string;
   document_title: string;
+  source_type: "internal" | "external";
   deliverable_id: string;
   page_count: number;
   figure_count: number;

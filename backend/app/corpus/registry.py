@@ -125,26 +125,30 @@ class CorpusRegistry:
         raise DocumentNotFoundError(figure_id)
 
     def pending_files(self) -> list[str]:
-        """List approved source files not yet indexed, comparing filenames."""
+        """List corpus files not yet indexed."""
         from app.ingestion.standalone_images import is_image_document
 
         if not self._corpus_path.is_dir():
             return []
-        indexed = {record.filename for record in self.load().values()}
+        indexed = {
+            record.source_path or record.filename for record in self.load().values()
+        }
         return sorted(
-            path.name
-            for path in self._corpus_path.iterdir()
+            path.relative_to(self._corpus_path).as_posix()
+            for path in self._corpus_path.rglob("*")
             if path.is_file()
             and (path.suffix.lower() == ".pdf" or is_image_document(path))
-            and path.name not in indexed
+            and path.relative_to(self._corpus_path).as_posix() not in indexed
         )
 
     # Source files
     def resolve_source_path(self, document_id: str) -> Path:
-        """Resolve a registered source without allowing directory escape."""
+        """Resolve an internal source without allowing directory escape."""
         record = self.get(document_id)
+        if record.source_type == "external":
+            raise DocumentNotFoundError(document_id)
         corpus_root = self._corpus_path.resolve()
-        candidate = (corpus_root / record.filename).resolve()
+        candidate = (corpus_root / (record.source_path or record.filename)).resolve()
         if not candidate.is_relative_to(corpus_root):
             raise DocumentNotFoundError(document_id)
         if not candidate.is_file():

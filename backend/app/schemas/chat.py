@@ -6,6 +6,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.schemas.chunks import SourceType
 from app.schemas.figures import Figure
 from app.schemas.onboarding import OnboardingProfile
 
@@ -33,6 +34,11 @@ class Citation(BaseModel):
     evidence_id: str
     document_id: str
     document_title: str
+    source_type: SourceType = "internal"
+    authors: list[str] = Field(default_factory=list)
+    publishers: list[str] = Field(default_factory=list)
+    publication_date: str = ""
+    external_url: str = ""
     deliverable_id: str = ""
     page_number: int
     chunk_id: str

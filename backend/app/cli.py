@@ -139,6 +139,8 @@ def status() -> None:
                     {
                         "document_id": record.document_id,
                         "filename": record.filename,
+                        "source_path": record.source_path or record.filename,
+                        "source_type": record.source_type,
                         "pages": record.page_count,
                         "chunks": record.chunk_count,
                         "checksum": record.document_checksum[:12],

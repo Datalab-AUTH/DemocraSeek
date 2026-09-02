@@ -181,6 +181,9 @@ class RagOrchestrator:
 
         enriched: list[Citation] = []
         for citation in citations:
+            if citation.source_type == "external":
+                enriched.append(citation)
+                continue
             try:
                 records = self._registry.figures_for_page(
                     citation.document_id, citation.page_number

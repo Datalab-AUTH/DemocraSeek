@@ -5,12 +5,16 @@ Deterministic chunk IDs and file fingerprints make repeated runs idempotent.
 
 from __future__ import annotations
 
+import hashlib
+import json
 import logging
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
+from urllib.parse import urlsplit
 
 import yaml
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.config import Settings
 from app.corpus.registry import CorpusRegistry
@@ -26,7 +30,7 @@ from app.ingestion.standalone_images import (
     load_image_document,
 )
 from app.providers.base import EmbeddingProvider, VectorStore, VisionProvider
-from app.schemas.chunks import Chunk, DocumentRecord, IndexMetadata, PageText
+from app.schemas.chunks import Chunk, DocumentRecord, IndexMetadata, PageText, SourceType
 from app.schemas.figures import FigureRecord
 
 logger = logging.getLogger(__name__)
@@ -34,8 +38,46 @@ logger = logging.getLogger(__name__)
 # Optional document metadata sidecar.
 METADATA_SIDECAR = "corpus.metadata.yaml"
 
-# One metadata entry per source filename.
-SidecarEntry = dict[str, str]
+class SidecarEntry(BaseModel):
+    """Reviewed metadata for one corpus file."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    document_title: str = ""
+    deliverable_id: str = ""
+    publication_date: str = ""
+    authors: list[str] = Field(default_factory=list)
+    publishers: list[str] = Field(default_factory=list)
+    external_url: str = ""
+
+    @field_validator(
+        "document_title", "deliverable_id", "publication_date", "external_url", mode="before"
+    )
+    @classmethod
+    def _normalise_text(cls, value: object) -> str:
+        return " ".join(str(value or "").replace("\xa0", " ").split())
+
+    @field_validator("authors", "publishers", mode="before")
+    @classmethod
+    def _normalise_people(cls, value: object) -> list[str]:
+        values = [value] if isinstance(value, str) else list(value or [])
+        cleaned = [
+            " ".join(str(item).replace("\xa0", " ").split()).strip(" .")
+            for item in values
+        ]
+        return [item for item in cleaned if item]
+
+    @field_validator("external_url")
+    @classmethod
+    def _validate_url(cls, value: str) -> str:
+        if not value:
+            return value
+        parsed = urlsplit(value)
+        if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+            raise ValueError("external_url must be an absolute HTTP(S) URL")
+        if parsed.username or parsed.password:
+            raise ValueError("external_url must not contain credentials")
+        return value
 
 
 @dataclass(frozen=True)
@@ -119,36 +161,43 @@ class IngestionService:
         report.files_discovered = len(source_files)
 
         documents = self._registry.load()
-        ingested_ids: set[str] = set()
+        discovered_ids = {
+            pdf_extract.slugify_document_id(path.name) for path in source_files
+        }
 
         for path in source_files:
             try:
                 outcome = self._ingest_one(path, sidecar, documents, report, force=force)
             except Exception as exc:
                 outcome = self._record_failure(path, exc, report)
-            else:
-                ingested_ids.add(outcome.document_id)
             report.documents.append(outcome)
 
         if only is None:
-            self._remove_vanished_documents(documents, ingested_ids, report)
+            self._remove_vanished_documents(documents, discovered_ids, report)
 
         self._registry.save(documents)
         return self._with_totals(report).finish()
 
     @staticmethod
     def _discover_source_files(corpus_dir: Path, *, only: str | None) -> list[Path]:
-        """Approved files in the corpus directory, in a stable order."""
+        """Approved files in internal/external folders, in a stable order."""
         files = sorted(
             (
                 path
-                for path in corpus_dir.iterdir()
+                for path in corpus_dir.rglob("*")
                 if path.is_file()
                 and (path.suffix.lower() == ".pdf" or is_image_document(path))
             ),
-            key=lambda path: path.name,
+            key=lambda path: path.relative_to(corpus_dir).as_posix().lower(),
         )
-        return [path for path in files if path.name == only] if only else files
+        if not only:
+            return files
+        requested = only.replace("\\", "/")
+        return [
+            path
+            for path in files
+            if path.name == only or path.relative_to(corpus_dir).as_posix() == requested
+        ]
 
     @staticmethod
     def _record_failure(path: Path, exc: Exception, report: IngestionReport) -> DocumentOutcome:
@@ -213,13 +262,29 @@ class IngestionService:
         checksum = pdf_extract.compute_checksum(path)
         fingerprint = self._settings.index_fingerprint
         existing = documents.get(document_id)
+        source_path = path.relative_to(self._settings.corpus_path).as_posix()
+        source_type = self._source_type(source_path)
+        entry = sidecar.get(source_path) or sidecar.get(path.name) or SidecarEntry()
+        self._validate_source_metadata(path, source_type, entry)
+        title = self._resolve_title(path, entry)
+        metadata_fingerprint = self._source_metadata_fingerprint(
+            source_path, source_type, title, entry
+        )
 
-        if not force and self._is_unchanged(existing, checksum, fingerprint):
+        if not force and self._is_unchanged(
+            existing, checksum, fingerprint, metadata_fingerprint
+        ):
             return self._skipped_outcome(document_id, path, existing, report)
 
-        entry = sidecar.get(path.name, {})
-        title = self._resolve_title(path, entry)
-        metadata_template = self._metadata_template(document_id, checksum, title, path.name, entry)
+        metadata_template = self._metadata_template(
+            document_id,
+            checksum,
+            title,
+            path.name,
+            source_path,
+            source_type,
+            entry,
+        )
 
         pages, figures = self._read_source(path, document_id=document_id, title=title)
         text = self._chunk_pages(pages, document_id, metadata_template, report)
@@ -238,7 +303,10 @@ class IngestionService:
             path=path,
             checksum=checksum,
             fingerprint=fingerprint,
+            metadata_fingerprint=metadata_fingerprint,
             title=title,
+            source_path=source_path,
+            source_type=source_type,
             entry=entry,
             pages=pages,
             chunk_count=len(chunks),
@@ -263,13 +331,17 @@ class IngestionService:
 
     @staticmethod
     def _is_unchanged(
-        existing: DocumentRecord | None, checksum: str, fingerprint: str
+        existing: DocumentRecord | None,
+        checksum: str,
+        fingerprint: str,
+        metadata_fingerprint: str,
     ) -> bool:
         """True when neither the file nor the way we index it has changed."""
         return (
             existing is not None
             and existing.document_checksum == checksum
             and existing.index_fingerprint == fingerprint
+            and existing.source_metadata_fingerprint == metadata_fingerprint
         )
 
     @staticmethod
@@ -288,14 +360,21 @@ class IngestionService:
     @staticmethod
     def _resolve_title(path: Path, entry: SidecarEntry) -> str:
         """The operator's title wins; then the PDF's own; then the filename."""
-        if entry.get("document_title"):
-            return entry["document_title"]
+        if entry.document_title:
+            return entry.document_title
         if is_image_document(path):
             return humanise_filename(path)
         return pdf_extract.read_pdf_title(path) or path.stem
 
     def _metadata_template(
-        self, document_id: str, checksum: str, title: str, filename: str, entry: SidecarEntry
+        self,
+        document_id: str,
+        checksum: str,
+        title: str,
+        filename: str,
+        source_path: str,
+        source_type: SourceType,
+        entry: SidecarEntry,
     ) -> dict[str, object]:
         """Fields every chunk of this document carries, so a citation is complete."""
         settings = self._settings
@@ -304,8 +383,13 @@ class IngestionService:
             "document_checksum": checksum,
             "document_title": title,
             "filename": filename,
-            "deliverable_id": entry.get("deliverable_id", ""),
-            "publication_date": entry.get("publication_date", ""),
+            "source_path": source_path,
+            "source_type": source_type,
+            "authors": entry.authors,
+            "publishers": entry.publishers,
+            "external_url": entry.external_url,
+            "deliverable_id": entry.deliverable_id,
+            "publication_date": entry.publication_date,
             "corpus_version": settings.corpus_version,
             "index_version": settings.index_version,
             "embedding_provider": self._embeddings.provider_name,
@@ -392,7 +476,10 @@ class IngestionService:
         path: Path,
         checksum: str,
         fingerprint: str,
+        metadata_fingerprint: str,
         title: str,
+        source_path: str,
+        source_type: SourceType,
         entry: SidecarEntry,
         pages: list[PageText],
         chunk_count: int,
@@ -404,9 +491,14 @@ class IngestionService:
             document_checksum=checksum,
             document_title=title,
             filename=path.name,
+            source_path=source_path,
+            source_type=source_type,
+            authors=entry.authors,
+            publishers=entry.publishers,
+            external_url=entry.external_url,
             document_type="image" if is_image_document(path) else "pdf",
-            deliverable_id=entry.get("deliverable_id", ""),
-            publication_date=entry.get("publication_date", ""),
+            deliverable_id=entry.deliverable_id,
+            publication_date=entry.publication_date,
             page_count=len(pages),
             chunk_count=chunk_count,
             figure_count=figure_count,
@@ -414,8 +506,60 @@ class IngestionService:
             corpus_version=settings.corpus_version,
             index_version=settings.index_version,
             index_fingerprint=fingerprint,
+            source_metadata_fingerprint=metadata_fingerprint,
             ingested_at=datetime.now(UTC).isoformat(),
         )
+
+    @staticmethod
+    def _source_type(source_path: str) -> SourceType:
+        """Infer trust/display behaviour from the first corpus subfolder."""
+        parts = Path(source_path).parts
+        if len(parts) == 1:
+            return "internal"
+        folder = parts[0].lower()
+        if folder not in {"internal", "external"}:
+            raise ValueError("Corpus files must be inside internal/ or external/.")
+        return folder  # type: ignore[return-value]
+
+    @staticmethod
+    def _validate_source_metadata(
+        path: Path, source_type: SourceType, entry: SidecarEntry
+    ) -> None:
+        """External sources need complete reviewed attribution and a safe URL."""
+        if source_type == "internal":
+            return
+        missing: list[str] = []
+        if not entry.document_title:
+            missing.append("document_title")
+        if not entry.authors:
+            missing.append("authors")
+        if not entry.publishers:
+            missing.append("publishers")
+        if not entry.publication_date:
+            missing.append("publication_date")
+        if not entry.external_url:
+            missing.append("external_url")
+        if missing:
+            raise ValueError(
+                f"External source {path.name!r} is missing metadata: {', '.join(missing)}"
+            )
+
+    @staticmethod
+    def _source_metadata_fingerprint(
+        source_path: str,
+        source_type: SourceType,
+        title: str,
+        entry: SidecarEntry,
+    ) -> str:
+        """Detect metadata edits without forcing a full re-index."""
+        payload = {
+            "source_path": source_path,
+            "source_type": source_type,
+            "document_title": title,
+            **entry.model_dump(exclude={"document_title"}),
+        }
+        encoded = json.dumps(payload, ensure_ascii=False, sort_keys=True).encode("utf-8")
+        return hashlib.sha256(encoded).hexdigest()
 
     # Reporting
     def _new_report(self) -> IngestionReport:
@@ -445,15 +589,15 @@ class IngestionService:
 
     @staticmethod
     def _load_sidecar(corpus_dir: Path) -> dict[str, SidecarEntry]:
-        """Read optional per-file metadata. Missing values stay empty."""
+        """Read and validate optional per-file metadata."""
         path = corpus_dir / METADATA_SIDECAR
         if not path.is_file():
             return {}
         raw = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
         documents = raw.get("documents", {})
         if not isinstance(documents, dict):
-            return {}
+            raise ValueError(f"{METADATA_SIDECAR} must contain a documents mapping")
         return {
-            str(filename): {str(key): str(value) for key, value in (entry or {}).items()}
+            str(filename).replace("\\", "/"): SidecarEntry.model_validate(entry or {})
             for filename, entry in documents.items()
         }

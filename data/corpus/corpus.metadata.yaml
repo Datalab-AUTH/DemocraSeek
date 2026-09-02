@@ -1,0 +1,144 @@
+# Reviewed metadata keyed by the exact corpus filename.
+documents:
+  "Digital Fascism and Digital Capitalism.pdf":
+    document_title: "Digital Fascism and Digital Capitalism"
+    authors:
+      - "Christian Fuchs"
+    publishers:
+      - "Philosophy & Social Criticism"
+    publication_date: "2026"
+    external_url: "https://doi.org/10.1177/01914537261434922"
+
+  "tripleC_English.pdf":
+    document_title: "Digital Fascism and Digital Capitalism"
+    authors:
+      - "Christian Fuchs"
+    publishers:
+      - "tripleC: Communication, Capitalism & Critique"
+    publication_date: "2026"
+    external_url: "https://doi.org/10.31269/2f8w2p37"
+
+  "What is participatory digital democracy.pdf":
+    document_title: "What is Participatory Digital Democracy?"
+    authors:
+      - "Kevin Friesch"
+      - "Christian Fuchs"
+      - "Joel Museba"
+    publishers:
+      - "The Communication Review"
+    publication_date: "2026"
+    external_url: "https://doi.org/10.1080/10714421.2026.2691015"
+
+  "What is digital democracy.pdf":
+    document_title: "What is Digital Democracy?"
+    authors:
+      - "Christian Fuchs"
+    publishers:
+      - "Journal of Information Technology & Politics"
+    publication_date: "2026"
+    external_url: "https://doi.org/10.1080/19331681.2026.2660162"
+
+  "What is and how do we achieve a resilient digital democracy.pdf":
+    document_title: "What is and how do we achieve a resilient digital democracy?"
+    authors:
+      - "Christian Fuchs"
+    publishers:
+      - "Open Research Europe"
+    publication_date: "2026"
+    external_url: "https://doi.org/10.12688/openreseurope.21988.2"
+
+  "The Futures of Digital Democracy Four Scenarios.pdf":
+    document_title: "The Futures of Digital Democracy: Four Scenarios"
+    authors:
+      - "Christian Fuchs"
+      - "Joel Museba"
+      - "Kevin Friesch"
+    publishers:
+      - "Open Research Europe"
+    publication_date: "2026"
+    external_url: "https://doi.org/10.12688/openreseurope.22910.2"
+
+  "The Digital Commons and the Digital Public Sphere How to Advance Digital Democracy Today.pdf":
+    document_title: "The Digital Commons and the Digital Public Sphere: How to Advance Digital Democracy Today"
+    authors:
+      - "Christian Fuchs"
+    publishers:
+      - "Westminster Papers in Communication and Culture"
+    publication_date: "2021"
+    external_url: "https://doi.org/10.16997/wpcc.917"
+
+  "Digital Democracy and the Digital Public Sphere. Media, Communication and Society Volume Six.pdf":
+    document_title: "Digital Democracy and the Digital Public Sphere: Media, Communication and Society Volume Six"
+    authors:
+      - "Christian Fuchs"
+    publishers:
+      - "Routledge"
+    publication_date: "2023"
+    external_url: "https://doi.org/10.4324/9781003331087"
+
+  "Re-constructing digital democracy An outline of four ‘positions’.pdf":
+    document_title: "Re-constructing digital democracy: An outline of four ‘positions’"
+    authors:
+      - "Lincoln Dahlberg"
+    publishers:
+      - "New Media & Society"
+    publication_date: "2011"
+    external_url: "https://doi.org/10.1177/1461444810389569"
+
+  "empowering-digital-democracy.pdf":
+    document_title: "Empowering Digital Democracy"
+    authors:
+      - "Roberta Fischli"
+      - "James Muldoon"
+    publishers:
+      - "Perspectives on Politics"
+    publication_date: "2024"
+    external_url: "https://doi.org/10.1017/S1537592724000409"
+
+  "Social Media and the Public Sphere.pdf":
+    document_title: "Social Media and the Public Sphere"
+    authors:
+      - "Christian Fuchs"
+    publishers:
+      - "tripleC: Communication, Capitalism & Critique"
+    publication_date: "2014"
+    external_url: "https://doi.org/10.31269/triplec.v12i1.552"
+
+  "AI for Democracy – Human-Centric, Trustworthy, and Inclusive Innovations.pdf":
+    document_title: "AI for Democracy – Human-Centric, Trustworthy, and Inclusive Innovations"
+    authors:
+      - "Ilaria Mariani"
+      - "Jennifer Edmond"
+      - "George Manias"
+      - "Maria Panou"
+    publishers:
+      - "Springer"
+    publication_date: "2026"
+    external_url: "https://link.springer.com/book/10.1007/978-3-032-23948-8"
+
+  "The Design of Digital Democracy.pdf":
+    document_title: "The Design of Digital Democracy"
+    authors:
+      - "Gianluca Sgueo"
+    publishers:
+      - "Springer"
+    publication_date: "2023"
+    external_url: "https://link.springer.com/book/10.1007/978-3-031-36946-9"
+
+  "Final_GAMES POWERS AND DEMOCRACIES.pdf":
+    document_title: "Games, Powers & Democracies"
+    authors:
+      - "Gianluca Sgueo"
+    publishers:
+      - "Bocconi University Press"
+    publication_date: "2018"
+    external_url: "https://www.gianlucasgueo.it/2018/10/09/games-powers-and-democracies/"
+
+  "Rethinking Democracy.pdf":
+    document_title: "Rethinking Democracy: The New Model of Democracy for the New Democratic Era"
+    authors:
+      - "Hanno Scholtz"
+    publishers:
+      - "De Gruyter"
+    publication_date: "2026"
+    external_url: "https://uplopen.com/books/m/10.1515/9783111827902"

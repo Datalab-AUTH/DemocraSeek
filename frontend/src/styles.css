@@ -1269,6 +1269,49 @@ kbd {
 }
 
 /* Sources */
+.external-reading {
+  margin-top: 1.2rem;
+  padding: 0.9rem 1rem;
+  background: color-mix(in srgb, var(--accent) 7%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--border));
+  border-radius: var(--radius-sm);
+}
+
+.external-reading > p {
+  margin: 0 0 0.55rem;
+  color: var(--text-soft);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.external-reading ul {
+  display: grid;
+  gap: 0.55rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.external-reading li {
+  display: flex;
+  flex-direction: column;
+  gap: 0.08rem;
+}
+
+.external-reading a {
+  width: fit-content;
+  color: var(--brand);
+  font-size: 0.86rem;
+  font-weight: 720;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.external-reading span {
+  color: var(--text-faint);
+  font-size: 0.72rem;
+}
+
 .sources {
   margin-top: 1.35rem;
   padding: 1rem;
@@ -1675,6 +1718,11 @@ kbd {
   animation: source-drawer-in 220ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/* External sources have no tab row. */
+.source-drawer--external {
+  grid-template-rows: auto minmax(0, 1fr) auto;
+}
+
 @keyframes source-drawer-in {
   from {
     transform: translateX(32px);
@@ -1868,6 +1916,12 @@ kbd {
   border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--border));
 }
 
+.source-drawer__status--external {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--border));
+}
+
 .source-drawer__status--passage,
 .evidence-card__badge--passage {
   color: var(--warn-text);
@@ -1941,6 +1995,7 @@ kbd {
 }
 
 .evidence-card,
+.external-source-card,
 .source-drawer__section,
 .page-context {
   background: var(--surface);
@@ -1951,6 +2006,49 @@ kbd {
 
 .evidence-card {
   overflow: hidden;
+}
+
+.external-source-card {
+  padding: 1.25rem;
+}
+
+.external-source-card h3 {
+  margin: 0.18rem 0 0;
+  font-size: 1.05rem;
+}
+
+.external-source-card__lead {
+  margin: 0.75rem 0 1.1rem;
+  color: var(--text-soft);
+  line-height: 1.6;
+}
+
+.external-source-card__metadata {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  border-top: 1px solid var(--border);
+}
+
+.external-source-card__metadata > div {
+  display: grid;
+  grid-template-columns: minmax(8rem, 0.35fr) 1fr;
+  gap: 1rem;
+  padding: 0.72rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.external-source-card__metadata dt {
+  color: var(--text-faint);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.external-source-card__metadata dd {
+  margin: 0;
+  color: var(--text);
+  font-size: 0.86rem;
+  line-height: 1.45;
 }
 
 .evidence-card__heading,
