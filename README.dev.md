@@ -5,8 +5,8 @@ Short, practical version of the full handbook in [README.md](README.md).
 ---
 ## 1. What it is
 
-A local-first, citation-grounded RAG application over an approved INNOVADE
-knowledge base.
+A citation-grounded RAG application over an approved INNOVADE knowledge base,
+with Docker-local storage and configurable institutional or local AI endpoints.
 
 - The user completes a 4-step onboarding (role, intent, support need, presentation
   mode) and then asks questions in their own language.
@@ -49,7 +49,7 @@ question + history
   -> detect language, translate to canonical English
   -> compile presentation policy from the 4 onboarding codes (deterministic, no LLM)
   -> dense retrieval (threshold gate) + BM25 -> cross-encoder rerank -> top-K evidence
-  -> system + user prompt -> llama3.1:8b returns strict JSON
+  -> system + user prompt -> FILOS qwen3.8:27b returns strict JSON
   -> parse + validate citations -> hydrate trusted metadata from the index
   -> translate answer text around [C...] markers, verify marker sequence
   -> render answer + source evidence
@@ -62,11 +62,20 @@ question + history
 | `frontend` — nginx + Vite-built React, proxies `/api` | Docker | `8080` |
 | `backend` — Python 3.13, FastAPI/Uvicorn | Docker | `8000` |
 | `db` — PostgreSQL 18 + pgvector + pg_textsearch | Docker | `5434` |
-| Ollama — `llama3.1:8b`, `nomic-embed-text`, `qwen2.5vl:7b` | **Host, not Docker** | `11434` |
+| FILOS — `qwen3.8:27b` answering, translation, and vision | AUTH service | HTTPS |
+| FILOS — `all-minilm:22m` embeddings | AUTH service | HTTPS |
+| Ollama local fallback | **Host, not Docker** | `11434` |
 
-Containers reach Ollama through `host.docker.internal:11434`. All host ports bind
-to `127.0.0.1`. The browser uses a single origin (`http://localhost:8080`), so
-there is no CORS setup and no hard-coded backend URL in the bundle.
+The active institutional services require VPN/network access and one key in the
+root `.env`. Local fallback reaches Ollama through
+`host.docker.internal:11434`. All application host ports bind to `127.0.0.1`.
+The browser uses one origin (`http://localhost:8080`), so there is no CORS setup
+and no hard-coded backend URL in the bundle.
+
+Institutional mode sends chunks to FILOS for embeddings, kept figure images to
+FILOS during ingestion, and selected evidence plus the current question/history
+to FILOS during answering. Confirm that the approved corpus permits this
+processing.
 
 Persistent state lives in named volumes: `pgdata18` (database), `ingestdata18`
 (registry + extracted figures), `modelcache` (reranker). `docker compose down`
@@ -78,11 +87,20 @@ keeps them unless you add `--volumes` — do not add it unless you want a full r
 
 - Windows 10/11 with PowerShell (for the included launchers)
 - Docker Desktop with Compose v2
-- Ollama on the host
-- Disk/RAM for `llama3.1:8b`, `nomic-embed-text`, `qwen2.5vl:7b`, the Docker
-  images, and the reranker
+- Institutional VPN/network access and API key for the active FILOS profile
+- Ollama and local models only when using the documented fallback
+- Disk/RAM for Docker images and the local reranker
 
 Python and Node are **not** required on the host for normal Docker runtime.
+
+Use the procedure that matches the situation:
+
+| Situation | Procedure |
+|---|---|
+| Brand-new machine or clean clone | Follow section 5 from beginning to end |
+| Existing machine with a valid index | Use the daily commands in section 6 |
+| New, replaced, or removed corpus file | Follow the corpus workflow in section 4 |
+| Embedding, vision, chunking, dimensions, or index version changed | Run the re-index workflow in section 5.7 |
 
 ---
 
@@ -135,6 +153,8 @@ data/corpus/
 
 The scanner is recursive. Files directly under `data/corpus/` remain compatible
 and are treated as internal, but new material should use the two named folders.
+The repository contains `.gitkeep` placeholders, so both folders exist after a
+clone even though the actual documents are distributed separately.
 
 ### What may go in
 
@@ -148,6 +168,24 @@ corpus-relative path. Internal entries are optional. Every external file must
 have `document_title`, non-empty `authors`, non-empty `publishers`,
 `publication_date`, and an absolute HTTP(S) `external_url`. An incomplete
 external file is rejected instead of being shown with invented attribution.
+
+Prefer a corpus-relative key, especially when filenames could collide:
+
+```yaml
+documents:
+  "external/New Study.pdf":
+    document_title: "New Study"
+    authors:
+      - "Author One"
+    publishers:
+      - "Publisher Name"
+    publication_date: "2026"
+    external_url: "https://example.org/publication"
+```
+
+For a new internal source, copy the file into `internal/`; metadata is optional.
+For a new external source, copy the file into `external/`, add its reviewed entry
+to this YAML file, and then run the normal incremental ingestion command.
 
 Changing source metadata is detected by its own fingerprint, so the normal
 incremental `ingest` updates that document. External source files, page text,
@@ -167,11 +205,12 @@ repository root:
 .\ingest.cmd -Reindex -Yes            # full rebuild of derived index state
 ```
 
-It starts Ollama and Docker Desktop if they are down, checks that the embedding
-and vision models are actually installed, runs the command, and prints the corpus
-status afterwards. The stack does not need to be up first — Compose starts the
-database on its own. `-Reindex` refuses to run without `-Yes`, because it throws
-away the whole index and pays the full ingestion cost again.
+It starts Docker Desktop if needed. It starts and validates Ollama only when a
+configured endpoint is local; remote FILOS endpoints skip that check. It
+runs the command and prints corpus status afterwards. The stack does not need to
+be up first — Compose starts the database on its own. `-Reindex` refuses to run
+without `-Yes`, because it throws away the whole index and pays the full
+ingestion cost again.
 
 Everything it does is a wrapper over one CLI, which you can also call directly:
 
@@ -222,37 +261,125 @@ how many figures were kept and whether the VLM actually described them.
 
 ---
 
-## 5. First run
+## 5. First installation on a new machine
+
+Run every command in this section from the repository root: the directory that
+contains `.env.example`, `ingest.cmd`, `start-demo.cmd`, and `deployment/`.
+
+The repository deliberately does **not** contain the secret `.env`, corpus
+documents, database, vectors, registry, or extracted figures. A new machine must
+create all derived state once.
+
+### 5.1 Create the local configuration
 
 ```powershell
-# 1. configuration
-Copy-Item .env.example .env      # then review ports, model names, vision, retrieval
-
-# 2. models on the host
-ollama pull llama3.1:8b
-ollama pull nomic-embed-text
-ollama pull qwen2.5vl:7b
-
-# 3. approved documents - NOT in the repository, see section 4
-#    copy them into data/corpus/
-
-# 4. build and start
-docker compose -f deployment\docker-compose.yml --env-file .env up -d --build
-
-# 5. ingest (slow on first run: the VLM describes every figure)
-.\ingest.cmd
-
-# 6. verify
-docker compose -f deployment\docker-compose.yml --env-file .env run --rm backend python -m app.cli status
-Invoke-RestMethod http://localhost:8000/api/ready
+Copy-Item .env.example .env
 ```
 
-Before ingestion, `/api/ready` is expected to report not-ready. Do not commit `.env`.
+Open `.env` and set only the real FILOS credential:
+
+```dotenv
+INSTITUTIONAL_API_KEY=sk-your-real-key
+```
+
+Keep these empty unless a provider explicitly gives a different credential:
+
+```dotenv
+LLM_API_KEY=
+EMBEDDING_API_KEY=
+VISION_API_KEY=
+```
+
+The active template sends answering, translation, vision, and embeddings to
+FILOS. Never commit or distribute the resulting `.env`.
+
+### 5.2 Connect the institutional network
+
+Connect the AUTH VPN or use a network that can reach
+`https://filos.csd.auth.gr`. Docker Desktop must be able to use the same route.
+
+### 5.3 Add the approved corpus
+
+Copy INNOVADE-owned material into:
+
+```text
+data/corpus/internal/
+```
+
+Copy downloaded third-party material into:
+
+```text
+data/corpus/external/
+```
+
+External filenames must match their entries in
+`data/corpus/corpus.metadata.yaml`. Add a reviewed YAML entry before ingesting
+any new external document. The YAML file alone is not the corpus; the actual
+PDF/image files must also be present.
+
+### 5.4 Build the Docker images
+
+```powershell
+docker compose -f deployment\docker-compose.yml --env-file .env build
+```
+
+Use `build`, not `up`, at this stage. The application cannot become ready before
+the first index exists.
+
+### 5.5 Create the first index
+
+```powershell
+.\ingest.cmd
+```
+
+On a clean machine, normal `ingest` creates the collection, registry, vectors,
+and reports. Do not use `-Reindex` for a first index. The launcher starts the
+database dependency automatically; the full application does not need to be
+running. This step can be slow because every chunk is embedded and every kept
+figure is described once.
+
+### 5.6 Start and verify the application
+
+```powershell
+.\start-demo.cmd
+```
+
+The launcher starts the Docker services, waits for readiness, and opens:
+
+```text
+http://localhost:8080
+```
+
+Verify from another PowerShell window:
+
+```powershell
+.\ingest.cmd -Status
+Invoke-RestMethod http://localhost:8000/api/ready
+Invoke-RestMethod http://localhost:8000/api/corpus
+```
+
+Expected result: readiness is `ready`, indexed document counts are non-zero, and
+`pending_files` is empty. Review the latest files in `data/reports/` for per-file
+failures and figure-description counts.
+
+### 5.7 Re-index an existing installation after an index-affecting change
+
+This workflow is for an existing index after changing the embedding model or
+dimensions, vision provider/model, chunk size/overlap, or `INDEX_VERSION`:
+
+```powershell
+.\stop-demo.cmd
+.\ingest.cmd -Reindex -Yes
+.\start-demo.cmd
+```
+
+Do not re-index for an answering-model, prompt, top-K, threshold, or onboarding
+change. Those changes require only the restart/rebuild documented in section 7.
 
 ## 6. Daily run
 
 ```powershell
-.\start-demo.cmd            # validates .env, starts Ollama + Docker, waits for /api/ready, opens the UI
+.\start-demo.cmd            # validates .env, starts Docker, waits for /api/ready, opens the UI
 .\start-demo.cmd -Build     # after code, dependency, or frontend changes
 .\start-demo.cmd -NoBrowser
 .\stop-demo.cmd             # stops, keeps database and index
@@ -286,9 +413,10 @@ Key groups in `.env`:
 | Group | Variables | Notes |
 |---|---|---|
 | App | `APP_ENV`, `LOG_LEVEL`, `FRONTEND_HOST_PORT`, `BACKEND_HOST_PORT` | |
-| Answer LLM | `LLM_PROVIDER`, `LLM_MODEL`, `LLM_BASE_URL`, `LLM_API_KEY`, `LLM_TEMPERATURE`, `LLM_MAX_OUTPUT_TOKENS`, `LLM_TIMEOUT_SECONDS` | `openai_compatible` adapter; Ollama accepts `ollama` as the key |
-| Embeddings | `EMBEDDING_MODEL`, `EMBEDDING_BASE_URL`, `EMBEDDING_DIMENSIONS`, `EMBEDDING_BATCH_SIZE` | dimensions must match the returned vectors |
-| Vision | `VISION_PROVIDER` (`none` / `openai_compatible`), `VISION_MODEL`, `VISION_BASE_URL`, `VISION_MAX_DESCRIPTION_CHARS` | |
+| Shared credential | `INSTITUTIONAL_API_KEY` | set once in `.env`; never commit it |
+| Answer LLM | `LLM_PROVIDER`, `LLM_MODEL`, `LLM_BASE_URL`, `LLM_API_KEY`, `LLM_TEMPERATURE`, `LLM_MAX_OUTPUT_TOKENS`, `LLM_TIMEOUT_SECONDS` | FILOS `qwen3.8:27b`; a specific key overrides the shared key |
+| Embeddings | `EMBEDDING_PROVIDER`, `EMBEDDING_MODEL`, `EMBEDDING_BASE_URL`, `EMBEDDING_API_KEY`, `EMBEDDING_DIMENSIONS`, `EMBEDDING_BATCH_SIZE` | FILOS `all-minilm:22m`, 384d; a specific key overrides the shared key |
+| Vision | `VISION_PROVIDER` (`none` / `openai_compatible`), `VISION_MODEL`, `VISION_BASE_URL`, `VISION_API_KEY`, `VISION_MAX_DESCRIPTION_CHARS` | FILOS `qwen3.8:27b`; a specific key overrides the shared key |
 | Retrieval | `RETRIEVAL_CANDIDATE_K` (10), `RETRIEVAL_TOP_K` (6), `RETRIEVAL_SCORE_THRESHOLD` (0.65), `RETRIEVAL_MAX_CONTEXT_TOKENS` (4000), `RERANK_MODEL` | the actual tuning knobs |
 | Store | `VECTOR_STORE_COLLECTION`, `VECTOR_STORE_URL`, `POSTGRES_HOST_PORT`, `POSTGRES_USER` / `PASSWORD` / `DB` | inside Compose the backend always talks to `db:5432` |
 | Corpus | `CORPUS_PATH`, `INDEX_PATH`, `REPORT_PATH`, `CHUNK_SIZE` (1200), `CHUNK_OVERLAP` (180), `INDEX_VERSION` | |
@@ -447,6 +575,8 @@ pool, and there is no token streaming.
 | Symptom | Fix |
 |---|---|
 | `start-demo.cmd` times out on readiness | Check `/api/ready` and backend logs. Usually: nothing ingested in the `ingestdata18` volume, missing model, fingerprint mismatch, db unavailable, pending files, or reranker download failure |
+| FILOS returns 401 | Put the key in root `.env` as `INSTITUTIONAL_API_KEY`; keep provider-specific key fields empty unless overriding it |
+| Container cannot reach FILOS | Connect the institutional VPN and verify Docker Desktop uses the VPN route; endpoints must end in `/ollama/v1` |
 | Container cannot reach Ollama | `*_BASE_URL` must be `http://host.docker.internal:11434/v1`; verify `http://localhost:11434/api/tags` on the host; check VPN/firewall |
 | Missing model | `ollama list`, then pull. Tags in `.env` must match installed tags exactly |
 | PostgreSQL port conflict | Change `POSTGRES_HOST_PORT`; `VECTOR_STORE_URL` still uses `db:5432` |

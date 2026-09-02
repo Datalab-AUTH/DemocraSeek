@@ -128,7 +128,7 @@ if ($localModels.Count -gt 0) {
     Write-Host "[       OK] Ollama and required local models are ready" -ForegroundColor Green
 }
 else {
-    Write-Host "[     INFO] Provider endpoints are remote; local Ollama check skipped" -ForegroundColor Yellow
+    Write-Host "[     INFO] FILOS endpoints are remote; local Ollama check skipped" -ForegroundColor Yellow
 }
 
 Write-Step "Checking Docker Desktop"

@@ -42,6 +42,9 @@ class Settings(BaseSettings):
     app_base_url: str = "http://localhost:8080"
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
 
+    # Shared FILOS credential. Specific provider keys override it.
+    institutional_api_key: str = ""
+
     # LLM
     llm_provider: LLMProviderName = "openai_compatible"
     llm_model: str = "llama3.1:8b"
@@ -135,8 +138,11 @@ class Settings(BaseSettings):
         if self.llm_provider == "openai_compatible":
             if not self.llm_base_url:
                 problems.append("LLM_BASE_URL is required when LLM_PROVIDER=openai_compatible.")
-            if not self.llm_api_key:
-                problems.append("LLM_API_KEY is required when LLM_PROVIDER=openai_compatible.")
+            if not self.effective_llm_api_key:
+                problems.append(
+                    "LLM_API_KEY or INSTITUTIONAL_API_KEY is required when "
+                    "LLM_PROVIDER=openai_compatible."
+                )
             if not self.llm_model:
                 problems.append("LLM_MODEL is required when LLM_PROVIDER=openai_compatible.")
 
@@ -145,9 +151,10 @@ class Settings(BaseSettings):
                 problems.append(
                     "EMBEDDING_BASE_URL is required when EMBEDDING_PROVIDER=openai_compatible."
                 )
-            if not self.embedding_api_key:
+            if not self.effective_embedding_api_key:
                 problems.append(
-                    "EMBEDDING_API_KEY is required when EMBEDDING_PROVIDER=openai_compatible."
+                    "EMBEDDING_API_KEY or INSTITUTIONAL_API_KEY is required when "
+                    "EMBEDDING_PROVIDER=openai_compatible."
                 )
             if not self.embedding_model:
                 problems.append(
@@ -159,9 +166,10 @@ class Settings(BaseSettings):
                 problems.append(
                     "VISION_BASE_URL is required when VISION_PROVIDER=openai_compatible."
                 )
-            if not self.vision_api_key:
+            if not self.effective_vision_api_key:
                 problems.append(
-                    "VISION_API_KEY is required when VISION_PROVIDER=openai_compatible."
+                    "VISION_API_KEY or INSTITUTIONAL_API_KEY is required when "
+                    "VISION_PROVIDER=openai_compatible."
                 )
             if not self.vision_model:
                 problems.append(
@@ -181,6 +189,18 @@ class Settings(BaseSettings):
         return self
 
     # Derived values
+    @property
+    def effective_llm_api_key(self) -> str:
+        return self.llm_api_key or self.institutional_api_key
+
+    @property
+    def effective_embedding_api_key(self) -> str:
+        return self.embedding_api_key or self.institutional_api_key
+
+    @property
+    def effective_vision_api_key(self) -> str:
+        return self.vision_api_key or self.institutional_api_key
+
     @property
     def index_fingerprint(self) -> str:
         """Return the index identity; any change requires re-indexing."""
