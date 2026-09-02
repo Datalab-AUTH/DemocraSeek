@@ -108,6 +108,7 @@ def corpus_contents(context: ApplicationContext = Depends(get_context)) -> dict[
             {
                 "document_id": record.document_id,
                 "document_title": record.document_title,
+                "source_type": record.source_type,
                 "deliverable_id": record.deliverable_id,
                 "page_count": record.page_count,
                 "figure_count": record.figure_count,

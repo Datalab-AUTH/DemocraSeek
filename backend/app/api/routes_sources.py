@@ -25,7 +25,7 @@ def get_source(
     record = context.registry.get(document_id)
 
     page_payload: SourcePage | None = None
-    if page is not None:
+    if page is not None and record.source_type == "internal":
         if page > record.page_count:
             raise DocumentNotFoundError(f"{document_id}#p{page}")
         page_text = context.registry.get_page(document_id, page)
@@ -55,13 +55,21 @@ def get_source(
         document_id=record.document_id,
         document_title=record.document_title,
         filename=record.filename,
+        source_type=record.source_type,
+        authors=record.authors,
+        publishers=record.publishers,
+        external_url=record.external_url,
         document_type=record.document_type,
         deliverable_id=record.deliverable_id,
         publication_date=record.publication_date,
         page_count=record.page_count,
         corpus_version=record.corpus_version,
         page=page_payload,
-        file_url=f"/api/sources/{record.document_id}/file",
+        file_url=(
+            f"/api/sources/{record.document_id}/file"
+            if record.source_type == "internal"
+            else None
+        ),
     )
 
 
@@ -70,6 +78,8 @@ def get_figure_image(
     document_id: str, figure_id: str, context: ApplicationContext = Depends(get_context)
 ) -> FileResponse:
     """Serve one extracted figure. Path comes from the registry only."""
+    if context.registry.get(document_id).source_type == "external":
+        raise DocumentNotFoundError(document_id)
     path = context.registry.resolve_figure_path(document_id, figure_id)
     return FileResponse(path, media_type="image/png")
 
@@ -92,9 +102,11 @@ _MEDIA_TYPES = {
 def get_source_file(
     document_id: str, context: ApplicationContext = Depends(get_context)
 ) -> FileResponse:
-    """Serve the original approved file. Path comes from the registry only."""
-    path = context.registry.resolve_source_path(document_id)
+    """Serve only internal original files."""
     record = context.registry.get(document_id)
+    if record.source_type == "external":
+        raise DocumentNotFoundError(document_id)
+    path = context.registry.resolve_source_path(document_id)
     return FileResponse(
         path,
         media_type=_MEDIA_TYPES.get(path.suffix.lower(), "application/octet-stream"),

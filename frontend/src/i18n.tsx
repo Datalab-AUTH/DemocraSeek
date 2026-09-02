@@ -70,6 +70,8 @@ export interface UiCopy {
     fromImage: string;
     sourceExcerpt: string;
     image: string;
+    externalSource: string;
+    moreIn: string;
   };
   figures: {
     label: string;
@@ -89,6 +91,7 @@ export interface UiCopy {
     source: string;
     metadata: string;
     page: string;
+    pageLabel: string;
     pageOf: string;
     views: string;
     excerptTab: string;
@@ -120,6 +123,13 @@ export interface UiCopy {
     passageTitle: string;
     passageDetail: string;
     loadError: string;
+    externalBadge: string;
+    externalAboutTitle: string;
+    externalAboutText: string;
+    authorsLabel: string;
+    publishersLabel: string;
+    publishedLabel: string;
+    visitExternal: string;
   };
 }
 
@@ -165,6 +175,7 @@ const EN: UiCopy = {
     sourcesTitle: "Check the sources", sourcesSummary: "Open a source to see where the answer came from",
     viewSource: "View source details {id}: {document}, page {page}", page: "Page {page}",
     exactQuote: "Exact quote", fromImage: "From an image", sourceExcerpt: "Source excerpt", image: "image",
+    externalSource: "External source", moreIn: "You can see more in",
   },
   figures: {
     label: "Figures from the cited source", figureFrom: "Figure from {document}, page {page}",
@@ -175,7 +186,7 @@ const EN: UiCopy = {
     dialog: "Source {id}: {document}, page {page}", sourcePosition: "Source {current} of {total}",
     answerSource: "Answer source", pager: "Move between answer sources", previous: "Previous source",
     next: "Next source", close: "Close source panel", source: "Source", metadata: "Source metadata",
-    page: "Page {page}", pageOf: "Page {page} of {total}", views: "Source views",
+    page: "Page {page}", pageLabel: "Cited page", pageOf: "Page {page} of {total}", views: "Source views",
     excerptTab: "Source excerpt", fullPageTab: "Full page", whyShown: "Why this source is shown",
     excerptHeading: "Source excerpt", seeOnPage: "See this excerpt on the full page",
     figureSection: "Figure on the cited page", imageFromPage: "Image from this page",
@@ -190,6 +201,10 @@ const EN: UiCopy = {
     figureTitle: "This answer uses an image", figureDetail: "The image was read when the document was added. Open it below to check the details.",
     passageBadge: "From the source", passageTitle: "Taken from this page",
     passageDetail: "This excerpt comes directly from the original source.", loadError: "We could not load the source details.",
+    externalBadge: "External source", externalAboutTitle: "About this publication",
+    externalAboutText: "This publication supported the answer. Its local copy is used only for search and is not available here.",
+    authorsLabel: "Authors", publishersLabel: "Publisher", publishedLabel: "Publication date",
+    visitExternal: "Visit original source",
   },
 };
 
@@ -241,6 +256,7 @@ const EL: UiCopy = {
     sourcesTitle: "Ελέγξτε τις πηγές", sourcesSummary: "Ανοίξτε μια πηγή για να δείτε από πού προήλθε η απάντηση",
     viewSource: "Προβολή στοιχείων πηγής {id}: {document}, σελίδα {page}", page: "Σελίδα {page}",
     exactQuote: "Ακριβές απόσπασμα", fromImage: "Από εικόνα", sourceExcerpt: "Απόσπασμα πηγής", image: "εικόνα",
+    externalSource: "Εξωτερική πηγή", moreIn: "Μπορείτε να δείτε περισσότερα στο",
   },
   figures: {
     label: "Εικόνες από την αναφερόμενη πηγή", figureFrom: "Εικόνα από {document}, σελίδα {page}",
@@ -251,7 +267,7 @@ const EL: UiCopy = {
     dialog: "Πηγή {id}: {document}, σελίδα {page}", sourcePosition: "Πηγή {current} από {total}",
     answerSource: "Πηγή απάντησης", pager: "Μετακίνηση μεταξύ πηγών", previous: "Προηγούμενη πηγή",
     next: "Επόμενη πηγή", close: "Κλείσιμο πηγής", source: "Πηγή", metadata: "Στοιχεία πηγής",
-    page: "Σελίδα {page}", pageOf: "Σελίδα {page} από {total}", views: "Προβολές πηγής",
+    page: "Σελίδα {page}", pageLabel: "Σελίδα παραπομπής", pageOf: "Σελίδα {page} από {total}", views: "Προβολές πηγής",
     excerptTab: "Απόσπασμα πηγής", fullPageTab: "Πλήρης σελίδα", whyShown: "Γιατί εμφανίζεται αυτή η πηγή",
     excerptHeading: "Απόσπασμα πηγής", seeOnPage: "Δείτε το απόσπασμα στην πλήρη σελίδα",
     figureSection: "Εικόνα στην αναφερόμενη σελίδα", imageFromPage: "Εικόνα από αυτή τη σελίδα",
@@ -266,6 +282,10 @@ const EL: UiCopy = {
     figureTitle: "Η απάντηση χρησιμοποιεί εικόνα", figureDetail: "Η εικόνα αναγνώστηκε κατά την προσθήκη του εγγράφου. Ανοίξτε την παρακάτω για να ελέγξετε τις λεπτομέρειες.",
     passageBadge: "Από την πηγή", passageTitle: "Λήφθηκε από αυτή τη σελίδα",
     passageDetail: "Αυτό το απόσπασμα προέρχεται απευθείας από την αρχική πηγή.", loadError: "Δεν ήταν δυνατή η φόρτωση των στοιχείων της πηγής.",
+    externalBadge: "Εξωτερική πηγή", externalAboutTitle: "Σχετικά με τη δημοσίευση",
+    externalAboutText: "Η δημοσίευση υποστήριξε την απάντηση. Το τοπικό αντίγραφό της χρησιμοποιείται μόνο για αναζήτηση και δεν είναι διαθέσιμο εδώ.",
+    authorsLabel: "Συγγραφείς", publishersLabel: "Εκδότης", publishedLabel: "Ημερομηνία δημοσίευσης",
+    visitExternal: "Μετάβαση στην αρχική πηγή",
   },
 };
 
@@ -314,6 +334,7 @@ const FR: UiCopy = {
     openSource: "Ouvrir la source {id} : {document}, page {page}", sourcesLabel: "Sources de cette réponse", sourcesTitle: "Vérifiez les sources",
     sourcesSummary: "Ouvrez une source pour voir d’où vient la réponse", viewSource: "Voir les détails de la source {id} : {document}, page {page}",
     page: "Page {page}", exactQuote: "Citation exacte", fromImage: "Issu d’une image", sourceExcerpt: "Extrait de la source", image: "image",
+    externalSource: "Source externe", moreIn: "Pour en savoir plus, consultez",
   },
   figures: {
     label: "Figures de la source citée", figureFrom: "Figure de {document}, page {page}", fromDocument: "De {document}, page {page}",
@@ -322,7 +343,7 @@ const FR: UiCopy = {
   source: {
     dialog: "Source {id} : {document}, page {page}", sourcePosition: "Source {current} sur {total}", answerSource: "Source de la réponse",
     pager: "Naviguer entre les sources", previous: "Source précédente", next: "Source suivante", close: "Fermer le panneau des sources",
-    source: "Source", metadata: "Métadonnées de la source", page: "Page {page}", pageOf: "Page {page} sur {total}", views: "Vues de la source",
+    source: "Source", metadata: "Métadonnées de la source", page: "Page {page}", pageLabel: "Page citée", pageOf: "Page {page} sur {total}", views: "Vues de la source",
     excerptTab: "Extrait de la source", fullPageTab: "Page complète", whyShown: "Pourquoi cette source est affichée", excerptHeading: "Extrait de la source",
     seeOnPage: "Voir cet extrait sur la page complète", figureSection: "Figure sur la page citée", imageFromPage: "Image de cette page",
     imageOnPage: "Image à la page {page}", loadingDetails: "Chargement des détails de la source…", textFromSource: "Texte de la source",
@@ -334,6 +355,10 @@ const FR: UiCopy = {
     figureBadge: "Issu d’une image", figureTitle: "Cette réponse utilise une image", figureDetail: "L’image a été lue lors de l’ajout du document. Ouvrez-la ci-dessous pour vérifier les détails.",
     passageBadge: "Issu de la source", passageTitle: "Extrait de cette page", passageDetail: "Cet extrait provient directement de la source originale.",
     loadError: "Nous n’avons pas pu charger les détails de la source.",
+    externalBadge: "Source externe", externalAboutTitle: "À propos de cette publication",
+    externalAboutText: "Cette publication étaye la réponse. Sa copie locale sert uniquement à la recherche et n’est pas accessible ici.",
+    authorsLabel: "Auteurs", publishersLabel: "Éditeur", publishedLabel: "Date de publication",
+    visitExternal: "Consulter la source originale",
   },
 };
 
@@ -381,6 +406,7 @@ const ES: UiCopy = {
     openSource: "Abrir fuente {id}: {document}, página {page}", sourcesLabel: "Fuentes de esta respuesta", sourcesTitle: "Compruebe las fuentes",
     sourcesSummary: "Abra una fuente para ver de dónde procede la respuesta", viewSource: "Ver detalles de la fuente {id}: {document}, página {page}",
     page: "Página {page}", exactQuote: "Cita exacta", fromImage: "Procedente de una imagen", sourceExcerpt: "Extracto de la fuente", image: "imagen",
+    externalSource: "Fuente externa", moreIn: "Puede consultar más información en",
   },
   figures: {
     label: "Figuras de la fuente citada", figureFrom: "Figura de {document}, página {page}", fromDocument: "De {document}, página {page}",
@@ -389,7 +415,7 @@ const ES: UiCopy = {
   source: {
     dialog: "Fuente {id}: {document}, página {page}", sourcePosition: "Fuente {current} de {total}", answerSource: "Fuente de la respuesta",
     pager: "Moverse entre las fuentes", previous: "Fuente anterior", next: "Fuente siguiente", close: "Cerrar panel de fuentes",
-    source: "Fuente", metadata: "Metadatos de la fuente", page: "Página {page}", pageOf: "Página {page} de {total}", views: "Vistas de la fuente",
+    source: "Fuente", metadata: "Metadatos de la fuente", page: "Página {page}", pageLabel: "Página citada", pageOf: "Página {page} de {total}", views: "Vistas de la fuente",
     excerptTab: "Extracto de la fuente", fullPageTab: "Página completa", whyShown: "Por qué se muestra esta fuente", excerptHeading: "Extracto de la fuente",
     seeOnPage: "Ver este extracto en la página completa", figureSection: "Figura en la página citada", imageFromPage: "Imagen de esta página",
     imageOnPage: "Imagen en la página {page}", loadingDetails: "Cargando detalles de la fuente…", textFromSource: "Texto de la fuente",
@@ -401,6 +427,10 @@ const ES: UiCopy = {
     figureBadge: "Procedente de una imagen", figureTitle: "Esta respuesta utiliza una imagen", figureDetail: "La imagen se leyó al añadir el documento. Ábrala a continuación para comprobar los detalles.",
     passageBadge: "Procedente de la fuente", passageTitle: "Tomado de esta página", passageDetail: "Este extracto procede directamente de la fuente original.",
     loadError: "No hemos podido cargar los detalles de la fuente.",
+    externalBadge: "Fuente externa", externalAboutTitle: "Acerca de esta publicación",
+    externalAboutText: "Esta publicación respalda la respuesta. Su copia local solo se utiliza para la búsqueda y no está disponible aquí.",
+    authorsLabel: "Autores", publishersLabel: "Editorial", publishedLabel: "Fecha de publicación",
+    visitExternal: "Visitar la fuente original",
   },
 };
 
@@ -448,6 +478,7 @@ const NL_BE: UiCopy = {
     openSource: "Bron {id} openen: {document}, pagina {page}", sourcesLabel: "Bronnen voor dit antwoord", sourcesTitle: "Controleer de bronnen",
     sourcesSummary: "Open een bron om te zien waar het antwoord vandaan komt", viewSource: "Details van bron {id} bekijken: {document}, pagina {page}",
     page: "Pagina {page}", exactQuote: "Exact citaat", fromImage: "Uit een afbeelding", sourceExcerpt: "Bronfragment", image: "afbeelding",
+    externalSource: "Externe bron", moreIn: "Meer informatie vindt u in",
   },
   figures: {
     label: "Figuren uit de geciteerde bron", figureFrom: "Figuur uit {document}, pagina {page}", fromDocument: "Uit {document}, pagina {page}",
@@ -456,7 +487,7 @@ const NL_BE: UiCopy = {
   source: {
     dialog: "Bron {id}: {document}, pagina {page}", sourcePosition: "Bron {current} van {total}", answerSource: "Bron van het antwoord",
     pager: "Tussen antwoordbronnen navigeren", previous: "Vorige bron", next: "Volgende bron", close: "Bronnenpaneel sluiten",
-    source: "Bron", metadata: "Bronmetadata", page: "Pagina {page}", pageOf: "Pagina {page} van {total}", views: "Bronweergaven",
+    source: "Bron", metadata: "Bronmetadata", page: "Pagina {page}", pageLabel: "Geciteerde pagina", pageOf: "Pagina {page} van {total}", views: "Bronweergaven",
     excerptTab: "Bronfragment", fullPageTab: "Volledige pagina", whyShown: "Waarom deze bron wordt getoond", excerptHeading: "Bronfragment",
     seeOnPage: "Bekijk dit fragment op de volledige pagina", figureSection: "Figuur op de geciteerde pagina", imageFromPage: "Afbeelding van deze pagina",
     imageOnPage: "Afbeelding op pagina {page}", loadingDetails: "Brondetails laden…", textFromSource: "Tekst uit de bron",
@@ -468,6 +499,10 @@ const NL_BE: UiCopy = {
     figureBadge: "Uit een afbeelding", figureTitle: "Dit antwoord gebruikt een afbeelding", figureDetail: "De afbeelding werd gelezen toen het document werd toegevoegd. Open ze hieronder om de details te controleren.",
     passageBadge: "Uit de bron", passageTitle: "Overgenomen van deze pagina", passageDetail: "Dit fragment komt rechtstreeks uit de oorspronkelijke bron.",
     loadError: "We konden de brondetails niet laden.",
+    externalBadge: "Externe bron", externalAboutTitle: "Over deze publicatie",
+    externalAboutText: "Deze publicatie onderbouwt het antwoord. De lokale kopie wordt alleen voor zoeken gebruikt en is hier niet beschikbaar.",
+    authorsLabel: "Auteurs", publishersLabel: "Uitgever", publishedLabel: "Publicatiedatum",
+    visitExternal: "Naar de oorspronkelijke bron",
   },
 };
 

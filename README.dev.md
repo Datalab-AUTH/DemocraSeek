@@ -90,9 +90,9 @@ Python and Node are **not** required on the host for normal Docker runtime.
 
 ### The corpus does not come with the repository
 
-`data/corpus/` is gitignored — approved documents are distributed out of band, so
-a fresh clone leaves you an empty folder holding only `.gitkeep` and
-`corpus.metadata.example.yaml`.
+Corpus documents are gitignored and distributed out of band. The reviewed
+`corpus.metadata.yaml` remains in the repository because it contains attribution
+rather than document contents and is the single metadata manifest used by ingestion.
 
 The index is machine-local too. `pgdata18` (chunks and vectors) and `ingestdata18`
 (registry, page records, figure PNGs) are Docker named volumes that never travel
@@ -124,6 +124,18 @@ reports land on your disk. The registry is the exception: it lives in the
 `ingestdata18` volume rather than on the host, which is why host `data/index/`
 stays empty when you run through Compose.
 
+### Corpus layout
+
+```text
+data/corpus/
+├── internal/   # interface may show excerpts, pages, figures, and the local file
+├── external/   # local copy is searchable but never exposed by the API
+└── corpus.metadata.yaml
+```
+
+The scanner is recursive. Files directly under `data/corpus/` remain compatible
+and are treated as internal, but new material should use the two named folders.
+
 ### What may go in
 
 `.pdf`, `.png`, `.jpg` / `.jpeg`, `.webp`, `.bmp`, `.tif` / `.tiff`, `.gif`.
@@ -131,9 +143,16 @@ stays empty when you run through Compose.
 There is no upload endpoint. Placing a file on disk is the only way in, and
 approving the corpus is deliberately an operator action.
 
-Optionally copy `corpus.metadata.example.yaml` to `corpus.metadata.yaml` in the
-same folder to supply reviewed titles, deliverable IDs, and publication dates.
-Title precedence is operator metadata, then embedded PDF title, then filename.
+`corpus.metadata.yaml` supplies reviewed metadata keyed by an exact filename or
+corpus-relative path. Internal entries are optional. Every external file must
+have `document_title`, non-empty `authors`, non-empty `publishers`,
+`publication_date`, and an absolute HTTP(S) `external_url`. An incomplete
+external file is rejected instead of being shown with invented attribution.
+
+Changing source metadata is detected by its own fingerprint, so the normal
+incremental `ingest` updates that document. External source files, page text,
+excerpts, and extracted images are never returned to the browser; citations show
+the reviewed bibliography and link instead.
 
 ### Indexing
 

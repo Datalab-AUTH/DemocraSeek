@@ -8,6 +8,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 # Text is extracted; figure content may include a derived description.
 Modality = Literal["text", "figure"]
+SourceType = Literal["internal", "external"]
 
 
 class PageText(BaseModel):
@@ -30,6 +31,11 @@ class ChunkMetadata(BaseModel):
     document_checksum: str
     document_title: str
     filename: str
+    source_path: str = ""
+    source_type: SourceType = "internal"
+    authors: list[str] = Field(default_factory=list)
+    publishers: list[str] = Field(default_factory=list)
+    external_url: str = ""
     deliverable_id: str = ""
     publication_date: str = ""
     page_number: int = Field(ge=1)
@@ -107,6 +113,11 @@ class DocumentRecord(BaseModel):
     document_checksum: str
     document_title: str
     filename: str
+    source_path: str = ""
+    source_type: SourceType = "internal"
+    authors: list[str] = Field(default_factory=list)
+    publishers: list[str] = Field(default_factory=list)
+    external_url: str = ""
     document_type: DocumentType = "pdf"
     deliverable_id: str = ""
     publication_date: str = ""
@@ -118,4 +129,5 @@ class DocumentRecord(BaseModel):
     corpus_version: str
     index_version: str
     index_fingerprint: str
+    source_metadata_fingerprint: str = ""
     ingested_at: str

@@ -79,12 +79,20 @@ export function AnswerMessage({
   const seenFigures = new Set<string>();
   const uniqueFigures: { figure: Figure; citation: Citation }[] = [];
   for (const citation of response.citations) {
+    if (citation.source_type === "external") continue;
     for (const figure of citation.figures) {
       if (seenFigures.has(figure.figure_id)) continue;
       seenFigures.add(figure.figure_id);
       uniqueFigures.push({ figure, citation });
     }
   }
+  const externalSources = Array.from(
+    new Map(
+      response.citations
+        .filter((citation) => citation.source_type === "external" && citation.external_url)
+        .map((citation) => [citation.document_id, citation]),
+    ).values(),
+  );
 
   return (
     <div className="answer">
@@ -130,6 +138,26 @@ export function AnswerMessage({
         />
       ) : null}
 
+      {externalSources.length > 0 ? (
+        <aside className="external-reading" aria-label={ui.answer.moreIn}>
+          <p>{ui.answer.moreIn}</p>
+          <ul>
+            {externalSources.map((citation) => (
+              <li key={citation.document_id}>
+                <a href={citation.external_url} target="_blank" rel="noreferrer noopener">
+                  {citation.document_title}
+                </a>
+                <span>
+                  {[...citation.publishers, citation.publication_date]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </aside>
+      ) : null}
+
       {response.citations.length > 0 ? (
         <section className="sources" aria-label={ui.answer.sourcesLabel}>
           <div className="sources__head">
@@ -164,17 +192,29 @@ export function AnswerMessage({
                       {citation.document_title.replace(/_/g, " ")}
                     </span>
                     <span className="sources__meta">
-                      {citation.deliverable_id ? `${citation.deliverable_id} · ` : ""}
-                      {formatUi(ui.answer.page, { page: citation.page_number })}
-                      {/* Match the drawer's source wording. */}
-                      {citation.excerpt_source === "model_quote_verified"
-                        ? ` · ${ui.answer.exactQuote}`
-                        : citation.excerpt_source === "figure_description"
-                          ? ` · ${ui.answer.fromImage}`
-                          : ` · ${ui.answer.sourceExcerpt}`}
+                      {citation.source_type === "external" ? (
+                        <>
+                          {[...citation.publishers, citation.publication_date]
+                            .filter(Boolean)
+                            .join(" · ")}
+                          {` · ${formatUi(ui.answer.page, { page: citation.page_number })}`}
+                        </>
+                      ) : (
+                        <>
+                          {citation.deliverable_id ? `${citation.deliverable_id} · ` : ""}
+                          {formatUi(ui.answer.page, { page: citation.page_number })}
+                          {citation.excerpt_source === "model_quote_verified"
+                            ? ` · ${ui.answer.exactQuote}`
+                            : citation.excerpt_source === "figure_description"
+                              ? ` · ${ui.answer.fromImage}`
+                              : ` · ${ui.answer.sourceExcerpt}`}
+                        </>
+                      )}
                     </span>
                   </span>
-                  {citation.modality === "figure" ? (
+                  {citation.source_type === "external" ? (
+                    <span className="sources__tag">{ui.answer.externalSource}</span>
+                  ) : citation.modality === "figure" ? (
                     <span className="sources__tag">{ui.answer.image}</span>
                   ) : null}
                   <svg className="sources__arrow" viewBox="0 0 20 20" aria-hidden="true">

@@ -633,12 +633,25 @@ Supported approved files:
 - `.tif` / `.tiff`;
 - `.gif`.
 
-The operator places them under `CORPUS_PATH`, normally `data/corpus/`.
-No browser upload endpoint exists.
+The operator separates them under `CORPUS_PATH`, normally:
 
-An optional `corpus.metadata.yaml` can provide reviewed titles, deliverable IDs,
-and publication dates. `corpus.metadata.example.yaml` documents the shape.
-Title precedence is operator metadata, then embedded PDF title, then filename.
+```text
+data/corpus/
+├── internal/   # INNOVADE material that the interface may open
+├── external/   # searchable local copies that the interface never exposes
+└── corpus.metadata.yaml
+```
+
+No browser upload endpoint exists. External sources require a reviewed title,
+authors, publishers, publication date, and absolute HTTP(S) URL in
+`corpus.metadata.yaml`. Incomplete external metadata fails closed for that file.
+Internal metadata is optional. Title precedence is operator metadata, embedded
+PDF title, then filename.
+
+The external PDF is used only during ingestion, retrieval, generation, and
+citation validation. Its file, page text, excerpts, and extracted figures are
+not served to the browser. A cited external source instead shows its authors,
+publisher, publication date, cited page, and a link to the reviewed URL.
 
 ### 7.2 Stable identity, checksum, and fingerprint
 
@@ -657,9 +670,10 @@ embedding provider
 | CHUNKING_VERSION
 ```
 
-A document is skipped only when both checksum and fingerprint match the registry.
-This prevents vectors produced under incompatible models or chunking rules from
-being mixed silently.
+A document is skipped only when its checksum, index fingerprint, and source
+metadata fingerprint match the registry. Therefore changing a title, author,
+publisher, date, URL, or internal/external folder is applied by the next normal
+incremental ingestion. This also prevents incompatible vectors from being mixed.
 
 ### 7.3 Page extraction
 
@@ -1252,6 +1266,10 @@ semantic support.
 For figure evidence there is no verbatim sentence inside a chart. The displayed
 excerpt is the caption plus VLM description and is explicitly labelled as a
 derived figure description.
+
+For external evidence the same quote check still runs server-side, but neither
+the quote nor a fallback chunk excerpt is returned to the browser. The user sees
+only reviewed bibliographic metadata and the external link.
 
 ### Deterministic structural checks
 
@@ -1943,8 +1961,10 @@ ollama pull qwen2.5vl:7b
 
 ### 19.3 Add approved corpus files
 
-Place only reviewed documents under `data/corpus/`. Optionally create
-`data/corpus/corpus.metadata.yaml` from the example.
+Place INNOVADE documents in `data/corpus/internal/` and downloaded third-party
+documents in `data/corpus/external/`. Record external attribution and URLs in
+`data/corpus/corpus.metadata.yaml`. This reviewed manifest is the single source
+of corpus attribution metadata and also shows the required schema.
 
 ### 19.4 Build and start infrastructure/application
 

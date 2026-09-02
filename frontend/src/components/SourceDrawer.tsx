@@ -26,7 +26,8 @@ interface Provenance {
 }
 
 /** Add a client-side page fragment when opening a cited PDF. */
-function originalFileHref(source: SourceResponse, pageNumber: number): string {
+function originalFileHref(source: SourceResponse, pageNumber: number): string | null {
+  if (!source.file_url) return null;
   const url = absoluteUrl(source.file_url);
   if (source.document_type === "image") {
     return url;
@@ -154,6 +155,7 @@ export function SourceDrawer({
     setSource(null);
     setError(null);
     setView("evidence");
+    if (citation.source_type === "external") return undefined;
     fetchSource(citation.source_url)
       .then((result) => {
         if (!cancelled) setSource(result);
@@ -167,6 +169,7 @@ export function SourceDrawer({
   }, [citation.citation_id, citation.source_url, ui.source.loadError]);
 
   const said = provenance(citation, ui);
+  const isExternal = citation.source_type === "external";
   const position = siblings.findIndex((item) => item.citation_id === citation.citation_id);
   const canNavigate = siblings.length > 1 && position >= 0 && Boolean(onSelect);
   const pageText = source?.page?.text ?? "";
@@ -190,7 +193,7 @@ export function SourceDrawer({
       <div className="source-drawer__backdrop" onClick={onClose} aria-hidden="true" />
       <aside
         ref={drawerRef}
-        className="source-drawer"
+        className={`source-drawer${isExternal ? " source-drawer--external" : ""}`}
         role="dialog"
         aria-modal="true"
         aria-label={formatUi(ui.source.dialog, {
@@ -256,37 +259,69 @@ export function SourceDrawer({
                   })
                 : formatUi(ui.source.page, { page: citation.page_number })}
             </span>
-            <span className={`source-drawer__status source-drawer__status--${said.tone}`}>
-              <span aria-hidden="true">{said.tone === "verified" ? "✓" : "i"}</span>
-              {said.badge}
+            <span
+              className={`source-drawer__status source-drawer__status--${
+                isExternal ? "external" : said.tone
+              }`}
+            >
+              <span aria-hidden="true">{isExternal ? "↗" : said.tone === "verified" ? "✓" : "i"}</span>
+              {isExternal ? ui.source.externalBadge : said.badge}
             </span>
           </div>
         </header>
 
-        <div className="source-drawer__tabs" role="tablist" aria-label={ui.source.views}>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={view === "evidence"}
-            className={view === "evidence" ? "source-drawer__tab source-drawer__tab--active" : "source-drawer__tab"}
-            onClick={() => setView("evidence")}
-          >
-            {ui.source.excerptTab}
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={view === "page"}
-            className={view === "page" ? "source-drawer__tab source-drawer__tab--active" : "source-drawer__tab"}
-            onClick={showPage}
-            disabled={source?.document_type === "image"}
-          >
-            {ui.source.fullPageTab}
-          </button>
-        </div>
+        {!isExternal ? (
+          <div className="source-drawer__tabs" role="tablist" aria-label={ui.source.views}>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={view === "evidence"}
+              className={view === "evidence" ? "source-drawer__tab source-drawer__tab--active" : "source-drawer__tab"}
+              onClick={() => setView("evidence")}
+            >
+              {ui.source.excerptTab}
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={view === "page"}
+              className={view === "page" ? "source-drawer__tab source-drawer__tab--active" : "source-drawer__tab"}
+              onClick={showPage}
+              disabled={source?.document_type === "image"}
+            >
+              {ui.source.fullPageTab}
+            </button>
+          </div>
+        ) : null}
 
         <div className="source-drawer__body">
-          {view === "evidence" ? (
+          {isExternal ? (
+            <div className="source-drawer__view">
+              <section className="external-source-card" aria-labelledby="external-source-heading">
+                <p className="source-drawer__eyebrow">{ui.source.externalBadge}</p>
+                <h3 id="external-source-heading">{ui.source.externalAboutTitle}</h3>
+                <p className="external-source-card__lead">{ui.source.externalAboutText}</p>
+                <dl className="external-source-card__metadata">
+                  <div>
+                    <dt>{ui.source.authorsLabel}</dt>
+                    <dd>{citation.authors.join(", ")}</dd>
+                  </div>
+                  <div>
+                    <dt>{ui.source.publishersLabel}</dt>
+                    <dd>{citation.publishers.join(", ")}</dd>
+                  </div>
+                  <div>
+                    <dt>{ui.source.publishedLabel}</dt>
+                    <dd>{citation.publication_date}</dd>
+                  </div>
+                  <div>
+                    <dt>{ui.source.pageLabel}</dt>
+                    <dd>{citation.page_number}</dd>
+                  </div>
+                </dl>
+              </section>
+            </div>
+          ) : view === "evidence" ? (
             <div className="source-drawer__view" role="tabpanel">
               <section className="evidence-card" aria-labelledby="evidence-heading">
                 <div className="evidence-card__heading">
@@ -415,12 +450,22 @@ export function SourceDrawer({
           <button type="button" className="button button--ghost" onClick={onClose}>
             {ui.source.back}
           </button>
-          {source ? (
+          {isExternal && citation.external_url ? (
             <a
               className="button button--primary source-drawer__original"
-              href={originalFileHref(source, citation.page_number)}
+              href={citation.external_url}
               target="_blank"
-              rel="noreferrer"
+              rel="noreferrer noopener"
+            >
+              {ui.source.visitExternal}
+              <ExternalIcon />
+            </a>
+          ) : source && originalFileHref(source, citation.page_number) ? (
+            <a
+              className="button button--primary source-drawer__original"
+              href={originalFileHref(source, citation.page_number) ?? undefined}
+              target="_blank"
+              rel="noreferrer noopener"
             >
               {source.document_type === "image"
                 ? ui.source.openOriginalImage

@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
-from app.schemas.chunks import DocumentType
+from app.schemas.chunks import DocumentType, SourceType
 from app.schemas.figures import Figure
 
 
@@ -20,6 +20,10 @@ class SourceResponse(BaseModel):
     document_id: str
     document_title: str
     filename: str
+    source_type: SourceType = "internal"
+    authors: list[str] = Field(default_factory=list)
+    publishers: list[str] = Field(default_factory=list)
+    external_url: str = ""
     #: "image" documents have no text layer; their content is the picture.
     document_type: DocumentType = "pdf"
     deliverable_id: str = ""
@@ -29,4 +33,4 @@ class SourceResponse(BaseModel):
     #: Present when the request named a page.
     page: SourcePage | None = None
     #: Direct link to the original PDF, resolved server-side from the registry.
-    file_url: str
+    file_url: str | None = None

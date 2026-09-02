@@ -6,7 +6,7 @@
 # Approved corpus distributed separately
 data/corpus/*
 !data/corpus/.gitkeep
-!data/corpus/corpus.metadata.example.yaml
+!data/corpus/corpus.metadata.yaml
 
 # Reproducible ingestion output
 data/index/*
