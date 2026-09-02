@@ -17,13 +17,9 @@ class ConversationMessage(BaseModel):
 
     role: Literal["user", "assistant"]
     content: str
-    #: Optional English form used only as internal conversation context. The
-    #: interface sends it back from the preceding ChatResponse so multilingual
-    #: conversations do not need to re-translate every old turn on every request.
-    #: ``content`` remains the text that was actually shown to the user.
+    # English form reused as internal multilingual context.
     canonical_content: str | None = None
-    #: Language metadata of the visible turn. Used only when a later, genuinely
-    #: ambiguous follow-up cannot identify its own language.
+    # Visible-turn language used by ambiguous follow-ups.
     language_code: str | None = Field(
         default=None, pattern=r"^[A-Za-z]{2,8}(?:-[A-Za-z0-9]{1,8})*$"
     )
@@ -31,11 +27,7 @@ class ConversationMessage(BaseModel):
 
 
 class Citation(BaseModel):
-    """A verified citation.
-
-    Every field except ``citation_id``/``evidence_id`` is copied from the
-    ingestion record of the supporting chunk. None of it comes from the model.
-    """
+    """A citation backed by trusted chunk metadata."""
 
     citation_id: str
     evidence_id: str
@@ -45,18 +37,12 @@ class Citation(BaseModel):
     page_number: int
     chunk_id: str
     supporting_excerpt: str
-    #: How the excerpt was produced:
-    #: "model_quote_verified" - the model's quote was found verbatim in the chunk;
-    #: "chunk_head"           - fell back to the start of the chunk;
-    #: "figure_description"   - the evidence is a figure; the excerpt is its
-    #:                          caption plus an automatically derived description,
-    #:                          and the image itself is attached for verification.
+    # Excerpt origin: verified quote, chunk start or figure description.
     excerpt_source: Literal["model_quote_verified", "chunk_head", "figure_description"]
     source_url: str
-    #: "text" or "figure". Figure citations must be presented differently.
+    # Evidence type used by the interface.
     modality: Literal["text", "figure"] = "text"
-    #: Images from the cited page. Attached deterministically by the application
-    #: from validated citations - the model never selects or describes them.
+    # Registered images from the cited page.
     figures: list[Figure] = []
 
 
@@ -67,17 +53,12 @@ class GroundedAnswer(BaseModel):
     answer: str
     citations: list[Citation]
     policy_version: str
-    #: Machine-readable reason when status is insufficient_evidence.
+    # Machine-readable failure reason.
     reason_code: str = ""
 
 
 class MultilingualAnswer(GroundedAnswer):
-    """A grounded English result plus its user-facing language rendering.
-
-    The canonical fields are deliberately returned to the client. They let a
-    stateless API preserve English-only RAG context while the visible
-    conversation remains in the user's language.
-    """
+    """Grounded output plus canonical English context for later turns."""
 
     language_code: str
     language_name: str
@@ -92,10 +73,6 @@ class ChatRequest(BaseModel):
 
 
 class ChatResponse(MultilingualAnswer):
-    """What the chat endpoint returns: the answer plus the request id.
-
-    Extends GroundedAnswer rather than repeating its five fields, so the wire
-    shape and the internal result cannot drift apart.
-    """
+    """Chat response with its request ID."""
 
     request_id: str

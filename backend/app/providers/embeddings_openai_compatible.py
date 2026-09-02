@@ -1,8 +1,6 @@
-"""Embedding adapter for any OpenAI-compatible /embeddings endpoint.
+"""Embedding adapter for OpenAI-compatible endpoints.
 
-Configured completely independently of the LLM adapter: different base URL,
-key, model and dimensions are all supported. Changing anything here invalidates
-the stored vectors and requires a controlled re-index.
+Changing the model or dimensions requires re-indexing.
 """
 
 from __future__ import annotations
@@ -69,7 +67,7 @@ class OpenAICompatibleEmbeddings:
         if not batch:
             return []
         payload: dict[str, object] = {"model": self._model, "input": batch}
-        # Servers that do not support variable output size ignore this field.
+        # Unsupported servers may ignore or reject this optional field.
         payload["dimensions"] = self._dimensions
         try:
             response = self._client.post(f"{self._base_url}/embeddings", json=payload)

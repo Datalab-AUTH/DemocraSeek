@@ -66,9 +66,7 @@ def ready(
         document_count = 0
         ok = False
 
-    # Not a readiness failure - the instance can still answer from what it has -
-    # but an operator needs to see it, because "I added a file and nothing
-    # happened" is otherwise indistinguishable from a broken system.
+    # Pending files are visible warnings, not readiness failures.
     try:
         pending = context.registry.pending_files()
     except Exception:
@@ -99,18 +97,12 @@ def ready(
 
 @router.get("/corpus")
 def corpus_contents(context: ApplicationContext = Depends(get_context)) -> dict[str, object]:
-    """What the knowledge base actually holds.
-
-    The interface shows this before the first question. Telling someone what is
-    in the corpus is the difference between a blank box and a usable tool - and
-    it is derived from the registry, so it can never overstate what is indexed.
-    """
+    """Return the corpus inventory recorded by the registry."""
     documents = context.registry.load()
     ordered = sorted(documents.values(), key=lambda r: r.document_title)
     return {
         "corpus_version": context.settings.corpus_version,
-        # Files present but not yet ingested, so the interface can say so rather
-        # than silently behave as if they do not exist.
+        # Surface source files that still need ingestion.
         "pending_files": context.registry.pending_files(),
         "documents": [
             {
@@ -126,20 +118,13 @@ def corpus_contents(context: ApplicationContext = Depends(get_context)) -> dict[
     }
 
 
-#: Wrapped around a detected section heading. Neutral on purpose: the question
-#: should not imply an answer the corpus may not contain.
+# Neutral wrapper for detected section headings.
 _QUESTION_TEMPLATE = "What does the evidence say about {topic}?"
 MAX_SUGGESTIONS = 4
 
 
 def _as_question(topic: str) -> str:
-    """Turn a section heading into a readable question.
-
-    A heading that is already a question is used as it stands - wrapping
-    "What is Digital Democracy?" in the template produced "What does the
-    evidence say about what is Digital Democracy??". The topic keeps its own
-    capitalisation for the same reason: lower-casing it gave "digital Democracy".
-    """
+    """Turn a section heading into a readable question."""
     cleaned = topic.strip()
     if cleaned.endswith("?"):
         return cleaned
@@ -147,15 +132,7 @@ def _as_question(topic: str) -> str:
 
 
 def suggested_questions(records: list[DocumentRecord]) -> list[str]:
-    """Starter questions for the empty chat screen.
-
-    Derived from section headings found in the indexed documents, so they stay
-    relevant to whatever corpus is loaded instead of going stale the moment the
-    documents change.
-
-    Topics are taken one document at a time in rotation, so a single long report
-    cannot fill every slot.
-    """
+    """Build starter questions from indexed topics in document rotation."""
     questions: list[str] = []
     seen: set[str] = set()
     for index in range(max((len(record.topics) for record in records), default=0)):

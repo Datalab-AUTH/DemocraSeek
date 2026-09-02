@@ -1,11 +1,4 @@
-"""FastAPI application factory.
-
-Endpoints are synchronous (``def``, not ``async def``). FastAPI runs them in a
-threadpool, which suits the blocking HTTP and database calls this application
-makes and keeps the RAG flow readable top to bottom. Streaming is therefore not
-implemented; it is optional in the requirements and would add an async path
-through every layer for no current benefit.
-"""
+"""Create the FastAPI application and its shared runtime context."""
 
 from __future__ import annotations
 
@@ -81,6 +74,4 @@ def _allowed_origins(settings: Settings) -> list[str]:
     return ["http://localhost:5173", "http://127.0.0.1:5173", settings.app_base_url]
 
 
-# Started with `uvicorn app.main:create_app --factory`. There is deliberately no
-# module-level app instance: importing this module must not read configuration
-# or build providers as a side effect.
+# Uvicorn uses ``--factory`` to avoid import-time provider setup.

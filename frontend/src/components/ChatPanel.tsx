@@ -1,10 +1,4 @@
-/**
- * The conversation.
- *
- * The composer is pinned to the bottom of the panel and the history scrolls
- * above it. Previously the composer sat at the end of a growing page, so the
- * thing you need on every turn walked off the screen as you used the app.
- */
+/** Scrollable conversation with a fixed composer. */
 
 import { useEffect, useRef, useState } from "react";
 
@@ -149,8 +143,7 @@ export function ChatPanel({
               placeholder={ui.chat.placeholder}
               onChange={(event) => setDraft(event.target.value)}
               onKeyDown={(event) => {
-                // Enter sends, Shift+Enter starts a new line: the convention
-                // people already have from every other chat interface.
+                // Enter sends; Shift+Enter inserts a line break.
                 if (event.key === "Enter" && !event.shiftKey) {
                   event.preventDefault();
                   void submit(event);

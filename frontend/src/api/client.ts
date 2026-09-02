@@ -51,9 +51,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     throw new ApiRequestError(detail, response.status, code);
   }
 
-  // A 200 that is not JSON means the request never reached the API - typically
-  // a dev server or proxy answering with its SPA fallback. Say that, rather
-  // than letting a raw "JSON.parse: unexpected character" reach the user.
+  // A non-JSON success usually means a proxy returned the SPA fallback.
   const contentType = response.headers.get("content-type") ?? "";
   if (!contentType.includes("json")) {
     throw new ApiRequestError(

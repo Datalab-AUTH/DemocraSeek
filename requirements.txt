@@ -7,9 +7,7 @@ pypdf==6.16.2
 PyYAML==6.0.2
 psycopg[binary,pool]==3.2.3
 typer==0.19.2
-# Pinned explicitly: typer's help rendering broke against click 8.2's changed
-# Parameter.make_metavar signature. A transitive dependency left unpinned is not
-# actually a pinned build.
+# Explicit pin keeps Typer's help API compatible.
 click==8.4.2
 pillow==12.3.0
 # Required by the shipped hybrid_rerank retrieval strategy.

@@ -1,17 +1,4 @@
-"""Operator CLI: corpus management and configuration checks.
-
-Ingestion is an operator action against a directory of approved files. There is
-no upload endpoint and no admin UI, so an end user cannot introduce a document
-into the official corpus.
-
-Documents enter the index through exactly one command, `ingest`.
-
-    python -m app.cli check-config
-    python -m app.cli ingest [--force] [--only FILE.pdf]
-    python -m app.cli remove DOCUMENT_ID
-    python -m app.cli reindex
-    python -m app.cli status
-"""
+"""Operator commands for configuration and corpus management."""
 
 from __future__ import annotations
 
@@ -78,10 +65,7 @@ def ingest(
     only: str | None = typer.Option(None, "--only", help="Ingest a single filename."),
     quiet: bool = typer.Option(False, "--quiet", help="Print JSON only."),
 ) -> None:
-    """Ingest every approved file from CORPUS_PATH.
-
-    Adding a file to the corpus directory never indexes it on its own.
-    """
+    """Ingest approved files from ``CORPUS_PATH``."""
     settings = get_settings()
     service = _service()
 
@@ -121,11 +105,7 @@ def remove(document_id: str) -> None:
 def reindex(
     yes: bool = typer.Option(False, "--yes", help="Do not ask for confirmation."),
 ) -> None:
-    """Drop the named index and rebuild it from the approved files.
-
-    Required after changing the embedding provider, model, dimensions, chunk
-    size, chunk overlap, vision provider or INDEX_VERSION.
-    """
+    """Rebuild the index after any index-shaping configuration change."""
     settings = get_settings()
     if not yes:
         typer.confirm(

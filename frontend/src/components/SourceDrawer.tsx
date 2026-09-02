@@ -25,14 +25,7 @@ interface Provenance {
   detail: string;
 }
 
-/**
- * Open the original file on the cited page.
- *
- * Browser PDF viewers honour the `#page=N` fragment, so the reader lands on the
- * passage instead of page 1. The fragment is client-side only: it never reaches
- * the backend, so the served file and its path checks are unchanged. A viewer
- * that ignores it simply opens page 1, and image documents have no pages.
- */
+/** Add a client-side page fragment when opening a cited PDF. */
 function originalFileHref(source: SourceResponse, pageNumber: number): string {
   const url = absoluteUrl(source.file_url);
   if (source.document_type === "image") {

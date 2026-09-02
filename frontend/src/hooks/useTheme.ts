@@ -1,13 +1,4 @@
-/**
- * Light / dark / system theme.
- *
- * Three states, not two. "System" is the default and it must stay reachable:
- * a reader whose machine switches to dark at sunset should not be stuck in the
- * light theme because they once tapped a toggle.
- *
- * The choice is written to <html data-theme="...">, which is what the
- * stylesheet keys off. Nothing else in the app knows about theming.
- */
+/** Persist and apply the light, dark or system theme. */
 
 import { useCallback, useEffect, useState } from "react";
 
@@ -31,7 +22,7 @@ function readStoredTheme(): ThemeChoice {
 function apply(choice: ThemeChoice): void {
   const root = document.documentElement;
   if (choice === "system") {
-    // No attribute: the stylesheet falls back to prefers-color-scheme.
+    // No attribute lets CSS follow the system preference.
     root.removeAttribute("data-theme");
   } else {
     root.setAttribute("data-theme", choice);
@@ -41,7 +32,7 @@ function apply(choice: ThemeChoice): void {
 export function useTheme(): {
   theme: ThemeChoice;
   setTheme: (choice: ThemeChoice) => void;
-  /** What is actually on screen right now, with "system" resolved. */
+  /** Effective light or dark theme. */
   resolved: "light" | "dark";
 } {
   const [theme, setThemeState] = useState<ThemeChoice>(() => readStoredTheme());

@@ -1,10 +1,4 @@
-"""Multilingual shell around the English RAG orchestrator.
-
-The RAG core never has to know which language the user speaks. This service
-normalises and translates input, supplies English conversation context, then
-translates only the already-validated answer. Retrieved evidence and citation
-metadata remain in the original source language so provenance stays exact.
-"""
+"""Translate questions into English and validated answers back to the user."""
 
 from __future__ import annotations
 
@@ -112,9 +106,7 @@ class MultilingualChatService:
         if code not in _UNDEFINED_LANGUAGE_CODES:
             return route.model_copy(update={"language_code": code})
 
-        # The current utterance always wins when it contains a deterministic
-        # language signal. This is why an English "what is?" after a Greek turn
-        # receives an English answer rather than inheriting Greek.
+        # A clear current-language signal overrides conversation history.
         current = _deterministic_language(original_question)
         if current is not None:
             fallback_code, fallback_name = current

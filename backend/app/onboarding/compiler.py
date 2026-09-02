@@ -1,17 +1,6 @@
-"""The deterministic response-policy compiler.
+"""Compile reusable profile fragments into a deterministic response policy.
 
-    Response Policy = Role + Intent + Support + Mode + Global guardrails
-
-7 x 6 x 6 x 5 = 1,260 profiles are covered by 24 fragments and this function.
-There is no per-combination prompt anywhere in the system.
-
-Determinism is a hard requirement: the same (codes, policy_version) always
-produce byte-identical instructions. Nothing here reads the clock, a random
-source, the request, or the retrieved evidence.
-
-Sections are emitted in *precedence order* (Support, Intent, Role, Mode) so the
-generated text states its own priority ordering to the model, and the absolute
-rules always come first.
+Order: global rules, support, intent, role, then mode.
 """
 
 from __future__ import annotations

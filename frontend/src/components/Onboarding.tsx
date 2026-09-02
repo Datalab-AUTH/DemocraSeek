@@ -1,10 +1,4 @@
-/**
- * The four onboarding questions.
- *
- * Questions, choices, translations, labels and codes all come from the
- * backend's versioned configuration. This component contains no onboarding
- * wording and no policy fragments of its own.
- */
+/** Render backend-defined onboarding questions and translations. */
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 
@@ -41,8 +35,7 @@ function localizedPresentation(
     ui: translation.ui,
     questions: config.questions.map((question) => {
       const localized = translation.questions[question.id];
-      // The backend rejects an incomplete locale. This fallback keeps the UI
-      // usable even if an older independently deployed backend is encountered.
+      // Fall back to English if a locale is incomplete.
       if (!localized) return question;
       return {
         ...question,
@@ -121,9 +114,7 @@ export function Onboarding({
           .replace("{total}", String(questions.length))}
       </p>
 
-      {/* All four steps at once, with what has been chosen so far. Four blind
-          screens in a row leave you unable to see where you are or what you
-          picked; this also lets you jump back to fix an earlier answer. */}
+      {/* Show progress and allow earlier choices to be revised. */}
       <ol className="stepper">
         {questions.map((item, index) => {
           const chosen = answers[item.dimension];

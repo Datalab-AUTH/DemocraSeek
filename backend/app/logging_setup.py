@@ -1,12 +1,4 @@
-"""Structured JSON logging.
-
-What is logged: request ids, policy codes, policy version, provider and model
-names, document ids, timings and error categories.
-
-What is never logged: API keys, connection strings, system prompts, compiled
-policy text, retrieved passages, or user questions and answers. Those would
-turn an operational log into a copy of the corpus and of the conversation.
-"""
+"""Structured JSON logging with sensitive fields removed."""
 
 from __future__ import annotations
 
@@ -18,7 +10,7 @@ from typing import Any
 
 request_id_var: contextvars.ContextVar[str] = contextvars.ContextVar("request_id", default="-")
 
-#: Attributes present on every LogRecord; anything else is treated as a field.
+# Standard LogRecord fields.
 _STANDARD = {
     "name", "msg", "args", "levelname", "levelno", "pathname", "filename", "module",
     "exc_info", "exc_text", "stack_info", "lineno", "funcName", "created", "msecs",
@@ -26,7 +18,7 @@ _STANDARD = {
     "message", "asctime",
 }
 
-#: Field names that must never appear in a log line, whatever the caller passes.
+# Fields excluded from every log entry.
 _FORBIDDEN = {
     "api_key", "llm_api_key", "embedding_api_key", "authorization",
     "password", "dsn", "vector_store_url", "llm_base_url", "embedding_base_url",

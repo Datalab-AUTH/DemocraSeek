@@ -1,12 +1,4 @@
-"""Vision adapter for any OpenAI-compatible endpoint that accepts image input.
-
-Works with a local Ollama vision model (qwen2.5vl, llava, moondream, ...) and
-with hosted OpenAI-compatible services, because both accept the same
-``image_url`` data-URI message part.
-
-Runs at ingestion time only. A slow local model costs minutes once per document,
-never a second of user-facing latency.
-"""
+"""Describe images through an OpenAI-compatible endpoint during ingestion."""
 
 from __future__ import annotations
 
@@ -20,8 +12,7 @@ from app.providers.base import ProviderError
 
 logger = logging.getLogger(__name__)
 
-#: Written to discourage speculation: a wrong description of a chart is worse
-#: than a vague one, because it enters the index as retrievable evidence.
+# Conservative prompt because descriptions become searchable evidence.
 DESCRIBE_PROMPT = """\
 You are describing a figure taken from an official report so that it can be \
 found later by search.
@@ -98,8 +89,7 @@ class OpenAICompatibleVision:
         try:
             response = self._client.post(f"{self._base_url}/chat/completions", json=payload)
         except httpx.HTTPError as exc:
-            # A figure without a description is a degraded result, not a failed
-            # ingestion: the figure is still stored and still shown by page.
+            # Keep the figure even when description generation fails.
             logger.warning("vision_request_failed", extra={"error_category": type(exc).__name__})
             return ""
 

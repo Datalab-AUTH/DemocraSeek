@@ -165,7 +165,6 @@ export interface CorpusResponse {
   documents: CorpusDocument[];
   /** Files sitting in the corpus directory that have not been ingested yet. */
   pending_files: string[];
-  /** Starter questions: operator-configured if set, otherwise derived from
-   *  section headings in the indexed documents. */
+  /** Starter questions derived from indexed headings. */
   suggested_questions: string[];
 }

@@ -1,9 +1,4 @@
-"""Source inspection.
-
-Only document ids that exist in the corpus registry resolve. The registry maps
-an id to a filename and re-checks the resolved path against the corpus root, so
-a crafted id cannot reach the filesystem outside the approved corpus.
-"""
+"""Serve only source files and figures registered in the approved corpus."""
 
 from __future__ import annotations
 
@@ -17,7 +12,7 @@ from app.schemas.sources import SourcePage, SourceResponse
 
 router = APIRouter(prefix="/api/sources", tags=["sources"])
 
-#: Preview cap. Full documents are served by the /file endpoint instead.
+# Maximum source-page preview length.
 MAX_PAGE_PREVIEW_CHARS = 6000
 
 
@@ -79,8 +74,7 @@ def get_figure_image(
     return FileResponse(path, media_type="image/png")
 
 
-#: Media types for the source files we ingest. Anything not listed is served as
-#: a download rather than guessed at.
+# Known source-file media types.
 _MEDIA_TYPES = {
     ".pdf": "application/pdf",
     ".png": "image/png",

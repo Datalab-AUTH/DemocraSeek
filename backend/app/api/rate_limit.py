@@ -1,10 +1,4 @@
-"""Basic in-memory sliding-window rate limiting.
-
-Adequate for a single-instance prototype and honest about it: with more than
-one worker process the limit applies per process. A shared limiter would need
-Redis or a gateway, which is a deployment decision that has not been made.
-See docs/D5.5-technical-documentation.md, "Known limitations".
-"""
+"""Per-process sliding-window rate limiting."""
 
 from __future__ import annotations
 

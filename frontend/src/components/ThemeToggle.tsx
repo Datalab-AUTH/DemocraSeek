@@ -1,9 +1,4 @@
-/**
- * Theme switch: light, dark, or follow the system.
- *
- * A radio group rather than a cycling button, so the current state is visible
- * without clicking and "system" stays reachable in one step.
- */
+/** Accessible light, dark and system theme selector. */
 
 import type { ThemeChoice } from "../hooks/useTheme";
 import { useUi } from "../i18n";

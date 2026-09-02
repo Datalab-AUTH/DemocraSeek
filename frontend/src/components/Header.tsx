@@ -1,10 +1,4 @@
-/**
- * Application header.
- *
- * The profile used to occupy a permanent column even though it is changed once
- * per session. It now lives behind a chip here: visible at a glance, one click
- * to open, and the conversation gets the full width it needs.
- */
+/** Header controls for profile, language and theme. */
 
 import { useEffect, useRef, useState } from "react";
 
@@ -42,11 +36,7 @@ function labelFor(
   return translated?.questions[question.id]?.choices[code]?.label ?? base;
 }
 
-/**
- * A speech bubble with a check inside: the product is answers you can verify.
- * Inline SVG rather than an icon package - it is eleven elements and it inherits
- * the brand gradient, so there is nothing to install and nothing to keep in sync.
- */
+/** Inline verified-answer brand mark. */
 export function BrandMark(): JSX.Element {
   return (
     <svg className="app__mark" viewBox="0 0 40 40" role="img" aria-hidden="true" focusable="false">
@@ -98,8 +88,7 @@ export function Header({
         setOpen(false);
       }
     }
-    // Escape is handled at document level, not on the popover: focus stays on
-    // the trigger after opening, so a handler bound to the popover never sees it.
+    // Listen on the document because focus remains on the trigger.
     function onKeyDown(event: KeyboardEvent): void {
       if (event.key === "Escape") {
         setOpen(false);

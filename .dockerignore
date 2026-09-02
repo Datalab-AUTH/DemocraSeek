@@ -1,10 +1,10 @@
-# Repository metadata and local configuration never enter an image.
+# Repository metadata and local settings
 .git
 .gitignore
 .env
 .env.*
 
-# Generated Python and frontend artefacts.
+# Generated artifacts
 **/__pycache__
 **/*.py[cod]
 .venv
@@ -15,16 +15,16 @@ frontend/dist
 frontend/coverage
 node_modules
 
-# Corpus, indexes and reports are mounted at runtime.
+# Runtime-mounted data
 data
 
-# Operator documentation and host-only helpers are not image inputs.
+# Host-only documentation and helpers
 README.md
 scripts
 start-demo.cmd
 stop-demo.cmd
 
-# Editor and operating-system noise.
+# Editor and OS files
 .idea
 .vscode
 .DS_Store

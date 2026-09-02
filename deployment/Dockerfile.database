@@ -1,16 +1,13 @@
 FROM golang:1.25.13-alpine AS gosu_builder
 
-# The upstream PostgreSQL 18 image currently ships gosu 1.19 built with an old
-# Go toolchain. Rebuild that same helper from an immutable upstream revision so
-# its Go standard library contains the current security fixes.
+# Rebuild gosu with a current Go toolchain.
 RUN CGO_ENABLED=0 GOBIN=/out /usr/local/go/bin/go install \
         github.com/tianon/gosu@v0.0.0-20250923190938-6456aaa0f3c8 \
     && /out/gosu --version
 
 FROM pgvector/pgvector:0.8.6-pg18 AS pg_textsearch_downloader
 
-# pg_textsearch supplies a real, persistent BM25 access method for PostgreSQL.
-# Both release and archive checksum are pinned so builds cannot silently change.
+# Install a pinned, checksummed pg_textsearch BM25 release.
 ARG PG_TEXTSEARCH_VERSION=1.4.0
 ARG TARGETARCH
 

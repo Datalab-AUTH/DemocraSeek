@@ -1,10 +1,4 @@
-/**
- * Images from cited pages.
- *
- * A figure appears here because a validated citation points at its page. When
- * vision is enabled, its searchable description was produced during ingestion;
- * the original image remains visible so the reader can check that description.
- */
+/** Images attached to validated citation pages. */
 
 import { absoluteUrl } from "../api/client";
 import type { Figure } from "../api/types";
@@ -12,7 +6,7 @@ import { formatUi, useUi } from "../i18n";
 
 interface Props {
   figures: Figure[];
-  /** True when the answer relies on what the figure shows, not just its page. */
+  /** Whether the answer relies on the figure's contents. */
   derived?: boolean;
   onOpenSource?: (figure: Figure) => void;
 }

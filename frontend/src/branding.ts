@@ -1,10 +1,4 @@
-/**
- * Branding is configuration, not code.
- *
- * Final INNOVADE/DemocraSeek logos and colours were not available at build
- * time. Every value here is overridable through Vite environment variables, so
- * dropping in the real assets is a configuration change, not a code change.
- */
+/** Branding values, overridable through Vite environment variables. */
 
 export interface Branding {
   appName: string;

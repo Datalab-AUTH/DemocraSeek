@@ -1,9 +1,4 @@
-"""LLM adapter for any OpenAI-compatible /chat/completions endpoint.
-
-Works unchanged with OpenAI, Azure OpenAI-compatible gateways, vLLM, Ollama's
-OpenAI shim, Together, Mistral's compatible endpoint, and similar services.
-Swapping model or endpoint is configuration + restart only - never re-indexing.
-"""
+"""LLM adapter for OpenAI-compatible chat-completions endpoints."""
 
 from __future__ import annotations
 

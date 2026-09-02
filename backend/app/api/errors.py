@@ -1,8 +1,4 @@
-"""Structured error handling.
-
-Clients get a stable error code, a safe message and the request id. Internal
-detail (stack traces, provider messages, connection strings) stays in the log.
-"""
+"""Return stable client errors without exposing internal details."""
 
 from __future__ import annotations
 

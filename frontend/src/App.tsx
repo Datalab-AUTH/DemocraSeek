@@ -49,8 +49,7 @@ export function App(): JSX.Element {
       .catch((caught: Error) => {
         if (!cancelled) setConfigError(caught.message);
       });
-    // What is in the corpus and which starter questions exist are useful but
-    // not essential: a failure here must not stop the app from working.
+    // Corpus hints are optional and must not block the app.
     fetchCorpus()
       .then((result) => {
         if (cancelled) return;
@@ -69,9 +68,7 @@ export function App(): JSX.Element {
     setOpenCitation(null);
   }, []);
 
-  // A profile is valid only under the configuration version that created it.
-  // A policy upgrade therefore returns the user to onboarding instead of
-  // silently reinterpreting old codes under new rules.
+  // A policy-version change requires fresh onboarding.
   const activeProfile =
     config && profile?.policy_version === config.policy_version ? profile : null;
 
@@ -202,9 +199,7 @@ export function App(): JSX.Element {
       {openCitation ? (
         <SourceDrawer
           citation={openCitation}
-          /* The other citations of the same answer, so a reader can compare
-             sources without closing and reopening the drawer. Found by identity:
-             the object came from that answer's own array. */
+          /* Let the drawer move between citations from the same answer. */
           siblings={
             turns.find((turn) => turn.response?.citations.includes(openCitation))?.response
               ?.citations ?? [openCitation]

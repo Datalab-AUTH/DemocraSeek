@@ -1,17 +1,9 @@
-# DemocraSeek onboarding and response-policy configuration.
-#
-# This file is the single source of truth for onboarding wording, answer codes
-# and personalisation policy fragments. The frontend renders it through the
-# backend API and does not duplicate its questions or choices.
-#
-# Coverage: 7 roles x 6 intents x 6 support needs x 5 modes = 1,260 profiles,
-# expressed as 24 reusable fragments plus 5 global guardrails and the
-# deterministic compiler in app/onboarding/compiler.py.
+# Single source of truth for onboarding copy, codes and policy fragments.
+# The compiler combines 24 fragments into 1,260 possible profiles.
 
 policy_version: "2.0"
 
-# Language changes presentation only. The stable R/I/S/M codes and their
-# English policy instructions below remain identical in every locale.
+# Locales translate display text, not stable policy codes or instructions.
 default_locale: "en"
 locales:
   - code: "en"
@@ -62,7 +54,7 @@ global_guardrails:
   - "G5 - Avoid impersonal dead ends: when the user needs support with a digital process or institutional procedure, state what is known, what remains unknown and the next realistic step supported by the evidence rather than ending with an impersonal or bureaucratic response."
 
 questions:
-  # ------------------------------------------------------------------ role
+  # Role
   - id: q_role
     dimension: role
     order: 1
@@ -123,7 +115,7 @@ questions:
           - "Use moderate jargon and define unfamiliar terminology."
           - "Give a short explanation first and make deeper exploration available."
 
-  # ---------------------------------------------------------------- intent
+  # Intent
   - id: q_intent
     dimension: intent
     order: 2
@@ -175,7 +167,7 @@ questions:
           - "Suggest relevant follow-up prompts only about subjects present in the retrieved evidence."
           - "Keep the initial answer light and make deeper exploration available."
 
-  # --------------------------------------------------------------- support
+  # Support
   - id: q_support
     dimension: support
     order: 3
@@ -236,7 +228,7 @@ questions:
           - "Let the selected role, intent and answer mode primarily determine the response."
           - "Maintain the global requirements for clarity, accessibility and source grounding."
 
-  # ------------------------------------------------------------------ mode
+  # Mode
   - id: q_mode
     dimension: mode
     order: 4
@@ -286,8 +278,7 @@ questions:
           - "Relate concepts to participation, administration, community or governance practice."
           - "Explain what each example illustrates and why it is relevant."
 
-# Complete presentation translations. They deliberately contain no policy
-# instructions: language must never change the meaning of a selected profile.
+# Display-only translations; policy instructions remain English.
 translations:
   - locale: "el"
     ui:
@@ -713,7 +704,5 @@ translations:
             label: "Voorbeelden uit het echte leven / de praktijk"
             description: "Concrete, scenariogestuurde voorbeelden die de praktische relevantie tonen."
 
-# Targeted combination overrides remain available for evaluated conflicts. No
-# override is currently needed because the explicit precedence resolves the
-# documented examples.
+# Optional exceptions for evaluated profile conflicts.
 overrides: []

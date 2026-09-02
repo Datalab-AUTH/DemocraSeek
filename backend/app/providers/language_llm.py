@@ -1,10 +1,6 @@
-"""LLM-backed language routing around the English-only RAG core.
+"""Detect and translate language around the English RAG core.
 
-The answering model is reused as a translation engine. Translation prompts are
-kept separate from the RAG prompts, and the provider never answers the input or
-adds knowledge. Citation markers are not sent as translatable text: the answer
-is split around them, translated segment-by-segment in one call, and rebuilt
-deterministically.
+Citation markers are isolated and restored after translation.
 """
 
 from __future__ import annotations
@@ -97,8 +93,7 @@ class LLMLanguageProvider:
         except (ValidationError, ValueError) as exc:
             raise ProviderError("Language routing returned an invalid JSON contract.") from exc
 
-        # The provider contract uses the base code for the skip decision. A
-        # regional English code such as en-GB is still English.
+        # Regional English codes still use English routing.
         return route.model_copy(update={"language_code": route.language_code.lower()})
 
     def translate_answer(

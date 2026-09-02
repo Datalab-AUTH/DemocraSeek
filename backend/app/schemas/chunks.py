@@ -1,8 +1,4 @@
-"""Neutral internal schemas for corpus content.
-
-These types are provider-agnostic on purpose: no adapter (LLM, embedding,
-vector store) may leak its own objects past this boundary.
-"""
+"""Provider-neutral schemas for corpus content and retrieval."""
 
 from __future__ import annotations
 
@@ -10,8 +6,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-#: "text" comes from the page's text layer. "figure" is a figure's caption plus
-#: a derived description, which is retrievable evidence but NOT document text.
+# Text is extracted; figure content may include a derived description.
 Modality = Literal["text", "figure"]
 
 
@@ -29,11 +24,7 @@ class PageText(BaseModel):
 
 
 class ChunkMetadata(BaseModel):
-    """Metadata attached to every stored chunk.
-
-    Optional fields (``deliverable_id``, ``publication_date``, ``section``)
-    stay empty when they cannot be determined reliably. They are never invented.
-    """
+    """Trusted provenance and index metadata for a stored chunk."""
 
     document_id: str
     document_checksum: str
@@ -44,13 +35,11 @@ class ChunkMetadata(BaseModel):
     page_number: int = Field(ge=1)
     section: str = ""
     chunk_id: str
-    #: What kind of evidence this chunk is. Figure chunks are rendered and
-    #: cited differently, because part of their text is derived, not quoted.
+    # Evidence type: extracted text or a figure description.
     modality: Modality = "text"
-    #: Set only on figure chunks: which figure this chunk describes.
+    # Figure ID, set only for figure chunks.
     figure_id: str = ""
-    #: Provenance of a figure chunk's description, e.g. "vision:qwen2.5vl:7b"
-    #: or "caption_only". Empty for text chunks.
+    # Figure-description source; empty for text chunks.
     description_source: str = ""
     corpus_version: str
     index_version: str
@@ -69,7 +58,7 @@ class Chunk(BaseModel):
     metadata: ChunkMetadata
 
     def to_record(self) -> dict[str, object]:
-        """Flat representation used by the ingestion report and fixtures."""
+        """Return a flat record for reporting or export."""
         return {"chunk_text": self.chunk_text, **self.metadata.model_dump()}
 
 
@@ -77,14 +66,9 @@ class RetrievedChunk(BaseModel):
     """A chunk returned by retrieval, with the scores that placed it there."""
 
     chunk: Chunk
-    #: Cosine similarity from the vector store, in [-1, 1]. This is the only
-    #: score compared against RETRIEVAL_SCORE_THRESHOLD. It is 0.0 for a chunk
-    #: that lexical search found and vector search did not, meaning "no cosine
-    #: was computed", not "dissimilar".
+    # Cosine similarity; zero also marks lexical-only hits.
     score: float
-    #: Cross-encoder relevance, when reranking ran. An unbounded logit on a
-    #: different scale from ``score``: useful for ordering and for logs, never
-    #: comparable with the threshold.
+    # Cross-encoder score used only for ordering.
     rerank_score: float | None = None
 
 
@@ -101,11 +85,7 @@ class IndexMetadata(BaseModel):
     index_version: str
 
     def compatibility_key(self) -> tuple[str, str, int, int, int, str]:
-        """Fields that must match for stored vectors to remain usable.
-
-        ``corpus_version`` is deliberately excluded: adding documents to the
-        corpus does not invalidate existing vectors.
-        """
+        """Return fields that must match for stored vectors to stay valid."""
         return (
             self.embedding_provider,
             self.embedding_model,
@@ -116,8 +96,7 @@ class IndexMetadata(BaseModel):
         )
 
 
-#: "pdf" is a paginated text document; "image" is a standalone image file
-#: ingested as a one-page document whose only content is the picture.
+# Source type: paginated PDF or one-page standalone image.
 DocumentType = Literal["pdf", "image"]
 
 
@@ -134,8 +113,7 @@ class DocumentRecord(BaseModel):
     page_count: int
     chunk_count: int
     figure_count: int = 0
-    #: Subject headings detected in this document. Used to suggest starter
-    #: questions that are guaranteed to have something behind them.
+    # Indexed headings used for starter questions.
     topics: list[str] = []
     corpus_version: str
     index_version: str

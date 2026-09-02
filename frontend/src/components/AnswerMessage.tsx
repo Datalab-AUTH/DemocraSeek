@@ -44,10 +44,7 @@ export function AnswerMessage({
 }: Props): JSX.Element {
   const { ui } = useUi();
   if (response.status === "insufficient_evidence") {
-    // "Nothing in the knowledge base" is only true when retrieval came back
-    // empty. When relevant passages were found but no verifiable answer could be
-    // written from them, saying that misleads the reader into thinking the
-    // corpus lacks the material.
+    // Distinguish missing evidence from an unverifiable generated answer.
     const foundButUnusable = response.reason_code === "unverifiable_answer";
     const unavailable = response.reason_code === "generation_unavailable";
     return (
@@ -78,8 +75,7 @@ export function AnswerMessage({
 
   const byId = new Map(response.citations.map((citation) => [citation.citation_id, citation]));
 
-  // Each image once per answer, keyed by figure rather than by citation: a page
-  // cited both as prose and as a figure carries the same image twice.
+  // Show each figure once even when several citations share its page.
   const seenFigures = new Set<string>();
   const uniqueFigures: { figure: Figure; citation: Citation }[] = [];
   for (const citation of response.citations) {
@@ -120,9 +116,7 @@ export function AnswerMessage({
         </p>
       ))}
 
-      {/* One gallery per answer, not per citation. A page cited both as text and
-          as a figure carries the same image twice, and a reader should see it
-          once. The citation kept is the first that surfaced each image. */}
+      {/* Show each cited figure once per answer. */}
       {uniqueFigures.length > 0 ? (
         <FigureGallery
           figures={uniqueFigures.map((entry) => entry.figure)}
@@ -172,8 +166,7 @@ export function AnswerMessage({
                     <span className="sources__meta">
                       {citation.deliverable_id ? `${citation.deliverable_id} · ` : ""}
                       {formatUi(ui.answer.page, { page: citation.page_number })}
-                      {/* Same plain wording as the drawer this opens - a reader
-                          should not meet two vocabularies for one idea. */}
+                      {/* Match the drawer's source wording. */}
                       {citation.excerpt_source === "model_quote_verified"
                         ? ` · ${ui.answer.exactQuote}`
                         : citation.excerpt_source === "figure_description"

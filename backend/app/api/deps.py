@@ -1,9 +1,4 @@
-"""Application wiring.
-
-A plain object built once at startup and hung on ``app.state``. No dependency
-injection container, no service locator: the object graph is small enough to
-read in one screen, which is the point.
-"""
+"""Build and expose the application's shared dependency graph."""
 
 from __future__ import annotations
 
@@ -41,14 +36,13 @@ class ApplicationContext:
     settings: Settings
     onboarding_config: OnboardingConfig
     llm: LLMProvider
-    #: Detects/translates around the English RAG core using the configured LLM.
+    # Language routing through the configured LLM.
     language: LanguageProvider
     embeddings: EmbeddingProvider
     vector_store: VectorStore
-    #: None when figure descriptions are switched off (VISION_PROVIDER=none).
+    # None when vision is disabled.
     vision: VisionProvider | None
-    #: Mandatory query-time reranker. It is not part of the index fingerprint
-    #: and changing its model never needs a re-ingest.
+    # Query-time reranker; model changes need no re-ingestion.
     reranker: RerankProvider
     retriever: Retriever
     orchestrator: RagOrchestrator

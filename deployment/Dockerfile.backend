@@ -1,5 +1,4 @@
-# DemocraSeek backend.
-# Build context is the repository root: docker build -f deployment/Dockerfile.backend .
+# Backend; build from the repository root.
 
 FROM python:3.13-slim AS base
 
@@ -11,14 +10,10 @@ WORKDIR /app
 
 # Dependencies first so application edits do not invalidate the layer.
 COPY requirements.txt ./
-# Keep the packaging toolchain on an audited version. The setuptools version
-# bundled with the Python base image is not part of requirements.txt but remains
-# installed in the runtime environment, so it must be pinned explicitly too.
+# Pin the base image's packaging toolchain.
 RUN python -m pip install --no-cache-dir "setuptools==83.0.0"
 
-# The reranker needs PyTorch but not CUDA. Installing from the default Linux
-# index pulls several gigabytes of unused NVIDIA libraries into the image, so
-# satisfy that dependency explicitly from PyTorch's CPU-only wheel index first.
+# Install CPU-only PyTorch for the reranker.
 ARG TORCH_VERSION=2.13.0
 RUN pip install --no-cache-dir \
         --index-url https://download.pytorch.org/whl/cpu \
@@ -28,7 +23,7 @@ RUN pip install --no-cache-dir \
 COPY backend/ ./backend/
 COPY config/ ./config/
 
-# The corpus and derived index are mounted at runtime, never baked into the image.
+# Mount corpus and index at runtime.
 RUN mkdir -p /app/data/corpus /app/data/index /app/data/reports \
     && useradd --create-home --uid 10001 democraseek \
     && mkdir -p /home/democraseek/.cache/huggingface \
@@ -43,6 +38,5 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
     CMD python -c "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=3).status==200 else 1)"
 
-# --factory: app.main has no module-level app instance, so importing it never
-# reads configuration or builds providers as a side effect.
+# ``--factory`` avoids provider setup during import.
 CMD ["uvicorn", "app.main:create_app", "--factory", "--host", "0.0.0.0", "--port", "8000"]

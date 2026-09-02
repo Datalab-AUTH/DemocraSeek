@@ -105,8 +105,7 @@ else {
 $needsModels = -not $Status
 
 if ($needsModels) {
-    # Ingestion calls the embedding endpoint for every chunk, and the vision
-    # endpoint for every kept figure. The answer LLM is not used here.
+    # Ingestion uses embeddings and optional vision, not answer generation.
     $requiredSettings = @(
         @{ Url = Get-EnvValue "EMBEDDING_BASE_URL"; Model = Get-EnvValue "EMBEDDING_MODEL" }
     )

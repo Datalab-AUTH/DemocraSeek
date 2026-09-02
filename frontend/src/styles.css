@@ -1,25 +1,6 @@
-/*
- * DemocraSeek interface styles.
- *
- * Plain CSS: no framework, no component library, no icon package. Colour lives
- * in custom properties, so re-skinning for INNOVADE branding means changing the
- * values in :root rather than touching components.
- *
- * The layout decisions that matter for usability:
- *   - the app fills the viewport; the conversation scrolls, the composer does not;
- *   - sources open in a drawer over the page, never below the fold;
- *   - the profile lives behind a chip in the header, not in a permanent column.
- */
+/* DemocraSeek interface styles and theme tokens. */
 
-/*
- * Theming has three states, and the CSS must cover all three:
- *   - an explicit choice stamps <html data-theme="light|dark">
- *   - the default "system" stamps nothing, so only prefers-color-scheme applies
- * So: the complete light palette lives on bare :root; the dark values are
- * redefined under the media query guarded by :not([data-theme="light"]), and
- * again under [data-theme="dark"] so an explicit choice wins in both directions.
- * No colour may have its only definition inside a media or attribute block.
- */
+/* System theme has no data-theme attribute; explicit choices override it. */
 :root {
   color-scheme: light;
 
@@ -43,12 +24,10 @@
   --warn-text: #7a4a00;
   --error: #a4232a;
   --error-bg: #fdf0f0;
-  /* Verified provenance. Distinct from --accent so "checked" and
-     "informational" never read as the same signal. */
+  /* Verified-source colour. */
   --ok: #15803d;
 
-  /* Text drawn on top of a brand-coloured fill. A token rather than a
-     per-component dark override, so all three theme states get it right. */
+  /* Text on brand-coloured backgrounds. */
   --on-brand: #ffffff;
 
   --radius: 18px;
@@ -61,7 +40,7 @@
   --header-height: 66px;
 }
 
-/* The dark palette, defined once and applied from two places below. */
+/* Dark palette. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     color-scheme: dark;
@@ -198,7 +177,7 @@ kbd {
   }
 }
 
-/* ------------------------------------------------------------------ shell */
+/* Shell */
 .app {
   height: 100vh;
   height: 100dvh;
@@ -289,7 +268,7 @@ kbd {
   overflow: hidden;
 }
 
-/* --------------------------------------------------------------- welcome */
+/* Welcome */
 .welcome {
   position: relative;
   height: 100vh;
@@ -483,7 +462,7 @@ kbd {
   }
 }
 
-/* Keep short-screen scrolling available without showing a distracting bar. */
+/* Allow onboarding scroll without showing its bar. */
 .app__main--onboarding {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -537,7 +516,7 @@ kbd {
   }
 }
 
-/* ---------------------------------------------------------- profile chip */
+/* Profile chip */
 .profile-chip__wrap {
   position: relative;
 }
@@ -658,7 +637,7 @@ kbd {
   margin: 0.75rem 0;
 }
 
-/* ------------------------------------------------------------- onboarding */
+/* Onboarding */
 .onboarding {
   padding: 2rem;
   max-width: 680px;
@@ -698,8 +677,7 @@ kbd {
   margin: 1.15rem 0 0;
   padding: 0;
   display: grid;
-  /* Reserve six answer rows so the five-answer final step does not make the
-     card visibly collapse. */
+  /* Keep every onboarding step the same height. */
   grid-template-rows: repeat(6, minmax(4.35rem, auto));
   gap: 0.45rem;
 }
@@ -767,7 +745,7 @@ kbd {
   margin-top: 1.4rem;
 }
 
-/* ------------------------------------------------------------------ chat */
+/* Chat */
 .chat {
   flex: 1;
   min-height: 0;
@@ -842,7 +820,7 @@ kbd {
   }
 }
 
-/* ---------------------------------------------------------- conversation */
+/* Conversation */
 .turn {
   width: min(100%, 920px);
   margin: 0 auto 1.9rem;
@@ -871,7 +849,7 @@ kbd {
   color: var(--on-brand);
 }
 
-/* ----------------------------------------------- language and theme controls */
+/* Language and theme controls */
 .display-controls {
   display: inline-flex;
   align-items: center;
@@ -925,7 +903,7 @@ kbd {
   background: var(--surface);
 }
 
-/* ---------------------------------------------------------- theme toggle */
+/* Theme toggle */
 .theme-toggle {
   display: inline-flex;
   padding: 2px;
@@ -971,12 +949,11 @@ kbd {
   stroke-linejoin: round;
 }
 
-/* --------------------------------------------------------------- stepper */
+/* Stepper */
 .stepper {
   list-style: none;
   display: grid;
-  /* minmax(0, 1fr), not 1fr: a bare 1fr track refuses to shrink below its
-     content, so a long answer pushed the whole bar outside the card. */
+  /* minmax lets long labels shrink inside the grid. */
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0.4rem;
   margin: 0 0 1.6rem;
@@ -1142,8 +1119,7 @@ kbd {
 }
 
 .answer {
-  /* The answer is what people came for: give it a comfortable measure and a
-     looser rhythm than the surrounding interface chrome. */
+  /* Comfortable reading width and rhythm. */
   max-width: 72ch;
   font-size: 1rem;
   line-height: 1.72;
@@ -1232,7 +1208,7 @@ kbd {
   box-shadow: 0 3px 9px rgb(37 99 235 / 24%);
 }
 
-/* --------------------------------------------------------------- figures */
+/* Figures */
 .figures {
   margin: 0.9rem 0;
   padding: 0.8rem;
@@ -1292,7 +1268,7 @@ kbd {
   margin-top: 0.3rem;
 }
 
-/* --------------------------------------------------------------- sources */
+/* Sources */
 .sources {
   margin-top: 1.35rem;
   padding: 1rem;
@@ -1477,7 +1453,7 @@ kbd {
   }
 }
 
-/* ----------------------------------------------------------- empty state */
+/* Empty state */
 .empty {
   width: min(100%, 760px);
   margin: 1rem auto 2rem;
@@ -1594,7 +1570,7 @@ kbd {
   color: var(--surface);
 }
 
-/* -------------------------------------------------------------- composer */
+/* Composer */
 .composer {
   flex: none;
   padding: 0.85rem 1.75rem 1.05rem;
@@ -1673,7 +1649,7 @@ kbd {
   stroke-linejoin: round;
 }
 
-/* ----------------------------------------------------- source inspector v2 */
+/* Source inspector */
 .source-drawer__backdrop {
   position: fixed;
   inset: 0;
@@ -2292,7 +2268,7 @@ kbd {
   }
 }
 
-/* ---------------------------------------------------------------- drawer */
+/* Drawer */
 .drawer__backdrop {
   position: fixed;
   inset: 0;
@@ -2469,9 +2445,7 @@ kbd {
   text-decoration: none;
 }
 
-/* ------------------------------------------------------------ the quote */
-/* The reader's actual question is "what does the document say?", so the quote
-   is the largest thing in the drawer and the first thing under the title. */
+/* Cited excerpt */
 .quote {
   margin: 0;
 }
@@ -2545,9 +2519,7 @@ kbd {
   background: var(--accent);
 }
 
-/* --------------------------------------------------- the page, readable */
-/* Was a monospace <pre> - accurate and unreadable to anyone who does not read
-   code. It is prose from a research report, so it is set as prose. */
+/* Source page */
 .page-view {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -2608,8 +2580,7 @@ kbd {
   color: var(--text-soft);
 }
 
-/* The point of the whole drawer: the reader sees the quote sitting on its own
-   page instead of being asked to trust that it does. */
+/* Highlight the excerpt inside its source page. */
 .page-view__mark {
   padding: 0.1em 0.15em;
   border-radius: 3px;
@@ -2640,7 +2611,7 @@ kbd {
   }
 }
 
-/* --------------------------------------------------------------- buttons */
+/* Buttons */
 .button {
   font: inherit;
   font-weight: 600;
@@ -2691,8 +2662,7 @@ kbd {
   margin: 0 0 0.6rem;
 }
 
-/* Keep the high-density chat comfortable on small screens. These rules live
-   after the component blocks so they reliably override their desktop values. */
+/* Mobile overrides follow component styles. */
 @media (max-width: 720px) {
   .profile-chip {
     max-width: 10rem;

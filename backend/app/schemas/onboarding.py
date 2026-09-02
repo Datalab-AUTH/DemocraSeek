@@ -8,11 +8,11 @@ from pydantic import BaseModel, ConfigDict, Field
 
 DIMENSIONS: tuple[str, ...] = ("role", "intent", "support", "mode")
 
-#: Documented conflict precedence. Global rules are absolute and sit above all.
+# Personalisation conflict order; global rules remain absolute.
 PRECEDENCE: tuple[str, ...] = ("support", "intent", "role", "mode")
 
 
-# --------------------------------------------------------------- configuration
+# Configuration
 class ChoiceConfig(BaseModel):
     """One selectable answer, with the policy fragments it contributes."""
 
@@ -93,12 +93,7 @@ class OnboardingTranslation(BaseModel):
 
 
 class OverrideConfig(BaseModel):
-    """A combination-keyed adjustment.
-
-    ``match`` may name any subset of the four dimension codes; an override
-    applies when every named code matches the profile. Deliberately minimal:
-    it can add instructions and suppress fragment text, nothing more.
-    """
+    """Add or suppress instructions for a matching code combination."""
 
     model_config = ConfigDict(frozen=True)
 
@@ -132,13 +127,9 @@ class OnboardingConfig(BaseModel):
         return tuple(choice.code for choice in self.question_for(dimension).choices)
 
 
-# --------------------------------------------------------------------- profile
+# Profile
 class OnboardingProfile(BaseModel):
-    """The complete stored preference profile. Four codes plus a version.
-
-    This is a *response preference* profile. It carries no demographic,
-    sensitive or identifying information.
-    """
+    """Four response-preference codes and their policy version."""
 
     model_config = ConfigDict(frozen=True)
 
@@ -173,7 +164,7 @@ class CompiledPolicy(BaseModel):
     compiled_system_instructions: str
 
 
-# ------------------------------------------------------------- API wire models
+# API models
 class CompileRequest(BaseModel):
     profile: OnboardingProfile
 

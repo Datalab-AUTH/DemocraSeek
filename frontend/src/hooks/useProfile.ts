@@ -1,14 +1,4 @@
-/**
- * Profile persistence.
- *
- * Exactly five strings are stored, in this browser's localStorage: four
- * preference codes and the policy version. There is no account, no cookie, no
- * identifier and no demographic data. Reset removes the entry entirely.
- *
- * The backend re-validates and re-compiles the profile on every request, so a
- * tampered or stale entry cannot change how answers are generated - it can only
- * be rejected.
- */
+/** Store four preference codes and their policy version in localStorage. */
 
 import { useCallback, useEffect, useState } from "react";
 
@@ -48,8 +38,7 @@ export function useProfile(): {
   const [profile, setProfile] = useState<Profile | null>(() => readStoredProfile());
 
   useEffect(() => {
-    // v1 used Barrier/B-codes. Remove it instead of silently interpreting it as
-    // the v2 Support/S-code profile contract.
+    // Remove the incompatible v1 Barrier/B-code profile.
     try {
       for (const key of LEGACY_STORAGE_KEYS) window.localStorage.removeItem(key);
     } catch {

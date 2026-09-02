@@ -1,9 +1,4 @@
-/**
- * What a user sees before their first question.
- *
- * The first screen is intentionally light: it tells a visitor what they can do
- * without exposing document inventory or ingestion details meant for operators.
- */
+/** Simple guidance shown before the first question. */
 
 import type { CorpusDocument } from "../api/types";
 import { branding } from "../branding";
