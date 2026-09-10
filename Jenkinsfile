@@ -43,7 +43,7 @@ pipeline {
         script {
           image_db          = docker.build("${dockertag}-db", "-f deployment/Dockerfile.database .")
           image_backend     = docker.build("${dockertag}-backend", "-f deployment/Dockerfile.backend .")
-          image_frontend    = docker.build("${dockertag}-frontend", "-f frontend/Dockerfile .")
+          image_frontend    = docker.build("${dockertag}-frontend", "-f deployment/Dockerfile.frontend .")
         }
       }
     }
