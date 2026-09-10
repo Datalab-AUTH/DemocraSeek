@@ -16,7 +16,7 @@ pipeline {
     // the name of your docker image
     // set to 'datalabauth/projectname' for Dockerhub
     // or just to 'projectname' if you're using our private registry
-    dockertag = 'democraseek'
+    dockertag = 'datalabauth/democraseek'
 
     // the registry name
     // set to 'https://registry.hub.docker.com' for DockerHub
