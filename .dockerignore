@@ -29,3 +29,6 @@ stop-demo.cmd
 .vscode
 .DS_Store
 Thumbs.db
+
+# Jenkins
+Jenkinsfile
