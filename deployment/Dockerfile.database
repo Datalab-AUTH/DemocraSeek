@@ -1,4 +1,4 @@
-FROM golang:1.25.13-alpine AS gosu_builder
+FROM golang:1.25-alpine AS gosu_builder
 
 # Rebuild gosu with a current Go toolchain.
 RUN CGO_ENABLED=0 GOBIN=/out /usr/local/go/bin/go install \
