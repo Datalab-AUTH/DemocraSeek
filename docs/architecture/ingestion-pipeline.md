@@ -34,12 +34,13 @@ Ingestion is an offline, operator-triggered pipeline implemented in
 7. clean page text and detect review conditions
 8. detect headings and skip contents pages
 9. create page-scoped text chunks
-10. extract, filter, caption, and store figures
+10. extract, filter, and caption figures in a staging directory
 11. use the VLM to create searchable figure descriptions
 12. create embeddings for all chunks
-13. replace the document's rows in pgvector
-14. save registry records
-15. save a JSON and text ingestion report
+13. promote staged page and figure artifacts with rollback protection
+14. replace the document's rows in one PostgreSQL transaction
+15. save the document registry record
+16. save a JSON and text ingestion report
 ```
 
 ## File discovery and approval boundary
@@ -191,14 +192,17 @@ mismatch fails loudly.
 
 ## Vector replacement
 
-For an updated document, the vector store deletes that document's old rows,
-embeds the new chunks, and upserts the new rows. Replacement prevents orphaned
-chunks when a document becomes shorter.
+For an updated document, extraction, vision calls, and embedding all finish
+before current data is touched. Page and figure artifacts are staged and can be
+rolled back while PostgreSQL deletes the old rows and inserts the new rows in a
+single transaction. A failed embedding, vision call, or database replacement
+therefore leaves the previous usable version intact.
 
 The PostgreSQL rows and JSON registry are not one distributed transaction. JSON
 writes are atomic at the file level and ingestion is single-writer, but a process
-failure between stores may require rerunning ingestion. The checksum/fingerprint
-model makes that recovery deterministic.
+failure after PostgreSQL commits but before the final document-registry save may
+require rerunning ingestion. The old registry checksum ensures that the next run
+does not incorrectly skip that recovery.
 
 ## Registry and report
 

@@ -55,6 +55,12 @@ Questions are whitespace-normalized, must be non-empty, and cannot exceed
 `MAX_USER_INPUT_CHARS` (default 2,000). The API applies an in-memory sliding
 window per client. The active limit is 60 requests per 60 seconds.
 
+Request parsing also rejects questions or individual message fields above
+20,000 characters and histories above 100 messages; nginx caps the complete
+body at 1 MiB. The backend logs elapsed time for language routing, embedding,
+dense search, lexical search, reranking, generation, RAG as a whole, and final
+translation. These timings are diagnostic logs, not product analytics.
+
 ### Conversation context
 
 The backend accepts up to the most recent 12 messages for generation. The LLM

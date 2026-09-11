@@ -35,5 +35,6 @@ frontend/coverage/
 
 # Editor and OS files
 .DS_Store
+Thumbs.db
 .idea/
 .vscode/

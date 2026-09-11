@@ -155,6 +155,12 @@ is the code default: `.env.example` sets container-absolute values such as
 | `RATE_LIMIT_REQUESTS` | `60` | requests per process/window |
 | `RATE_LIMIT_WINDOW_SECONDS` | `60` | window duration |
 
+The request schema has fixed safety ceilings of 20,000 characters per question
+or message and 100 history messages. The normal configured limits above are
+smaller. The shipped nginx configuration caps request bodies at 1 MiB and waits
+up to 900 seconds for a proxied response; individual model calls still use their
+provider-specific timeouts, normally 180 seconds.
+
 ## Frontend variables
 
 Passed to the frontend image as build arguments and embedded into the bundle:

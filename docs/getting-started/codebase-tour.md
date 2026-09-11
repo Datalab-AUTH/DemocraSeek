@@ -25,6 +25,7 @@ rag_index: true
 ```text
 democraseek/
 |-- backend/app/                    backend application
+|-- backend/tests/                  focused regression tests
 |-- config/onboarding.v2.yaml       onboarding source of truth
 |-- data/
 |   |-- corpus/                     approved source files
@@ -114,7 +115,8 @@ Start code reading with:
 | `src/components/Onboarding.tsx` | backend-driven four-step onboarding |
 | `src/components/ChatPanel.tsx` | messages, composer, requests |
 | `src/components/AnswerMessage.tsx` | answer and inline citations |
-| `src/components/SourceDrawer.tsx` | evidence/page/figure/original source |
+| `src/components/SourceDrawer.tsx` | source drawer fetching, focus, keyboard, and navigation |
+| `src/components/SourceDrawerContent.tsx` | evidence, page, figure, and external-source views |
 | `src/components/FigureGallery.tsx` | cited figures |
 | `src/components/Header.tsx` | app identity and profile controls |
 | `src/hooks/useProfile.ts` | versioned local profile |

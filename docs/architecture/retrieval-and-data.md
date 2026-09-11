@@ -197,6 +197,11 @@ It contains:
 After retrieval, PostgreSQL says which chunk is relevant. The registry lets the
 application safely show the exact page, original file, and associated figure.
 
+During citation hydration, figure records are loaded once per cited document
+and reused for every citation from that document. Direct source-page lookup
+still validates the document's complete page JSON; that remains a file-backed,
+single-host tradeoff to measure before introducing another store.
+
 ### Path safety
 
 The source API accepts IDs, not arbitrary filesystem paths. Registry resolution

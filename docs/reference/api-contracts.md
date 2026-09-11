@@ -72,6 +72,12 @@ canonical text is absent, the backend translates that history message before
 using it. Previous language metadata is consulted only for a genuinely
 ambiguous follow-up.
 
+Request parsing limits are 20,000 characters for the question and each message
+text field, and 100 history messages. Runtime configuration applies the normally
+smaller `MAX_USER_INPUT_CHARS` and `MAX_CONVERSATION_MESSAGES` limits after
+normalization. The shipped nginx proxy rejects complete request bodies above
+1 MiB.
+
 ## Chat response states
 
 `grounded` includes answer text and citations. `insufficient_evidence` contains
@@ -81,6 +87,10 @@ states also include:
 - `language_code` and `language_name`: detected language of the current question;
 - `canonical_question`: English question actually used by retrieval;
 - `canonical_answer`: validated English answer before final translation.
+
+When the collection is not built yet, chat follows the same safe
+`insufficient_evidence` path rather than exposing a database error. Readiness
+remains `503 not_ready` until ingestion creates the collection.
 
 The canonical fields are conversation state, not hidden reasoning or model
 chain-of-thought.

@@ -76,6 +76,11 @@ source of truth.
 - **Configuration affecting vectors/chunks:** run `reindex --yes`, not ordinary
   incremental ingestion.
 
+Extraction, vision analysis, and embedding complete in staging before the
+current document is replaced. If one of those steps or PostgreSQL replacement
+fails, the previous indexed chunks, page text, figures, and registry record stay
+available. Inspect the report, correct the dependency, and rerun the same ingest.
+
 ## Backups
 
 At minimum back up:

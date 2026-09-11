@@ -47,24 +47,12 @@ rag_index: true
    absent, the user receives an
    insufficient-evidence response rather than an unsupported answer.
 
-### Current verified corpus snapshot
+### Inspect the current corpus
 
-The readiness and corpus endpoints of the cleaned local deployment reported:
-
-| Item | Verified value |
-|---|---:|
-| Approved source files | 1 |
-| Processed pages | 338 |
-| Searchable chunks | 1,086 |
-| Extracted figures kept | 35 |
-| Embedding model | `nomic-embed-text`, 768 dimensions |
-| Vision model | `qwen2.5vl:7b` |
-| Collection | `innovade_v1` |
-
-This snapshot describes the approved D2.1 corpus in the current local Docker
-volumes. Generated indexes and reports are intentionally not committed; a fresh
-deployment creates its own report during ingestion. This is operational state,
-not a universal benchmark.
+Corpus counts belong to the running deployment and are not documentation
+constants. Use `GET /api/corpus` for the current document inventory and
+`python -m app.cli status` through Compose for current page, chunk, and figure
+counts. Generated indexes and reports are intentionally not committed.
 
 ### The two main architectural promises
 
@@ -151,7 +139,7 @@ Excluded from the current scope:
 - analytics and behavioral tracking;
 - distributed queues or microservices;
 - Kubernetes or cloud-specific manifests;
-- automated test suites, fixtures, and CI pipelines;
+- comprehensive evaluation suites and CI pipelines;
 - public-production operational controls.
 
 ---

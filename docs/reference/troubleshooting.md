@@ -99,6 +99,13 @@ backend logs for `generation_parse_rejected` or
 `citation_validation_rejected`. The validator is intentionally stricter than a
 best-effort display.
 
+## Chat ends with a gateway timeout
+
+Check whether nginx or a model provider ended the request. The shipped proxy
+waits up to 900 seconds, while each normal LLM or vision call has a 180-second
+provider timeout. Backend structured logs include language, retrieval,
+generation, and translation durations so the slow stage can be identified.
+
 ## Image is shown but cannot answer from it
 
 Possible causes:

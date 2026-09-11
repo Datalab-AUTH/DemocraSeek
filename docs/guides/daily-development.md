@@ -38,3 +38,6 @@ docker compose -f deployment\docker-compose.yml --env-file .env ps
 docker compose -f deployment\docker-compose.yml --env-file .env logs --tail 100 backend
 Invoke-RestMethod http://localhost:8000/api/corpus
 ```
+
+Before handing off a change, follow the complete
+[build and release verification](../operations/build-and-release.md) procedure.

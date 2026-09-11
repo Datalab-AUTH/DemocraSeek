@@ -20,7 +20,9 @@ data
 
 # Host-only documentation and helpers
 README.md
+docs
 scripts
+ingest.cmd
 start-demo.cmd
 stop-demo.cmd
 

@@ -47,7 +47,8 @@ No onboarding question wording is hard-coded in the frontend.
    through later steps.
 8. `ChatPanel.tsx` owns current in-memory conversation and request state.
 9. `AnswerMessage.tsx` renders safe answer text and interactive markers.
-10. `SourceDrawer.tsx` provides evidence, page context, image, and original file.
+10. `SourceDrawer.tsx` owns drawer fetching, focus, keyboard, and navigation;
+    `SourceDrawerContent.tsx` renders evidence, page context, and external-source views.
 11. A new conversation clears chat context; reset profile also removes stored
    preference codes.
 
