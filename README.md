@@ -81,24 +81,21 @@ described below.
    absent, the user receives an
    insufficient-evidence response rather than an unsupported answer.
 
-### Current verified corpus snapshot
+### Configured provider profile
 
-The readiness and corpus endpoints of the cleaned local deployment reported:
+The shipped configuration targets the AUTH institutional services:
 
-| Item | Verified value |
-|---|---:|
-| Approved source files | 1 |
-| Processed pages | 338 |
-| Searchable chunks | 1,086 |
-| Extracted figures kept | 35 |
-| Embedding model | `nomic-embed-text`, 768 dimensions |
-| Vision model | `qwen2.5vl:7b` |
-| Collection | `innovade_v1` |
+| Function | Configured service and model |
+|---|---|
+| Answering, language routing, translation | FILOS `qwen3.8:27b` |
+| Figure understanding | FILOS `qwen3.8:27b` |
+| Embeddings | FILOS `all-minilm:22m`, 384 dimensions |
+| Vector collection | `innovade_filos_minilm_v1` |
 
-This snapshot describes the approved D2.1 corpus in the current local Docker
-volumes. Generated indexes and reports are intentionally not committed; a fresh
-deployment creates its own report during ingestion. This is operational state,
-not a universal benchmark.
+The root `.env` still needs the operator's institutional key. Because the
+embedding and vision configuration shapes stored evidence, a fresh deployment
+must re-index before `/api/ready` can report ready. Generated indexes and reports
+are intentionally not committed.
 
 ### The two main architectural promises
 
@@ -205,8 +202,8 @@ Excluded from the current scope:
 | Citation ID | Reader-facing marker such as `C1` displayed as `[C1]` |
 | Supporting quote | Text the LLM claims to have copied from an evidence item; verified before display |
 | Registry | Trusted JSON records that map stable IDs to documents, pages, and figure files |
-| LLM | The answer-generation model, currently `llama3.1:8b` |
-| VLM | The ingestion-time vision-language model, currently `qwen2.5vl:7b` |
+| LLM | The answer-generation model, configured as FILOS `qwen3.8:27b` |
+| VLM | The ingestion-time vision model, configured as FILOS `qwen3.8:27b` |
 | RAG | Retrieve evidence first, then generate an answer from that evidence |
 | Index fingerprint | Identity of all settings/code versions that determine stored chunks and vectors |
 | Re-index | Delete and rebuild derived index state from the approved corpus |
@@ -447,35 +444,21 @@ meaning, treat it as a policy change and follow the versioned procedure above.
 ### High-level component diagram
 
 ```text
-                             LOCAL WORKSTATION
-+--------------------------------------------------------------------------------+
-|                                                                                |
-|  Browser                                                                       |
-|     | HTTP :8080                                                               |
-|     v                                                                          |
-|  +---------------------+       /api proxy       +---------------------------+   |
-|  | React + nginx       | ---------------------> | FastAPI backend           |   |
-|  | static frontend     |                        |                           |   |
-|  +---------------------+                        | onboarding compiler       |   |
-|                                                 | RAG orchestrator          |   |
-|                                                 | citation validator        |   |
-|                                                 | corpus/source API         |   |
-|                                                 +----+----------+-----------+   |
-|                                                      |          |               |
-|                                 SQL + vectors        |          | OpenAI API    |
-|                                                      v          v compatible    |
-|                                            +-------------+  +----------------+  |
-|                                            | PostgreSQL  |  | Host Ollama    |  |
-|                                            | pgvector    |  | llama3.1:8b    |  |
-|                                            | + HNSW      |  | nomic-embed    |  |
-|                                            | pg_text-    |  | qwen2.5vl:7b   |  |
-|                                            | search+BM25 |  +----------------+  |
-|                                            +-------------+                      |
-|                                                                                |
-|  Operator CLI                                                                  |
-|     approved files -> extraction -> chunks/figures -> embeddings -> stores     |
-|                                                                                |
-+--------------------------------------------------------------------------------+
+Browser :8080
+    |
+    v
+React + nginx  ---- /api ---->  FastAPI backend
+                                      |
+                    +-----------------+------------------+
+                    |                 |                  |
+                    v                 v                  v
+              PostgreSQL          FILOS /ollama/v1
+              pgvector HNSW       qwen3.8:27b: answer + vision
+              pg_textsearch       all-minilm:22m: embeddings (384d)
+              registry data
+
+Local fallback: the same OpenAI-compatible adapters can target host Ollama
+with llama3.1:8b, qwen2.5vl:7b, and nomic-embed-text.
 ```
 
 ### Two flows share one knowledge layer
@@ -504,7 +487,7 @@ Question + recent history
   -> dense gate + BM25 candidates + cross-encoder rerank
   -> create E1..En evidence context
   -> assemble system and user prompts
-  -> llama3.1:8b returns strict JSON
+  -> FILOS qwen3.8:27b returns strict JSON
   -> parse and validate citations
   -> hydrate trusted document/page/figure data from index records
   -> split the validated English answer around [C...] markers
@@ -823,7 +806,7 @@ POST /api/chat
   -> assign request-local E1..En identifiers
   -> enforce the context budget
   -> build system and user prompts
-  -> call llama3.1:8b
+  -> call the configured FILOS qwen3.8:27b
   -> parse strict JSON
   -> validate citation structure and quotes
   -> retry once when required
@@ -863,8 +846,8 @@ routing is a separate call required by the multilingual contract.
 
 ### 8.3 Language routing and output translation
 
-`LLMLanguageProvider` uses the configured local `llama3.1:8b`; it is not a
-second external service and has no duplicate environment block. Its first
+`LLMLanguageProvider` uses the configured answering model, currently FILOS
+`qwen3.8:27b`; it is not a second provider configuration. Its first
 strict-JSON task detects the dominant language and produces a faithful English
 translation without answering the question. Retrieval, reranking, policy
 compilation, evidence construction, generation, and citation validation then
@@ -964,7 +947,7 @@ runtime option.
 
 ```text
 question (+ limited history when needed)
-  -> nomic-embed-text query vector
+  -> FILOS all-minilm:22m query vector
   -> pgvector dense search: candidate_k results
   -> cosine threshold gate
        no dense result passes -> insufficient evidence
@@ -1025,16 +1008,12 @@ increased automatically.
 
 ### Threshold
 
-`RETRIEVAL_SCORE_THRESHOLD=0.65` is a minimum cosine similarity applied only to
-dense candidates before BM25 and reranking. It is not a cross-encoder cutoff.
-
-For the approved D2.1 corpus with `nomic-embed-text`, measured on-topic top scores
-were approximately 0.72-0.88 and reviewed off-topic questions peaked near 0.61.
-The value 0.65 sat between those groups. The threshold is a property of the
-corpus, chunking, and embedding model; it is not universal.
-
-When the corpus or embedding model changes, evaluate answered and unanswerable
-questions again before selecting a new threshold.
+`RETRIEVAL_SCORE_THRESHOLD=0.65` is the initial minimum cosine similarity applied
+only to dense candidates before BM25 and reranking. It is not a cross-encoder
+cutoff. The previous 0.65 measurement used `nomic-embed-text` and cannot validate
+the FILOS-served `all-minilm:22m` score distribution. After the first FILOS
+MiniLM re-index, evaluate answered and unanswerable questions and retain or
+replace the threshold from those measurements.
 
 ### HNSW
 
@@ -1075,40 +1054,44 @@ and retrieval quality rather than replacing the application retrieval API.
 
 ## 10. Models and provider boundaries
 
-### Active local stack
+### Active institutional stack
 
 | Function | Provider | Model | Why |
 |---|---|---|---|
-| Answer generation | Ollama via OpenAI-compatible adapter | `llama3.1:8b` | Best citation-format discipline among locally tested small instruction models |
-| Language detection and translation | same local LLM provider | `llama3.1:8b` | Keeps queries, history, and generation canonical in English while returning answers in the user's language |
-| Embeddings | Ollama via OpenAI-compatible adapter | `nomic-embed-text` | Local, multilingual-capable semantic embeddings; measured with current corpus; 768d |
+| Answer generation | FILOS via OpenAI-compatible adapter | `qwen3.8:27b` | Shared institutional model selected for answering and vision; citation-contract quality must be checked after credentials are installed |
+| Language detection and translation | same FILOS LLM configuration | `qwen3.8:27b` | Keeps retrieval canonical in English and returns the answer in the question's language |
+| Embeddings | FILOS via OpenAI-compatible adapter | `all-minilm:22m` | Dedicated 384-dimensional sentence embedding model |
 | Reranking | local `sentence-transformers` | `cross-encoder/ms-marco-MiniLM-L-6-v2` | Improves ordering of dense+BM25 candidate union |
-| Figure understanding | Ollama via OpenAI-compatible adapter | `qwen2.5vl:7b` | Creates searchable descriptions of charts/diagrams during ingestion |
+| Figure understanding | FILOS via OpenAI-compatible adapter | `qwen3.8:27b` | Creates searchable descriptions of charts/diagrams during ingestion |
 | Search storage | PostgreSQL | pgvector 0.8.6 + pg_textsearch 1.4.0 | Persistent chunks/metadata, HNSW cosine search, shared BM25 search |
 
-All answer, translation, embedding, and vision endpoints are currently local
-Ollama. There is no remote fallback. Language routing deliberately inherits the
-answer LLM configuration, so enabling multilingual answers adds no duplicate
-environment variables and changing `LLM_PROVIDER`, endpoint, or model changes
-both answer generation and translation after a restart. It never changes the
-index fingerprint and does not require re-ingestion.
+One root `INSTITUTIONAL_API_KEY` supplies all FILOS calls. A non-empty
+provider-specific `LLM_API_KEY`, `EMBEDDING_API_KEY`, or `VISION_API_KEY`
+overrides it. Language routing deliberately inherits the answer LLM, so changing
+the answer endpoint or model also changes detection and translation after a
+restart. Changing only the answer model does not require re-indexing.
 
-### Why `llama3.1:8b`
+With this profile, ingestion sends text chunks to FILOS for embedding and sends
+kept figure images to FILOS for description. Question time sends the question,
+selected evidence, compiled presentation policy, and limited canonical history
+to FILOS. PostgreSQL, the registry, source files, and extracted figure files stay
+on the Docker host. Operators must confirm that this institutional processing is
+permitted for the approved corpus.
 
-The deciding requirement was not only fluency; it was strict JSON and citation
-marker discipline. In same-question local testing, `qwen2.5:7b` and
-`qwen2.5:3b` repeatedly dropped or invented markers and their answers were
-rejected. `llama3.1:8b` produced valid cited output more reliably.
+### Local fallback
 
-Reasoning models that emit `<think>` blocks are unsuitable for the current strict
-single-JSON contract unless an adapter removes and validates that envelope.
+The same adapters can target host Ollama with `llama3.1:8b` for answering,
+`nomic-embed-text` (768d) for embeddings, and `qwen2.5vl:7b` for vision. Local
+model values are documented next to the active values in `.env.example`.
+Switching the answer model requires only a restart. Switching embeddings or
+vision changes the index fingerprint and requires a re-index.
 
-### Why `nomic-embed-text`
+### Why `all-minilm:22m`
 
-It is a dedicated embedding model, not the answer LLM. It runs locally through
-the same Ollama API, returns 768-dimensional vectors, and was used to calibrate
-the current threshold. Keeping the embedding model independent means the answer
-model can change without rebuilding the index.
+It is a dedicated embedding model served by FILOS, not the answer LLM. The
+configured 22M MiniLM variant produces 384-dimensional sentence vectors. The
+adapter verifies the returned vector length on every response. Its retrieval
+threshold must be calibrated on the approved corpus after the first re-index.
 
 A direct Hugging Face embedding provider is not implemented. The type
 `EmbeddingProviderName = Literal["openai_compatible"]` means the configuration
@@ -1126,10 +1109,10 @@ evaluate a multilingual cross-encoder.
 
 ### VLM
 
-`qwen2.5vl:7b` runs only during ingestion. It does not receive every chat
-question. Its descriptions are embedded as figure chunks so the normal answer
-LLM can later reason over text. This keeps online answering simpler and avoids a
-vision call per question.
+FILOS `qwen3.8:27b` runs as a VLM only during ingestion. It does not receive
+every chat question. Its descriptions are embedded as figure chunks so the
+answering path can later reason over text. This keeps online answering simpler
+and avoids a vision call per question.
 
 ### Provider interfaces
 
@@ -1383,9 +1366,9 @@ The active `.env` enables:
 
 ```dotenv
 VISION_PROVIDER=openai_compatible
-VISION_MODEL=qwen2.5vl:7b
-VISION_BASE_URL=http://host.docker.internal:11434/v1
-VISION_API_KEY=ollama
+VISION_MODEL=qwen3.8:27b
+VISION_BASE_URL=https://filos.csd.auth.gr/ollama/v1
+VISION_API_KEY=
 ```
 
 After ingestion, the generated report records kept figures and retrievable
@@ -1397,15 +1380,15 @@ ran; merely having the model installed is not enough.
 ```text
 INGESTION TIME
 figure PNG + caption
-  -> qwen2.5vl:7b description
+  -> FILOS qwen3.8:27b description
   -> caption + description
-  -> nomic-embed-text vector
+  -> FILOS all-minilm:22m vector
   -> pgvector figure chunk
 
 QUESTION TIME
 question
   -> retrieve figure description like normal text
-  -> llama3.1:8b answers from that text
+  -> FILOS qwen3.8:27b answers from that text
   -> citation validator labels it figure_description
   -> registry attaches original PNG
   -> reader compares answer with image
@@ -1697,8 +1680,8 @@ are no secondary Docker-specific environment files and no duplicated
 
 `backend/app/config.py` provides typed validation, safe fallback values, and
 cross-field checks; it is not a second operator configuration file.
-`.env.example` contains the exact same 57 variable names as `.env`, with safe
-template values. `config/onboarding.v2.yaml` remains separate because it is
+`.env.example` contains the exact same variable names as `.env`, with no secret
+value. `config/onboarding.v2.yaml` remains separate because it is
 versioned product policy, not infrastructure/provider configuration.
 
 ### Active demo configuration
@@ -1706,21 +1689,21 @@ versioned product policy, not infrastructure/provider configuration.
 | Area | Active value |
 |---|---|
 | Environment | `development` |
-| Answer LLM | local Ollama `llama3.1:8b` |
-| Language routing | same local Ollama `llama3.1:8b`; automatic per turn |
-| Embeddings | local Ollama `nomic-embed-text`, 768d |
-| Vision | local Ollama `qwen2.5vl:7b` |
+| Answer LLM | FILOS `qwen3.8:27b` |
+| Language routing | same FILOS `qwen3.8:27b`; automatic per turn |
+| Embeddings | FILOS `all-minilm:22m`, 384d |
+| Vision | FILOS `qwen3.8:27b` |
 | Reranker | `cross-encoder/ms-marco-MiniLM-L-6-v2` |
-| Vector store | pgvector collection `innovade_v1` |
+| Vector store | pgvector collection `innovade_filos_minilm_v1` |
 | PostgreSQL host port | `5434` |
 | Chunking | 1,200 chars, 180 overlap |
-| Retrieval | 10 candidates per branch, top 6, threshold 0.65, 4,000-token budget |
+| Retrieval | 10 candidates per branch, top 6, initial threshold 0.65, 4,000-token budget |
 | History | 12 recent messages for generation |
 | Onboarding | `config/onboarding.v2.yaml`, policy `2.0` |
 
 ### Application and logging
 
-| Variable | Default | Meaning |
+| Variable | Active `.env` value | Meaning |
 |---|---|---|
 | `APP_ENV` | `development` | `development` or `production` |
 | `APP_NAME` | `DemocraSeek` | display/logging name |
@@ -1728,44 +1711,45 @@ versioned product policy, not infrastructure/provider configuration.
 | `LOG_LEVEL` | `INFO` | `DEBUG`, `INFO`, `WARNING`, or `ERROR` |
 | `FRONTEND_HOST_PORT` | `8080` | host port for the user interface |
 | `BACKEND_HOST_PORT` | `8000` | host port for API/operator access |
+| `INSTITUTIONAL_API_KEY` | empty | shared FILOS secret, set only in `.env` |
 
 ### Answer LLM
 
-| Variable | Default | Meaning |
+| Variable | Active `.env` value | Meaning |
 |---|---|---|
 | `LLM_PROVIDER` | `openai_compatible` | shipped adapter; works with compatible local or remote services |
-| `LLM_MODEL` | `llama3.1:8b` | model identifier |
-| `LLM_BASE_URL` | required | endpoint as seen from the backend container |
-| `LLM_API_KEY` | empty | non-empty required for compatible adapter; Ollama accepts `ollama` |
+| `LLM_MODEL` | `qwen3.8:27b` | active FILOS model identifier |
+| `LLM_BASE_URL` | FILOS `/ollama/v1` | endpoint as seen from the backend container |
+| `LLM_API_KEY` | empty | optional override; otherwise uses `INSTITUTIONAL_API_KEY` |
 | `LLM_TEMPERATURE` | `0.0` | deterministic answering recommended |
 | `LLM_MAX_OUTPUT_TOKENS` | `1200` | output ceiling |
 | `LLM_TIMEOUT_SECONDS` | `180` | provider timeout |
 
 ### Embeddings
 
-| Variable | Default | Meaning |
+| Variable | Active `.env` value | Meaning |
 |---|---|---|
 | `EMBEDDING_PROVIDER` | `openai_compatible` | shipped embedding adapter |
-| `EMBEDDING_MODEL` | `nomic-embed-text` | embedding model identifier |
-| `EMBEDDING_BASE_URL` | required | endpoint as seen from the backend container |
-| `EMBEDDING_API_KEY` | empty | required by adapter |
-| `EMBEDDING_DIMENSIONS` | `768` | must match returned vectors |
+| `EMBEDDING_MODEL` | `all-minilm:22m` | active FILOS embedding model identifier |
+| `EMBEDDING_BASE_URL` | FILOS `/ollama/v1` | endpoint as seen from the backend container |
+| `EMBEDDING_API_KEY` | empty | optional override; otherwise uses `INSTITUTIONAL_API_KEY` |
+| `EMBEDDING_DIMENSIONS` | `384` | must match returned vectors |
 | `EMBEDDING_BATCH_SIZE` | `16` | ingestion batch size |
 
 ### Vision
 
-| Variable | Default | Meaning |
+| Variable | Active `.env` value | Meaning |
 |---|---|---|
-| `VISION_PROVIDER` | `none` | `none` or `openai_compatible` |
-| `VISION_MODEL` | empty | VLM identifier |
-| `VISION_BASE_URL` | empty | endpoint as seen from the backend container |
-| `VISION_API_KEY` | empty | required for compatible adapter |
+| `VISION_PROVIDER` | `openai_compatible` | use `none` to disable descriptions |
+| `VISION_MODEL` | `qwen3.8:27b` | active FILOS VLM identifier |
+| `VISION_BASE_URL` | FILOS `/ollama/v1` | endpoint as seen from the backend container |
+| `VISION_API_KEY` | empty | optional override; otherwise uses `INSTITUTIONAL_API_KEY` |
 | `VISION_TIMEOUT_SECONDS` | `180` | per-image call timeout |
 | `VISION_MAX_DESCRIPTION_CHARS` | `900` | stored description cap |
 
 ### Reranking and retrieval
 
-| Variable | Default | Meaning |
+| Variable | Active `.env` value | Meaning |
 |---|---|---|
 | `RERANK_PROVIDER` | `cross_encoder` | mandatory retrieval stage |
 | `RERANK_MODEL` | `cross-encoder/ms-marco-MiniLM-L-6-v2` | local reranking model |
@@ -1779,11 +1763,11 @@ are safe generic defaults, not evidence that the active runtime uses them.
 
 ### Vector store and PostgreSQL
 
-| Variable | Default | Meaning |
+| Variable | Active `.env` value | Meaning |
 |---|---|---|
 | `VECTOR_STORE_PROVIDER` | `pgvector` | persistent production store |
 | `VECTOR_STORE_URL` | required | container-visible PostgreSQL DSN |
-| `VECTOR_STORE_COLLECTION` | `innovade_v1` | safe alphanumeric/underscore collection |
+| `VECTOR_STORE_COLLECTION` | `innovade_filos_minilm_v1` | isolated collection for the active embedding profile |
 | `POSTGRES_HOST_PORT` | `5434` | host mapping only |
 | `POSTGRES_USER` | `democraseek` | Compose database user |
 | `POSTGRES_PASSWORD` | `democraseek` | Compose local password |
@@ -1797,25 +1781,24 @@ does not alter container networking.
 Paths exist at two levels. The `*_HOST_PATH` variables are read by Docker Compose
 and point at a folder on the machine running the deployment; Compose resolves them
 relative to `deployment/`, where the compose file lives. The remaining path
-variables are the container-side locations the backend sees. The `Default` column
-is the code default: `.env.example` sets container-absolute values such as
-`/app/data/corpus`.
+variables are the container-side locations the backend sees. The table shows the
+active root `.env` values.
 
-| Variable | Default | Meaning |
+| Variable | Active `.env` value | Meaning |
 |---|---|---|
 | `CORPUS_HOST_PATH` | set in `.env` | host folder holding the approved files, bind-mounted read-only; `.env.example` uses `../data/corpus` |
 | `REPORT_HOST_PATH` | set in `.env` | host folder receiving ingestion reports; `.env.example` uses `../data/reports` |
-| `CORPUS_PATH` | `data/corpus` | approved source directory as seen inside the container |
-| `CORPUS_VERSION` | `unversioned` | audit label, not vector invalidation by itself |
-| `INDEX_VERSION` | `1` | manual index invalidation lever |
-| `INDEX_PATH` | `data/index` | registry and derived figure location; Compose mounts the `ingestdata18` volume here |
-| `REPORT_PATH` | `data/reports` | ingestion reports |
+| `CORPUS_PATH` | `/app/data/corpus` | approved source directory as seen inside the container |
+| `CORPUS_VERSION` | `d2.1-approved-2026-08` | audit label, not vector invalidation by itself |
+| `INDEX_VERSION` | `2` | manual index invalidation lever; changed for the FILOS MiniLM index |
+| `INDEX_PATH` | `/app/data/index` | registry and derived figure location; Compose mounts the `ingestdata18` volume here |
+| `REPORT_PATH` | `/app/data/reports` | ingestion reports |
 | `CHUNK_SIZE` | `1200` | characters per chunk |
 | `CHUNK_OVERLAP` | `180` | repeated characters between adjacent chunks |
 
 ### Onboarding and request limits
 
-| Variable | Default | Meaning |
+| Variable | Active `.env` value | Meaning |
 |---|---|---|
 | `ONBOARDING_CONFIG_PATH` | `config/onboarding.v2.yaml` | versioned policy |
 | `MAX_USER_INPUT_CHARS` | `2000` | normalized question limit |
@@ -1827,7 +1810,7 @@ is the code default: `.env.example` sets container-absolute values such as
 
 Passed to the frontend image as build arguments and embedded into the bundle:
 
-| Variable | Default | Meaning |
+| Variable | Active `.env` value | Meaning |
 |---|---|---|
 | `VITE_API_BASE_URL` | empty | leave empty for same-origin `/api` |
 | `VITE_APP_NAME` | `DemocraSeek` | UI application name |
@@ -1839,7 +1822,7 @@ rebuilding the frontend image.
 
 Read only by the Vite dev server, never by the Docker deployment:
 
-| Variable | Default | Meaning |
+| Variable | Active `.env` value | Meaning |
 |---|---|---|
 | `VITE_DEV_API_TARGET` | `http://127.0.0.1:8000` | backend that `npm run dev` proxies `/api` to |
 
@@ -1890,16 +1873,18 @@ combinations.
 
 ### Switching the answer provider
 
-For another OpenAI-compatible endpoint:
+The active institutional configuration is:
 
 ```dotenv
 LLM_PROVIDER=openai_compatible
-LLM_MODEL=<provider-model-name>
-LLM_BASE_URL=<container-visible-base-url>
-LLM_API_KEY=<credential>
+LLM_MODEL=qwen3.8:27b
+LLM_BASE_URL=https://filos.csd.auth.gr/ollama/v1
+LLM_API_KEY=
 ```
 
-Then rebuild/restart and review citation and personalisation quality. No
+The empty provider-specific key falls back to `INSTITUTIONAL_API_KEY`. For local
+Ollama, use `llama3.1:8b`, `http://host.docker.internal:11434/v1`, and `ollama`.
+Then restart and review citation and personalisation quality. No
 re-index is needed because the answer model is not used to create stored
 vectors.
 
@@ -1908,8 +1893,11 @@ and configuration type, then document and validate the new adapter.
 
 ### Switching embeddings
 
-Update provider, model, URL, key, and dimensions together, then re-index.
-Existing vectors cannot be compared with vectors from another embedding model.
+The active FILOS embedding values are `all-minilm:22m`,
+`https://filos.csd.auth.gr/ollama/v1`, and 384 dimensions. The local fallback is
+`nomic-embed-text`, `http://host.docker.internal:11434/v1`, key `ollama`, and 768
+dimensions. Update the complete set together and then re-index; vectors from
+different models cannot be compared.
 
 ### Switching the VLM
 
@@ -1924,10 +1912,10 @@ figure descriptions remain old until rebuilt.
 
 - Windows 10/11 with PowerShell for the included launchers;
 - Docker Desktop with Compose v2;
-- Ollama;
-- enough disk/RAM for `llama3.1:8b`, `nomic-embed-text`,
-  `qwen2.5vl:7b`, Docker images, and the reranker;
-- internet for first image build/model downloads unless artifacts are preloaded.
+- institutional VPN/network access to FILOS;
+- a valid institutional API key;
+- internet for image builds and the local reranker download unless artifacts are preloaded;
+- Ollama and its models only when using the documented local fallback.
 
 Python and Node are not required on the host for normal Docker runtime.
 
@@ -1943,21 +1931,24 @@ Copy-Item .env.example .env
 
 Review:
 
+- `INSTITUTIONAL_API_KEY` in `.env` only;
 - PostgreSQL host port;
 - corpus version;
-- local model names;
+- provider endpoints and model names;
 - whether vision is enabled;
 - retrieval values.
 
 Do not commit `.env`.
 
-### 19.2 Pull local models
+### 19.2 Configure the institutional credential
 
-```powershell
-ollama pull llama3.1:8b
-ollama pull nomic-embed-text
-ollama pull qwen2.5vl:7b
+```dotenv
+INSTITUTIONAL_API_KEY=sk-your-real-key
 ```
+
+Keep `LLM_API_KEY`, `EMBEDDING_API_KEY`, and `VISION_API_KEY` empty to reuse that
+one credential. Never commit `.env`. If local fallback is selected instead,
+install Ollama and pull `llama3.1:8b`, `nomic-embed-text`, and `qwen2.5vl:7b`.
 
 ### 19.3 Add approved corpus files
 
@@ -1981,9 +1972,10 @@ expected.
 .\ingest.cmd
 ```
 
-The launcher starts Ollama and Docker Desktop if needed, verifies that the
-embedding and vision models are installed, runs the ingestion, and prints the
-resulting corpus status. The equivalent explicit command is:
+The launcher starts Docker Desktop if needed. It starts and validates Ollama
+only for locally configured endpoints; remote FILOS endpoints skip the
+local-model check. It then runs ingestion and prints corpus status. The
+equivalent explicit command is:
 
 ```powershell
 docker compose -f deployment\docker-compose.yml --env-file .env run --rm backend python -m app.cli ingest
@@ -2016,10 +2008,10 @@ whose citation opens the correct source.
 ## 20. Corpus operations
 
 All commands below run from the repository root through the backend image.
-`ingest.cmd` wraps the common ones with the same Ollama and Docker checks the
-demo launcher performs: `.\ingest.cmd`, `-Only "<file>"`, `-Force`, `-Status`,
-and `-Reindex -Yes`. Removing a single document has no launcher flag and uses the
-explicit command below.
+`ingest.cmd` wraps the common ones with the same conditional provider and Docker
+checks the demo launcher performs: `.\ingest.cmd`, `-Only "<file>"`, `-Force`,
+`-Status`, and `-Reindex -Yes`. Removing a single document has no launcher flag
+and uses the explicit command below.
 
 ### Status
 

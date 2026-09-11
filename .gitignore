@@ -3,10 +3,16 @@
 .env.*
 !.env.example
 
-# Approved corpus distributed separately
+# Approved corpus distributed separately; keep its repository structure.
 data/corpus/*
 !data/corpus/.gitkeep
 !data/corpus/corpus.metadata.yaml
+!data/corpus/internal/
+!data/corpus/external/
+data/corpus/internal/*
+data/corpus/external/*
+!data/corpus/internal/.gitkeep
+!data/corpus/external/.gitkeep
 
 # Reproducible ingestion output
 data/index/*

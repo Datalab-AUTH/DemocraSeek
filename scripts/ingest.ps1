@@ -154,7 +154,7 @@ if ($needsModels) {
         Write-Host "[       OK] Ollama and the ingestion models are ready" -ForegroundColor Green
     }
     else {
-        Write-Host "[     INFO] Ingestion endpoints are remote; local Ollama check skipped" -ForegroundColor Yellow
+        Write-Host "[     INFO] FILOS endpoints are remote; local Ollama check skipped" -ForegroundColor Yellow
     }
 }
 

@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 def build_llm(settings: Settings) -> LLMProvider:
     provider: LLMProvider = OpenAICompatibleLLM(
         base_url=settings.llm_base_url,
-        api_key=settings.llm_api_key,
+        api_key=settings.effective_llm_api_key,
         model=settings.llm_model,
         temperature=settings.llm_temperature,
         max_output_tokens=settings.llm_max_output_tokens,
@@ -45,7 +45,7 @@ def build_language_provider(settings: Settings, llm: LLMProvider) -> LanguagePro
 def build_embeddings(settings: Settings) -> EmbeddingProvider:
     provider: EmbeddingProvider = OpenAICompatibleEmbeddings(
         base_url=settings.embedding_base_url,
-        api_key=settings.embedding_api_key,
+        api_key=settings.effective_embedding_api_key,
         model=settings.embedding_model,
         dimensions=settings.embedding_dimensions,
         batch_size=settings.embedding_batch_size,
@@ -61,7 +61,7 @@ def build_vision(settings: Settings) -> VisionProvider | None:
     if settings.vision_provider == "openai_compatible":
         provider: VisionProvider = OpenAICompatibleVision(
             base_url=settings.vision_base_url,
-            api_key=settings.vision_api_key,
+            api_key=settings.effective_vision_api_key,
             model=settings.vision_model,
             timeout_seconds=settings.vision_timeout_seconds,
             max_description_chars=settings.vision_max_description_chars,
