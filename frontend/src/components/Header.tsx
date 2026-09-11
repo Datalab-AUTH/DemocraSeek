@@ -106,7 +106,6 @@ export function Header({
   const entries =
     config && profile
       ? ([
-          [ui.header.role, labelFor(config, locale, "role", profile.role_code)],
           [ui.header.intent, labelFor(config, locale, "intent", profile.intent_code)],
           [ui.header.support, labelFor(config, locale, "support", profile.support_code)],
           [ui.header.mode, labelFor(config, locale, "mode", profile.mode_code)],
@@ -161,10 +160,25 @@ export function Header({
                   aria-label={ui.header.preferences}
                   onClick={() => setOpen((value) => !value)}
                 >
+                  <svg
+                    className="profile-chip__icon"
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                    focusable="false"
+                  >
+                    <path d="M17.925 20.056a6 6 0 0 0-11.851.001" />
+                    <circle cx="12" cy="11" r="4" />
+                    <circle cx="12" cy="12" r="10" />
+                  </svg>
                   <span className="profile-chip__text">
-                    <span className="profile-chip__value">
-                      {labelFor(config, locale, "role", profile.role_code)}
-                    </span>
                     <span className="profile-chip__label">
                       {labelFor(config, locale, "mode", profile.mode_code)}
                     </span>
@@ -193,6 +207,32 @@ export function Header({
                     role="dialog"
                     aria-label={ui.header.tailoredDialog}
                   >
+                    <div className="profile__role">
+                      <svg
+                        className="profile__role-icon"
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                        focusable="false"
+                      >
+                        <path d="M17.925 20.056a6 6 0 0 0-11.851.001" />
+                        <circle cx="12" cy="11" r="4" />
+                        <circle cx="12" cy="12" r="10" />
+                      </svg>
+                      <div className="profile__role-text">
+                        <span className="profile__role-label">{ui.header.role}</span>
+                        <span className="profile__role-value">
+                          {labelFor(config, locale, "role", profile.role_code)}
+                        </span>
+                      </div>
+                    </div>
                     <h2 className="profile__heading">{ui.header.tailoredTitle}</h2>
                     <dl className="profile__list">
                       {entries.map(([term, label]) => (
