@@ -121,9 +121,16 @@ body {
   font-size: 16px;
   line-height: 1.6;
   color: var(--text);
-  background:
-    radial-gradient(circle at 12% 0%, color-mix(in srgb, var(--brand) 8%, transparent), transparent 32rem),
-    radial-gradient(circle at 88% 100%, color-mix(in srgb, var(--accent) 7%, transparent), transparent 34rem),
+  background: radial-gradient(
+      circle at 12% 0%,
+      color-mix(in srgb, var(--brand) 8%, transparent),
+      transparent 32rem
+    ),
+    radial-gradient(
+      circle at 88% 100%,
+      color-mix(in srgb, var(--accent) 7%, transparent),
+      transparent 34rem
+    ),
     var(--bg);
   -webkit-font-smoothing: antialiased;
 }
@@ -532,9 +539,7 @@ kbd {
   border-radius: 999px;
   cursor: pointer;
   max-width: 15rem;
-  transition:
-    border-color var(--speed),
-    background var(--speed);
+  transition: border-color var(--speed), background var(--speed);
 }
 
 .profile-chip:hover {
@@ -730,11 +735,8 @@ kbd {
   border-radius: var(--radius-sm);
   cursor: pointer;
   background: var(--surface);
-  transition:
-    border-color var(--speed),
-    background var(--speed),
-    transform var(--speed),
-    box-shadow var(--speed);
+  transition: border-color var(--speed), background var(--speed),
+    transform var(--speed), box-shadow var(--speed);
 }
 
 .choice:hover {
@@ -932,6 +934,12 @@ kbd {
   cursor: pointer;
 }
 
+.language-selector.is-compact select {
+  max-width: 3.1rem;
+  padding-right: 1rem;
+  letter-spacing: 0.02em;
+}
+
 .language-selector option {
   color: var(--text);
   background: var(--surface);
@@ -958,9 +966,7 @@ kbd {
   background: none;
   color: var(--text-faint);
   cursor: pointer;
-  transition:
-    background var(--speed),
-    color var(--speed);
+  transition: background var(--speed), color var(--speed);
 }
 
 .theme-toggle__item:hover {
@@ -1121,9 +1127,6 @@ kbd {
   .theme-toggle {
     display: none;
   }
-  .language-selector select {
-    max-width: 7.2rem;
-  }
   .profile-chip {
     max-width: 8.5rem;
   }
@@ -1204,9 +1207,7 @@ kbd {
   border-radius: 999px;
   padding: 0.24rem 0.7rem;
   cursor: pointer;
-  transition:
-    color var(--speed),
-    border-color var(--speed);
+  transition: color var(--speed), border-color var(--speed);
 }
 
 .answer__action:hover {
@@ -1227,11 +1228,8 @@ kbd {
   margin: 0 0.14em;
   cursor: pointer;
   line-height: 1.5;
-  transition:
-    background var(--speed),
-    color var(--speed),
-    transform var(--speed),
-    box-shadow var(--speed);
+  transition: background var(--speed), color var(--speed),
+    transform var(--speed), box-shadow var(--speed);
 }
 
 .citation-marker:hover,
@@ -1265,9 +1263,7 @@ kbd {
   cursor: pointer;
   overflow: hidden;
   line-height: 0;
-  transition:
-    transform var(--speed),
-    box-shadow var(--speed);
+  transition: transform var(--speed), box-shadow var(--speed);
 }
 
 .figures__item:hover {
@@ -1398,11 +1394,8 @@ kbd {
   cursor: pointer;
   font: inherit;
   color: var(--text);
-  transition:
-    background var(--speed),
-    border-color var(--speed),
-    transform var(--speed),
-    box-shadow var(--speed);
+  transition: background var(--speed), border-color var(--speed),
+    transform var(--speed), box-shadow var(--speed);
 }
 
 .sources__item:hover,
@@ -1616,9 +1609,7 @@ kbd {
   border-radius: var(--radius-sm);
   cursor: pointer;
   text-align: left;
-  transition:
-    border-color var(--speed),
-    background var(--speed),
+  transition: border-color var(--speed), background var(--speed),
     transform var(--speed);
 }
 
@@ -1731,8 +1722,7 @@ kbd {
   position: fixed;
   inset: 0;
   z-index: 40;
-  background:
-    linear-gradient(90deg, rgb(8 15 27 / 26%), rgb(8 15 27 / 68%)),
+  background: linear-gradient(90deg, rgb(8 15 27 / 26%), rgb(8 15 27 / 68%)),
     rgb(8 15 27 / 28%);
   backdrop-filter: blur(5px);
   animation: fade var(--speed) ease;
@@ -1766,8 +1756,11 @@ kbd {
 
 .source-drawer__header {
   padding: 1rem 1.5rem 1.15rem;
-  background:
-    radial-gradient(circle at 92% 0%, color-mix(in srgb, var(--brand) 13%, transparent), transparent 16rem),
+  background: radial-gradient(
+      circle at 92% 0%,
+      color-mix(in srgb, var(--brand) 13%, transparent),
+      transparent 16rem
+    ),
     color-mix(in srgb, var(--brand-soft) 36%, var(--surface));
   border-bottom: 1px solid var(--border);
 }
@@ -1836,7 +1829,8 @@ kbd {
   border: 0;
   border-radius: 8px;
   cursor: pointer;
-  transition: color var(--speed), background var(--speed), transform var(--speed);
+  transition: color var(--speed), background var(--speed),
+    transform var(--speed);
 }
 
 .source-drawer__pager button:hover,
@@ -2752,9 +2746,7 @@ kbd {
   border-radius: var(--radius-sm);
   cursor: pointer;
   border: 1px solid var(--brand);
-  transition:
-    background var(--speed),
-    border-color var(--speed);
+  transition: background var(--speed), border-color var(--speed);
 }
 
 .button--primary {
