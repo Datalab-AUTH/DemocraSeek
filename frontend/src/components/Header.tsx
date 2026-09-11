@@ -27,10 +27,13 @@ function labelFor(
   config: OnboardingConfig,
   locale: UiLocale,
   dimension: string,
-  code: string,
+  code: string
 ): string {
-  const question = config.questions.find((item) => item.dimension === dimension);
-  const base = question?.choices.find((choice) => choice.code === code)?.label ?? code;
+  const question = config.questions.find(
+    (item) => item.dimension === dimension
+  );
+  const base =
+    question?.choices.find((choice) => choice.code === code)?.label ?? code;
   if (locale === config.default_locale || !question) return base;
   const translated = config.translations.find((item) => item.locale === locale);
   return translated?.questions[question.id]?.choices[code]?.label ?? base;
@@ -39,7 +42,13 @@ function labelFor(
 /** Inline verified-answer brand mark. */
 export function BrandMark(): JSX.Element {
   return (
-    <svg className="app__mark" viewBox="0 0 40 40" role="img" aria-hidden="true" focusable="false">
+    <svg
+      className="app__mark"
+      viewBox="0 0 40 40"
+      role="img"
+      aria-hidden="true"
+      focusable="false"
+    >
       <defs>
         <linearGradient id="ds-mark" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%" stopColor="var(--brand)" />
@@ -84,7 +93,10 @@ export function Header({
     if (!open) return;
     function onPointerDown(event: MouseEvent): void {
       const target = event.target as Node;
-      if (!popoverRef.current?.contains(target) && !triggerRef.current?.contains(target)) {
+      if (
+        !popoverRef.current?.contains(target) &&
+        !triggerRef.current?.contains(target)
+      ) {
         setOpen(false);
       }
     }
@@ -106,8 +118,14 @@ export function Header({
   const entries =
     config && profile
       ? ([
-          [ui.header.intent, labelFor(config, locale, "intent", profile.intent_code)],
-          [ui.header.support, labelFor(config, locale, "support", profile.support_code)],
+          [
+            ui.header.intent,
+            labelFor(config, locale, "intent", profile.intent_code),
+          ],
+          [
+            ui.header.support,
+            labelFor(config, locale, "support", profile.support_code),
+          ],
           [ui.header.mode, labelFor(config, locale, "mode", profile.mode_code)],
         ] as const)
       : [];
@@ -178,13 +196,17 @@ export function Header({
                     <circle cx="12" cy="11" r="4" />
                     <circle cx="12" cy="12" r="10" />
                   </svg>
-                  <span className="profile-chip__text">
+                  {/* <span className="profile-chip__text">
                     <span className="profile-chip__label">
                       {labelFor(config, locale, "mode", profile.mode_code)}
                     </span>
-                  </span>
+                  </span> */}
                   <svg
-                    className={open ? "profile-chip__chevron is-open" : "profile-chip__chevron"}
+                    className={
+                      open
+                        ? "profile-chip__chevron is-open"
+                        : "profile-chip__chevron"
+                    }
                     viewBox="0 0 12 12"
                     aria-hidden="true"
                     focusable="false"
@@ -227,13 +249,17 @@ export function Header({
                         <circle cx="12" cy="12" r="10" />
                       </svg>
                       <div className="profile__role-text">
-                        <span className="profile__role-label">{ui.header.role}</span>
+                        <span className="profile__role-label">
+                          {ui.header.role}
+                        </span>
                         <span className="profile__role-value">
                           {labelFor(config, locale, "role", profile.role_code)}
                         </span>
                       </div>
                     </div>
-                    <h2 className="profile__heading">{ui.header.tailoredTitle}</h2>
+                    <h2 className="profile__heading">
+                      {ui.header.tailoredTitle}
+                    </h2>
                     <dl className="profile__list">
                       {entries.map(([term, label]) => (
                         <div key={term} className="profile__entry">
