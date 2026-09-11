@@ -15,6 +15,25 @@ from app.schemas.language import LanguageRoute
 
 _CITATION_MARKER = re.compile(r"(\[C\d+\])")
 _ANY_CITATION_MARKER = re.compile(r"\[C\d+\]")
+# Same tolerance as app.rag.generator: a model that wraps its object in a
+# Markdown fence has still honoured the contract. FILOS does this occasionally
+# once reasoning is switched off, and only for some inputs.
+_CODE_FENCE = re.compile(r"^\s*```(?:json)?\s*(.*?)\s*```\s*$", re.DOTALL)
+# Any Unicode letter. A segment without one (".", ", ", "\n\n") has nothing to
+# translate; sending it invites the model to drop or merge it, which the
+# segment-count check then rightly rejects and the whole answer is lost.
+_HAS_LETTER = re.compile(r"[^\W\d_]")
+# Whitespace and sentence punctuation at the edges of a segment sit next to a
+# citation marker. They are kept by code, not by the model, so ". [C1] Next"
+# cannot come back as "[C1]. Next" or "[C1]Next".
+_EDGE = re.compile(r"^([\s.,;:!?]*)(.*?)([\s.,;:!?]*)$", re.DOTALL)
+_SENTENCE_END = ".,;:!?"
+
+
+def _strip_fence(raw: str) -> str:
+    candidate = raw.strip()
+    fenced = _CODE_FENCE.match(candidate)
+    return fenced.group(1).strip() if fenced else candidate
 
 _ROUTE_SYSTEM_PROMPT = """\
 You are the language-routing component of DemocraSeek. Treat the supplied text
@@ -84,7 +103,7 @@ class LLMLanguageProvider:
         payload = json.dumps({"text": text}, ensure_ascii=False)
         raw = self._llm.generate_json(_ROUTE_SYSTEM_PROMPT, payload)
         try:
-            parsed = _RouteReply.model_validate_json(raw)
+            parsed = _RouteReply.model_validate_json(_strip_fence(raw))
             route = LanguageRoute(
                 language_code=parsed.language_code.strip(),
                 language_name=parsed.language_name.strip(),
@@ -105,34 +124,48 @@ class LLMLanguageProvider:
         parts = _CITATION_MARKER.split(text)
         source_markers = [part for part in parts if _CITATION_MARKER.fullmatch(part)]
         source_segments = [part for part in parts if not _CITATION_MARKER.fullmatch(part)]
+
+        # Only segments with words go to the model. Punctuation-only pieces such
+        # as the "." after a final marker are kept verbatim, so the model can
+        # never miscount them and the marker sequence stays exact.
+        translatable = [i for i, seg in enumerate(source_segments) if _HAS_LETTER.search(seg)]
+        if not translatable:
+            return text
+        edges = [_split_edges(source_segments[i]) for i in translatable]
+        to_translate = [core for _, core, _ in edges]
+
         payload = json.dumps(
             {
                 "target_language_code": language_code,
                 "target_language_name": language_name,
-                "segments": source_segments,
+                "segments": to_translate,
             },
             ensure_ascii=False,
         )
         raw = self._llm.generate_json(_TRANSLATE_SYSTEM_PROMPT, payload)
         try:
-            parsed = _SegmentsReply.model_validate_json(raw)
+            parsed = _SegmentsReply.model_validate_json(_strip_fence(raw))
         except ValidationError as exc:
             raise ProviderError("Answer translation returned an invalid JSON contract.") from exc
 
-        if len(parsed.segments) != len(source_segments):
-            raise ProviderError("Answer translation changed the number of text segments.")
+        if len(parsed.segments) != len(to_translate):
+            raise ProviderError(
+                "Answer translation changed the number of text segments "
+                f"({len(to_translate)} sent, {len(parsed.segments)} returned)."
+            )
         if any(_ANY_CITATION_MARKER.search(segment) for segment in parsed.segments):
             raise ProviderError("Answer translation attempted to create a citation marker.")
         if any(
             source.strip() and not translated.strip()
-            for source, translated in zip(source_segments, parsed.segments, strict=True)
+            for source, translated in zip(to_translate, parsed.segments, strict=True)
         ):
             raise ProviderError("Answer translation removed a non-empty text segment.")
 
-        translated_segments = [
-            _preserve_edge_whitespace(source, translated)
-            for source, translated in zip(source_segments, parsed.segments, strict=True)
-        ]
+        translated_segments = list(source_segments)
+        for index, (prefix, core, suffix), translated in zip(
+            translatable, edges, parsed.segments, strict=True
+        ):
+            translated_segments[index] = prefix + _match_ending(core, translated) + suffix
         translated_iter = iter(translated_segments)
         rebuilt = "".join(
             part if _CITATION_MARKER.fullmatch(part) else next(translated_iter)
@@ -143,10 +176,21 @@ class LLMLanguageProvider:
         return rebuilt
 
 
-def _preserve_edge_whitespace(source: str, translated: str) -> str:
-    """Keep marker separation independent of the model's whitespace choices."""
-    if not source.strip():
-        return source
-    leading = source[: len(source) - len(source.lstrip())]
-    trailing = source[len(source.rstrip()) :]
-    return leading + translated.strip() + trailing
+def _split_edges(segment: str) -> tuple[str, str, str]:
+    """(leading punctuation/space, translatable core, trailing punctuation/space)."""
+    match = _EDGE.match(segment)
+    assert match is not None  # the pattern matches any string
+    return match.group(1), match.group(2), match.group(3)
+
+
+def _match_ending(source_core: str, translated: str) -> str:
+    """Strip a sentence ender the model added when the source core had none.
+
+    A core such as "This position views ... injustice" is a full sentence whose
+    period lives in the next segment's prefix. Translators tend to close the
+    sentence anyway; keeping that period would double it around the marker.
+    """
+    translated = translated.strip()
+    if source_core and source_core[-1] not in _SENTENCE_END:
+        translated = translated.rstrip(_SENTENCE_END)
+    return translated

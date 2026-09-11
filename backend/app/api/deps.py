@@ -11,11 +11,14 @@ from app.corpus.registry import CorpusRegistry
 from app.onboarding.config_loader import load_onboarding_config
 from app.providers.base import (
     EmbeddingProvider,
+    IndexIncompatibleError,
     LanguageProvider,
     LLMProvider,
     RerankProvider,
     VectorStore,
     VisionProvider,
+    incompatible_index_message,
+    missing_index_message,
 )
 from app.providers.factory import (
     build_embeddings,
@@ -27,8 +30,28 @@ from app.providers.factory import (
 )
 from app.rag.orchestrator import RagOrchestrator
 from app.rag.retriever import Retriever
+from app.schemas.chunks import IndexMetadata
 from app.schemas.onboarding import OnboardingConfig
 from app.services.multilingual_chat import MultilingualChatService
+
+
+@dataclass(frozen=True, slots=True)
+class IndexStatus:
+    """What the running configuration expects versus what the store holds."""
+
+    expected: IndexMetadata
+    stored: IndexMetadata | None
+
+    @property
+    def missing(self) -> bool:
+        return self.stored is None
+
+    @property
+    def compatible(self) -> bool:
+        return (
+            self.stored is not None
+            and self.stored.compatibility_key() == self.expected.compatibility_key()
+        )
 
 
 @dataclass(slots=True)
@@ -48,6 +71,44 @@ class ApplicationContext:
     orchestrator: RagOrchestrator
     chat: MultilingualChatService
     registry: CorpusRegistry
+
+    def expected_index_metadata(self) -> IndexMetadata:
+        """The index identity this configuration requires. Mirrors ingestion."""
+        settings = self.settings
+        return IndexMetadata(
+            collection=settings.vector_store_collection,
+            embedding_provider=self.embeddings.provider_name,
+            embedding_model=self.embeddings.model_name,
+            embedding_dimensions=self.embeddings.dimensions,
+            chunk_size=settings.chunk_size,
+            chunk_overlap=settings.chunk_overlap,
+            corpus_version=settings.corpus_version,
+            index_version=settings.index_version,
+        )
+
+    def index_status(self) -> IndexStatus:
+        expected = self.expected_index_metadata()
+        stored = self.vector_store.get_index_metadata(expected.collection)
+        return IndexStatus(expected=expected, stored=stored)
+
+    def assert_index_compatible(self) -> None:
+        """Raise IndexIncompatibleError unless the stored index fits this configuration.
+
+        Readiness and answering share this one definition - and ingestion applies
+        the same ``compatibility_key()`` when it writes - so the three can never
+        disagree about what "compatible" means. Without the gate a never-built
+        collection surfaced from the dense search as a raw 500, and an index built
+        under another embedding model with the same dimensions would have been
+        searched silently.
+        """
+        status = self.index_status()
+        if status.missing:
+            raise IndexIncompatibleError(missing_index_message(status.expected.collection))
+        if not status.compatible:
+            assert status.stored is not None
+            raise IndexIncompatibleError(
+                incompatible_index_message(status.stored, status.expected)
+            )
 
     def close(self) -> None:
         for component in (

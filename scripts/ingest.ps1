@@ -46,8 +46,23 @@ function Test-LocalOllamaUrl {
 }
 
 function Test-Docker {
-    docker info --format "{{.ServerVersion}}" 2>$null | Out-Null
-    return $LASTEXITCODE -eq 0
+    # When the engine is down, docker writes to stderr. Under Windows PowerShell
+    # 5.1 with $ErrorActionPreference = "Stop", that stderr line becomes a
+    # terminating NativeCommandError before $LASTEXITCODE is ever read - so the
+    # check would crash exactly in the case it exists to detect. Relax the
+    # preference for this one native call and decide on the exit code only.
+    $previous = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    try {
+        docker info --format "{{.ServerVersion}}" 2>$null | Out-Null
+        return $LASTEXITCODE -eq 0
+    }
+    catch {
+        return $false
+    }
+    finally {
+        $ErrorActionPreference = $previous
+    }
 }
 
 function Wait-Until {

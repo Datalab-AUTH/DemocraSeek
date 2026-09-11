@@ -36,19 +36,13 @@ def ready(
         checks["vector_store"] = f"unavailable: {type(exc).__name__}"
         ok = False
 
-    index_metadata = None
     try:
-        index_metadata = context.vector_store.get_index_metadata(settings.vector_store_collection)
-        if index_metadata is None:
+        # Same criteria the chat endpoint enforces and ingestion writes.
+        index = context.index_status()
+        if index.missing:
             checks["index"] = "missing: run `python -m app.cli ingest`"
             ok = False
-        elif (
-            index_metadata.embedding_model != context.embeddings.model_name
-            or index_metadata.embedding_dimensions != context.embeddings.dimensions
-            or index_metadata.chunk_size != settings.chunk_size
-            or index_metadata.chunk_overlap != settings.chunk_overlap
-            or index_metadata.index_version != settings.index_version
-        ):
+        elif not index.compatible:
             checks["index"] = "incompatible with current configuration: re-index required"
             ok = False
         else:

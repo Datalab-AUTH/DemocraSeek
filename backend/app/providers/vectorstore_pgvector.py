@@ -9,7 +9,12 @@ import psycopg
 from psycopg.rows import dict_row
 from psycopg_pool import ConnectionPool
 
-from app.providers.base import IndexIncompatibleError, ProviderError
+from app.providers.base import (
+    IndexIncompatibleError,
+    ProviderError,
+    incompatible_index_message,
+    missing_index_message,
+)
 from app.schemas.chunks import Chunk, ChunkMetadata, IndexMetadata, RetrievedChunk
 
 logger = logging.getLogger(__name__)
@@ -59,7 +64,7 @@ class PgVectorStore:
                     existing is not None
                     and existing.compatibility_key() != metadata.compatibility_key()
                 ):
-                    raise IndexIncompatibleError(_incompatible_message(existing, metadata))
+                    raise IndexIncompatibleError(incompatible_index_message(existing, metadata))
 
                 conn.execute(
                     f"""
@@ -180,22 +185,27 @@ class PgVectorStore:
         table = _table_name(collection)
         vector = _to_pgvector(query_embedding)
         with self._pool.connection() as conn, conn.cursor(row_factory=dict_row) as cur:
-            cur.execute(
-                f"""
-                WITH nearest AS MATERIALIZED (
-                    SELECT chunk_id, chunk_text, metadata,
-                           embedding <=> %s::vector AS distance
-                    FROM {table}
-                    ORDER BY embedding <=> %s::vector
+            try:
+                cur.execute(
+                    f"""
+                    WITH nearest AS MATERIALIZED (
+                        SELECT chunk_id, chunk_text, metadata,
+                               embedding <=> %s::vector AS distance
+                        FROM {table}
+                        ORDER BY embedding <=> %s::vector
+                        LIMIT %s
+                    )
+                    SELECT chunk_id, chunk_text, metadata, 1 - distance AS score
+                    FROM nearest
+                    ORDER BY distance, chunk_id
                     LIMIT %s
+                    """,
+                    (vector, vector, top_k, top_k),
                 )
-                SELECT chunk_id, chunk_text, metadata, 1 - distance AS score
-                FROM nearest
-                ORDER BY distance, chunk_id
-                LIMIT %s
-                """,
-                (vector, vector, top_k, top_k),
-            )
+            except psycopg.errors.UndefinedTable as exc:
+                # The dense search opens the evidence gate: a missing table is an
+                # operator error and must surface as one, never as "no evidence".
+                raise IndexIncompatibleError(missing_index_message(collection)) from exc
             records = cur.fetchall()
         return [
             RetrievedChunk(
@@ -293,15 +303,3 @@ def _to_pgvector(vector: list[float]) -> str:
     return "[" + ",".join(repr(float(value)) for value in vector) + "]"
 
 
-def _incompatible_message(existing: IndexMetadata, requested: IndexMetadata) -> str:
-    return (
-        f"Index {existing.collection!r} was built with "
-        f"(provider={existing.embedding_provider}, model={existing.embedding_model}, "
-        f"dims={existing.embedding_dimensions}, chunk_size={existing.chunk_size}, "
-        f"overlap={existing.chunk_overlap}, index_version={existing.index_version}) but the "
-        f"current configuration is (provider={requested.embedding_provider}, "
-        f"model={requested.embedding_model}, dims={requested.embedding_dimensions}, "
-        f"chunk_size={requested.chunk_size}, overlap={requested.chunk_overlap}, "
-        f"index_version={requested.index_version}). Mixing them is not allowed. "
-        f"Run `python -m app.cli reindex --yes` to rebuild from the approved corpus."
-    )

@@ -86,7 +86,9 @@ def register_exception_handlers(app: FastAPI) -> None:
 
     @app.exception_handler(ProviderError)
     async def _provider(request: Request, exc: ProviderError) -> JSONResponse:
-        logger.error("provider_error", extra={"error_category": "provider"})
+        logger.error(
+            "provider_error", extra={"error_category": "provider", "reason": str(exc)}
+        )
         return JSONResponse(
             status_code=503,
             content=_body(

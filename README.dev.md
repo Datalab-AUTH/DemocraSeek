@@ -49,7 +49,7 @@ question + history
   -> detect language, translate to canonical English
   -> compile presentation policy from the 4 onboarding codes (deterministic, no LLM)
   -> dense retrieval (threshold gate) + BM25 -> cross-encoder rerank -> top-K evidence
-  -> system + user prompt -> FILOS qwen3.8:27b returns strict JSON
+  -> system + user prompt -> FILOS datalab-2 returns strict JSON
   -> parse + validate citations -> hydrate trusted metadata from the index
   -> translate answer text around [C...] markers, verify marker sequence
   -> render answer + source evidence
@@ -62,7 +62,8 @@ question + history
 | `frontend` — nginx + Vite-built React, proxies `/api` | Docker | `8080` |
 | `backend` — Python 3.13, FastAPI/Uvicorn | Docker | `8000` |
 | `db` — PostgreSQL 18 + pgvector + pg_textsearch | Docker | `5434` |
-| FILOS — `qwen3.8:27b` answering, translation, and vision | AUTH service | HTTPS |
+| FILOS — `datalab-2:latest` answering and translation | AUTH service | HTTPS |
+| FILOS — `datalab-vision-1:latest` figure descriptions (`datalab-2` is text-only) | AUTH service | HTTPS |
 | FILOS — `all-minilm:22m` embeddings | AUTH service | HTTPS |
 | Ollama local fallback | **Host, not Docker** | `11434` |
 
@@ -414,9 +415,9 @@ Key groups in `.env`:
 |---|---|---|
 | App | `APP_ENV`, `LOG_LEVEL`, `FRONTEND_HOST_PORT`, `BACKEND_HOST_PORT` | |
 | Shared credential | `INSTITUTIONAL_API_KEY` | set once in `.env`; never commit it |
-| Answer LLM | `LLM_PROVIDER`, `LLM_MODEL`, `LLM_BASE_URL`, `LLM_API_KEY`, `LLM_TEMPERATURE`, `LLM_MAX_OUTPUT_TOKENS`, `LLM_TIMEOUT_SECONDS` | FILOS `qwen3.8:27b`; a specific key overrides the shared key |
+| Answer LLM | `LLM_PROVIDER`, `LLM_MODEL`, `LLM_BASE_URL`, `LLM_API_KEY`, `LLM_TEMPERATURE`, `LLM_MAX_OUTPUT_TOKENS`, `LLM_TIMEOUT_SECONDS`, `LLM_REASONING_EFFORT` | FILOS `datalab-2:latest`; a specific key overrides the shared key; keep `LLM_REASONING_EFFORT=none` for FILOS or the model's hidden thinking empties the reply |
 | Embeddings | `EMBEDDING_PROVIDER`, `EMBEDDING_MODEL`, `EMBEDDING_BASE_URL`, `EMBEDDING_API_KEY`, `EMBEDDING_DIMENSIONS`, `EMBEDDING_BATCH_SIZE` | FILOS `all-minilm:22m`, 384d; a specific key overrides the shared key |
-| Vision | `VISION_PROVIDER` (`none` / `openai_compatible`), `VISION_MODEL`, `VISION_BASE_URL`, `VISION_API_KEY`, `VISION_MAX_DESCRIPTION_CHARS` | FILOS `qwen3.8:27b`; a specific key overrides the shared key |
+| Vision | `VISION_PROVIDER` (`none` / `openai_compatible`), `VISION_MODEL`, `VISION_BASE_URL`, `VISION_API_KEY`, `VISION_MAX_DESCRIPTION_CHARS`, `VISION_REASONING_EFFORT` | FILOS `datalab-vision-1:latest` (`datalab-2` rejects images); keep `VISION_REASONING_EFFORT=none` |
 | Retrieval | `RETRIEVAL_CANDIDATE_K` (10), `RETRIEVAL_TOP_K` (6), `RETRIEVAL_SCORE_THRESHOLD` (0.65), `RETRIEVAL_MAX_CONTEXT_TOKENS` (4000), `RERANK_MODEL` | the actual tuning knobs |
 | Store | `VECTOR_STORE_COLLECTION`, `VECTOR_STORE_URL`, `POSTGRES_HOST_PORT`, `POSTGRES_USER` / `PASSWORD` / `DB` | inside Compose the backend always talks to `db:5432` |
 | Corpus | `CORPUS_PATH`, `INDEX_PATH`, `REPORT_PATH`, `CHUNK_SIZE` (1200), `CHUNK_OVERLAP` (180), `INDEX_VERSION` | |
