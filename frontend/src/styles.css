@@ -935,7 +935,7 @@ kbd {
 }
 
 .language-selector.is-compact select {
-  max-width: 3.1rem;
+  max-width: 3.7rem;
   padding-right: 1rem;
   letter-spacing: 0.02em;
 }
