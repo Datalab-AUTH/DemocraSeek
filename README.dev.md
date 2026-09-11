@@ -64,7 +64,7 @@ question + history
 | `db` — PostgreSQL 18 + pgvector + pg_textsearch | Docker | `5434` |
 | FILOS — `datalab-2:latest` answering and translation | AUTH service | HTTPS |
 | FILOS — `datalab-vision-1:latest` figure descriptions (`datalab-2` is text-only) | AUTH service | HTTPS |
-| FILOS — `all-minilm:22m` embeddings | AUTH service | HTTPS |
+| FILOS — `nomic-embed-text:latest` embeddings | AUTH service | HTTPS |
 | Ollama local fallback | **Host, not Docker** | `11434` |
 
 The active institutional services require VPN/network access and one key in the
@@ -416,7 +416,7 @@ Key groups in `.env`:
 | App | `APP_ENV`, `LOG_LEVEL`, `FRONTEND_HOST_PORT`, `BACKEND_HOST_PORT` | |
 | Shared credential | `INSTITUTIONAL_API_KEY` | set once in `.env`; never commit it |
 | Answer LLM | `LLM_PROVIDER`, `LLM_MODEL`, `LLM_BASE_URL`, `LLM_API_KEY`, `LLM_TEMPERATURE`, `LLM_MAX_OUTPUT_TOKENS`, `LLM_TIMEOUT_SECONDS`, `LLM_REASONING_EFFORT` | FILOS `datalab-2:latest`; a specific key overrides the shared key; keep `LLM_REASONING_EFFORT=none` for FILOS or the model's hidden thinking empties the reply |
-| Embeddings | `EMBEDDING_PROVIDER`, `EMBEDDING_MODEL`, `EMBEDDING_BASE_URL`, `EMBEDDING_API_KEY`, `EMBEDDING_DIMENSIONS`, `EMBEDDING_BATCH_SIZE` | FILOS `all-minilm:22m`, 384d; a specific key overrides the shared key |
+| Embeddings | `EMBEDDING_PROVIDER`, `EMBEDDING_MODEL`, `EMBEDDING_BASE_URL`, `EMBEDDING_API_KEY`, `EMBEDDING_DIMENSIONS`, `EMBEDDING_BATCH_SIZE` | FILOS `nomic-embed-text:latest`, 768d; a specific key overrides the shared key; FILOS needs the `:latest` tag |
 | Vision | `VISION_PROVIDER` (`none` / `openai_compatible`), `VISION_MODEL`, `VISION_BASE_URL`, `VISION_API_KEY`, `VISION_MAX_DESCRIPTION_CHARS`, `VISION_REASONING_EFFORT` | FILOS `datalab-vision-1:latest` (`datalab-2` rejects images); keep `VISION_REASONING_EFFORT=none` |
 | Retrieval | `RETRIEVAL_CANDIDATE_K` (10), `RETRIEVAL_TOP_K` (6), `RETRIEVAL_SCORE_THRESHOLD` (0.65), `RETRIEVAL_MAX_CONTEXT_TOKENS` (4000), `RERANK_MODEL` | the actual tuning knobs |
 | Store | `VECTOR_STORE_COLLECTION`, `VECTOR_STORE_URL`, `POSTGRES_HOST_PORT`, `POSTGRES_USER` / `PASSWORD` / `DB` | inside Compose the backend always talks to `db:5432` |

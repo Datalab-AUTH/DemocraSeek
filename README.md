@@ -89,8 +89,8 @@ The shipped configuration targets the AUTH institutional services:
 |---|---|
 | Answering, language routing, translation | FILOS `datalab-2:latest` |
 | Figure understanding | FILOS `datalab-vision-1:latest` |
-| Embeddings | FILOS `all-minilm:22m`, 384 dimensions |
-| Vector collection | `innovade_filos_minilm_v1` |
+| Embeddings | FILOS `nomic-embed-text:latest`, 768 dimensions |
+| Vector collection | `innovade_filos_nomic_v1` |
 
 The root `.env` still needs the operator's institutional key. Because the
 embedding and vision configuration shapes stored evidence, a fresh deployment
@@ -454,7 +454,7 @@ React + nginx  ---- /api ---->  FastAPI backend
                     v                 v                  v
               PostgreSQL          FILOS /ollama/v1
               pgvector HNSW       datalab-2 answer / datalab-vision-1
-              pg_textsearch       all-minilm:22m: embeddings (384d)
+              pg_textsearch       nomic-embed-text: embeddings (768d)
               registry data
 
 Local fallback: the same OpenAI-compatible adapters can target host Ollama
@@ -947,7 +947,7 @@ runtime option.
 
 ```text
 question (+ limited history when needed)
-  -> FILOS all-minilm:22m query vector
+  -> FILOS nomic-embed-text query vector
   -> pgvector dense search: candidate_k results
   -> cosine threshold gate
        no dense result passes -> insufficient evidence
@@ -1008,12 +1008,17 @@ increased automatically.
 
 ### Threshold
 
-`RETRIEVAL_SCORE_THRESHOLD=0.65` is the initial minimum cosine similarity applied
-only to dense candidates before BM25 and reranking. It is not a cross-encoder
-cutoff. The previous 0.65 measurement used `nomic-embed-text` and cannot validate
-the FILOS-served `all-minilm:22m` score distribution. After the first FILOS
-MiniLM re-index, evaluate answered and unanswerable questions and retain or
-replace the threshold from those measurements.
+`RETRIEVAL_SCORE_THRESHOLD=0.65` is a minimum cosine similarity applied only to
+dense candidates before BM25 and reranking. It is not a cross-encoder cutoff.
+
+The value was measured on `nomic-embed-text` over the approved D2.1 corpus:
+on-topic top scores were approximately 0.72-0.88 and reviewed off-topic
+questions peaked near 0.61, so 0.65 sits between the two groups. FILOS serves
+the same model, so the calibration carries over. During an interim trial with
+`all-minilm:22m` (384d) the scale shifted - off-topic peaked near 0.14 and an
+acronym-heavy on-topic question scored 0.60 and was refused - which is why the
+threshold is a property of the embedding model and must be re-measured whenever
+it changes.
 
 ### HNSW
 
@@ -1060,7 +1065,7 @@ and retrieval quality rather than replacing the application retrieval API.
 |---|---|---|---|
 | Answer generation | FILOS via OpenAI-compatible adapter | `datalab-2:latest` | Institutional reasoning model selected for answering and translation; citation-contract quality must be checked after credentials are installed |
 | Language detection and translation | same FILOS LLM configuration | `datalab-2:latest` | Keeps retrieval canonical in English and returns the answer in the question's language |
-| Embeddings | FILOS via OpenAI-compatible adapter | `all-minilm:22m` | Dedicated 384-dimensional sentence embedding model |
+| Embeddings | FILOS via OpenAI-compatible adapter | `nomic-embed-text:latest` | Dedicated 768-dimensional embedding model; the threshold was calibrated on it |
 | Reranking | local `sentence-transformers` | `cross-encoder/ms-marco-MiniLM-L-6-v2` | Improves ordering of dense+BM25 candidate union |
 | Figure understanding | FILOS via OpenAI-compatible adapter | `datalab-vision-1:latest` | Creates searchable descriptions of charts/diagrams during ingestion |
 | Search storage | PostgreSQL | pgvector 0.8.6 + pg_textsearch 1.4.0 | Persistent chunks/metadata, HNSW cosine search, shared BM25 search |
@@ -1086,12 +1091,15 @@ model values are documented next to the active values in `.env.example`.
 Switching the answer model requires only a restart. Switching embeddings or
 vision changes the index fingerprint and requires a re-index.
 
-### Why `all-minilm:22m`
+### Why `nomic-embed-text`
 
-It is a dedicated embedding model served by FILOS, not the answer LLM. The
-configured 22M MiniLM variant produces 384-dimensional sentence vectors. The
-adapter verifies the returned vector length on every response. Its retrieval
-threshold must be calibrated on the approved corpus after the first re-index.
+It is a dedicated embedding model served by FILOS, not the answer LLM. It
+returns 768-dimensional vectors, and the adapter verifies the returned length on
+every response. It is the model the retrieval threshold was calibrated on, and
+the same model the local Ollama fallback uses, so switching between FILOS and
+local embeddings does not change the score scale. FILOS resolves model names
+only with their tag: `nomic-embed-text:latest` works, `nomic-embed-text` is
+refused with "Model not found".
 
 A direct Hugging Face embedding provider is not implemented. The type
 `EmbeddingProviderName = Literal["openai_compatible"]` means the configuration
@@ -1396,7 +1404,7 @@ INGESTION TIME
 figure PNG + caption
   -> FILOS datalab-vision-1 description
   -> caption + description
-  -> FILOS all-minilm:22m vector
+  -> FILOS nomic-embed-text vector
   -> pgvector figure chunk
 
 QUESTION TIME
@@ -1705,10 +1713,10 @@ versioned product policy, not infrastructure/provider configuration.
 | Environment | `development` |
 | Answer LLM | FILOS `datalab-2:latest` |
 | Language routing | same FILOS `datalab-2:latest`; automatic per turn |
-| Embeddings | FILOS `all-minilm:22m`, 384d |
+| Embeddings | FILOS `nomic-embed-text:latest`, 768d |
 | Vision | FILOS `datalab-2:latest` |
 | Reranker | `cross-encoder/ms-marco-MiniLM-L-6-v2` |
-| Vector store | pgvector collection `innovade_filos_minilm_v1` |
+| Vector store | pgvector collection `innovade_filos_nomic_v1` |
 | PostgreSQL host port | `5434` |
 | Chunking | 1,200 chars, 180 overlap |
 | Retrieval | 10 candidates per branch, top 6, initial threshold 0.65, 4,000-token budget |
@@ -1745,10 +1753,10 @@ versioned product policy, not infrastructure/provider configuration.
 | Variable | Active `.env` value | Meaning |
 |---|---|---|
 | `EMBEDDING_PROVIDER` | `openai_compatible` | shipped embedding adapter |
-| `EMBEDDING_MODEL` | `all-minilm:22m` | active FILOS embedding model identifier |
+| `EMBEDDING_MODEL` | `nomic-embed-text:latest` | active FILOS embedding model identifier; FILOS requires the tag |
 | `EMBEDDING_BASE_URL` | FILOS `/ollama/v1` | endpoint as seen from the backend container |
 | `EMBEDDING_API_KEY` | empty | optional override; otherwise uses `INSTITUTIONAL_API_KEY` |
-| `EMBEDDING_DIMENSIONS` | `384` | must match returned vectors |
+| `EMBEDDING_DIMENSIONS` | `768` | must match returned vectors |
 | `EMBEDDING_BATCH_SIZE` | `16` | ingestion batch size |
 
 ### Vision
@@ -1783,7 +1791,7 @@ are safe generic defaults, not evidence that the active runtime uses them.
 |---|---|---|
 | `VECTOR_STORE_PROVIDER` | `pgvector` | persistent production store |
 | `VECTOR_STORE_URL` | required | container-visible PostgreSQL DSN |
-| `VECTOR_STORE_COLLECTION` | `innovade_filos_minilm_v1` | isolated collection for the active embedding profile |
+| `VECTOR_STORE_COLLECTION` | `innovade_filos_nomic_v1` | isolated collection for the active embedding profile |
 | `POSTGRES_HOST_PORT` | `5434` | host mapping only |
 | `POSTGRES_USER` | `democraseek` | Compose database user |
 | `POSTGRES_PASSWORD` | `democraseek` | Compose local password |
@@ -1806,7 +1814,7 @@ active root `.env` values.
 | `REPORT_HOST_PATH` | set in `.env` | host folder receiving ingestion reports; `.env.example` uses `../data/reports` |
 | `CORPUS_PATH` | `/app/data/corpus` | approved source directory as seen inside the container |
 | `CORPUS_VERSION` | `d2.1-approved-2026-08` | audit label, not vector invalidation by itself |
-| `INDEX_VERSION` | `2` | manual index invalidation lever; changed for the FILOS MiniLM index |
+| `INDEX_VERSION` | `2` | manual index invalidation lever; bumped when the index moved to FILOS |
 | `INDEX_PATH` | `/app/data/index` | registry and derived figure location; Compose mounts the `ingestdata18` volume here |
 | `REPORT_PATH` | `/app/data/reports` | ingestion reports |
 | `CHUNK_SIZE` | `1200` | characters per chunk |
@@ -1910,8 +1918,8 @@ and configuration type, then document and validate the new adapter.
 
 ### Switching embeddings
 
-The active FILOS embedding values are `all-minilm:22m`,
-`https://filos.csd.auth.gr/ollama/v1`, and 384 dimensions. The local fallback is
+The active FILOS embedding values are `nomic-embed-text:latest`,
+`https://filos.csd.auth.gr/ollama/v1`, and 768 dimensions. The local fallback is
 `nomic-embed-text`, `http://host.docker.internal:11434/v1`, key `ollama`, and 768
 dimensions. Update the complete set together and then re-index; vectors from
 different models cannot be compared.
