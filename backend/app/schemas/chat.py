@@ -11,15 +11,17 @@ from app.schemas.figures import Figure
 from app.schemas.onboarding import OnboardingProfile
 
 AnswerStatus = Literal["grounded", "insufficient_evidence"]
+MAX_CHAT_TEXT_CHARS = 20_000
+MAX_CHAT_HISTORY_MESSAGES = 100
 
 
 class ConversationMessage(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     role: Literal["user", "assistant"]
-    content: str
+    content: str = Field(max_length=MAX_CHAT_TEXT_CHARS)
     # English form reused as internal multilingual context.
-    canonical_content: str | None = None
+    canonical_content: str | None = Field(default=None, max_length=MAX_CHAT_TEXT_CHARS)
     # Visible-turn language used by ambiguous follow-ups.
     language_code: str | None = Field(
         default=None, pattern=r"^[A-Za-z]{2,8}(?:-[A-Za-z0-9]{1,8})*$"
@@ -73,9 +75,11 @@ class MultilingualAnswer(GroundedAnswer):
 
 
 class ChatRequest(BaseModel):
-    question: str = Field(min_length=1)
+    question: str = Field(min_length=1, max_length=MAX_CHAT_TEXT_CHARS)
     profile: OnboardingProfile
-    history: list[ConversationMessage] = []
+    history: list[ConversationMessage] = Field(
+        default_factory=list, max_length=MAX_CHAT_HISTORY_MESSAGES
+    )
 
 
 class ChatResponse(MultilingualAnswer):

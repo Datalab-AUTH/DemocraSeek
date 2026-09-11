@@ -6,6 +6,7 @@ One failed validation may be corrected once; a second failure discards the answe
 from __future__ import annotations
 
 import logging
+import time
 
 from app.corpus.registry import CorpusRegistry, DocumentNotFoundError
 from app.onboarding.compiler import compile_policy
@@ -16,7 +17,7 @@ from app.rag.prompt import SYSTEM_PROMPT, build_user_prompt
 from app.rag.query import normalise_question, trim_history
 from app.rag.retriever import Retriever
 from app.schemas.chat import Citation, ConversationMessage, GroundedAnswer
-from app.schemas.figures import Figure
+from app.schemas.figures import Figure, FigureRecord
 from app.schemas.onboarding import OnboardingConfig, OnboardingProfile
 
 logger = logging.getLogger(__name__)
@@ -110,10 +111,12 @@ class RagOrchestrator:
                 note = _RETRY_NOTE_FORMAT_ONLY if claimed_grounded else _RETRY_NOTE
                 user_prompt = base_prompt + note.format(problem=problem)
             try:
+                generation_started = time.perf_counter()
                 reply = self._llm.generate_json(SYSTEM_PROMPT, user_prompt)
             except ProviderError:
                 logger.exception("llm_call_failed", extra={"attempt": attempt})
                 return self._insufficient(profile, "generation_unavailable")
+            generation_ms = round((time.perf_counter() - generation_started) * 1000, 1)
 
             try:
                 raw = parse_model_reply(reply)
@@ -159,6 +162,7 @@ class RagOrchestrator:
                     "citation_count": len(citations),
                     "evidence_count": len(evidence),
                     "document_ids": sorted({c.document_id for c in citations}),
+                    "generation_ms": generation_ms,
                     **profile.as_log_fields(),
                 },
             )
@@ -180,14 +184,21 @@ class RagOrchestrator:
             return citations
 
         enriched: list[Citation] = []
+        figures_by_document: dict[str, list[FigureRecord]] = {}
         for citation in citations:
             if citation.source_type == "external":
                 enriched.append(citation)
                 continue
             try:
-                records = self._registry.figures_for_page(
-                    citation.document_id, citation.page_number
-                )
+                if citation.document_id not in figures_by_document:
+                    figures_by_document[citation.document_id] = self._registry.load_figures(
+                        citation.document_id
+                    )
+                records = [
+                    record
+                    for record in figures_by_document[citation.document_id]
+                    if record.page_number == citation.page_number
+                ]
             except DocumentNotFoundError:  # pragma: no cover - registry drift
                 records = []
             if not records:

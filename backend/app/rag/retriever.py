@@ -6,6 +6,7 @@ Cosine similarity gates evidence; reranker scores only determine ordering.
 from __future__ import annotations
 
 import logging
+import time
 
 from app.providers.base import EmbeddingProvider, RerankProvider, VectorStore
 from app.rag.evidence import EvidenceItem, build_evidence
@@ -44,19 +45,28 @@ class Retriever:
     ) -> list[EvidenceItem]:
         """Question (plus limited context) -> ranked, budgeted evidence items."""
         query = build_retrieval_query(question, history)
+        embed_started = time.perf_counter()
         query_vector = self._embeddings.embed_query(query)
+        timings = {"embedding_ms": _elapsed_ms(embed_started)}
+        dense_started = time.perf_counter()
         dense = self._store.search(self._collection, query_vector, self._candidate_k)
+        timings["dense_search_ms"] = _elapsed_ms(dense_started)
         relevant = self.apply_threshold(dense)
 
         # Only dense cosine similarity controls the evidence gate.
         if not relevant:
-            self._log(dense, [], [])
+            self._log(dense, [], [], timings)
             return []
 
-        pool = self._merge(relevant, self._lexical_candidates(query))
+        lexical_started = time.perf_counter()
+        lexical = self._lexical_candidates(query)
+        timings["lexical_search_ms"] = _elapsed_ms(lexical_started)
+        pool = self._merge(relevant, lexical)
+        rerank_started = time.perf_counter()
         ordered = self._rerank(query, pool)
+        timings["rerank_ms"] = _elapsed_ms(rerank_started)
         evidence = build_evidence(ordered[: self._top_k], self._max_context_tokens)
-        self._log(dense, pool, evidence)
+        self._log(dense, pool, evidence, timings)
         return evidence
 
     def apply_threshold(self, candidates: list[RetrievedChunk]) -> list[RetrievedChunk]:
@@ -94,6 +104,7 @@ class Retriever:
         dense: list[RetrievedChunk],
         pool: list[RetrievedChunk],
         evidence: list[EvidenceItem],
+        timings: dict[str, float],
     ) -> None:
         top_rerank = evidence[0].retrieved.rerank_score if evidence else None
         logger.info(
@@ -105,5 +116,10 @@ class Retriever:
                 "evidence_items": len(evidence),
                 "top_score": round(dense[0].score, 4) if dense else None,
                 "top_rerank_score": round(top_rerank, 4) if top_rerank is not None else None,
+                **timings,
             },
         )
+
+
+def _elapsed_ms(started: float) -> float:
+    return round((time.perf_counter() - started) * 1000, 1)

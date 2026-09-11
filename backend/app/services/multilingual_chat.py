@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import re
+import time
 
 from app.providers.base import LanguageProvider, ProviderError
 from app.rag.orchestrator import RagOrchestrator
@@ -52,31 +53,38 @@ class MultilingualChatService:
         profile: OnboardingProfile,
         history: list[ConversationMessage] | None = None,
     ) -> MultilingualAnswer:
+        started = time.perf_counter()
         original_question = normalise_question(question, self._max_user_input_chars)
         recent = trim_history(
             list(history or []), self._max_conversation_messages
         )
+        route_started = time.perf_counter()
         route = self._resolve_language(
             self._language.route_to_english(original_question),
             original_question=original_question,
             history=recent,
         )
+        route_ms = _elapsed_ms(route_started)
         canonical_question = normalise_question(
             route.english_text, self._max_user_input_chars
         )
         canonical_history = [self._canonical_message(message) for message in recent]
 
+        rag_started = time.perf_counter()
         grounded = self._rag.answer(
             question=canonical_question,
             profile=profile,
             history=canonical_history,
         )
+        rag_ms = _elapsed_ms(rag_started)
         canonical_answer = grounded.answer
+        translation_started = time.perf_counter()
         displayed_answer = self._language.translate_answer(
             canonical_answer,
             language_code=route.language_code,
             language_name=route.language_name,
         )
+        translation_ms = _elapsed_ms(translation_started)
 
         logger.info(
             "multilingual_answer",
@@ -84,6 +92,10 @@ class MultilingualChatService:
                 "language_code": route.language_code,
                 "history_messages": len(canonical_history),
                 "status": grounded.status,
+                "language_route_ms": route_ms,
+                "rag_ms": rag_ms,
+                "translation_ms": translation_ms,
+                "duration_ms": _elapsed_ms(started),
             },
         )
         return MultilingualAnswer(
@@ -159,3 +171,7 @@ def _last_known_language(
         if detected is not None:
             return detected
     return None
+
+
+def _elapsed_ms(started: float) -> float:
+    return round((time.perf_counter() - started) * 1000, 1)
