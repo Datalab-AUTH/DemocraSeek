@@ -85,10 +85,14 @@ class VectorStore(Protocol):
 
     def get_index_metadata(self, collection: str) -> IndexMetadata | None: ...
 
-    def upsert_chunks(
-        self, collection: str, chunks: list[Chunk], embeddings: list[list[float]]
+    def replace_document_chunks(
+        self,
+        collection: str,
+        document_id: str,
+        chunks: list[Chunk],
+        embeddings: list[list[float]],
     ) -> int:
-        """Insert or replace chunks keyed by ``chunk_id``. Returns rows written."""
+        """Replace one document's chunks atomically. Returns rows written."""
         ...
 
     def delete_document(self, collection: str, document_id: str) -> int:

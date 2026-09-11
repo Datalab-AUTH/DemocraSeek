@@ -4,6 +4,9 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
+from contextlib import contextmanager
+from collections.abc import Iterator
 from pathlib import Path
 
 from app.schemas.chunks import DocumentRecord, PageText
@@ -91,6 +94,59 @@ class CorpusRegistry:
             json.dumps(payload, indent=2, ensure_ascii=False) + "\n",
         )
 
+    @contextmanager
+    def promote_document_artifacts(
+        self,
+        document_id: str,
+        pages: list[PageText],
+        figures: list[FigureRecord],
+        staged_figures_dir: Path,
+    ) -> Iterator[None]:
+        """Expose staged artifacts and restore the old version if storage fails."""
+        safe_id = self._safe_id(document_id)
+        self._pages_dir.mkdir(parents=True, exist_ok=True)
+        self.figures_dir.mkdir(parents=True, exist_ok=True)
+        stage = staged_figures_dir.parent
+        staged_images = staged_figures_dir / safe_id
+        staged_images.mkdir(parents=True, exist_ok=True)
+        staged_pages = stage / f"{safe_id}.pages.json"
+        staged_figures = stage / f"{safe_id}.figures.json"
+        staged_pages.write_text(
+            json.dumps([page.model_dump() for page in pages], indent=2, ensure_ascii=False) + "\n",
+            encoding="utf-8",
+        )
+        staged_figures.write_text(
+            json.dumps([figure.model_dump() for figure in figures], indent=2, ensure_ascii=False)
+            + "\n",
+            encoding="utf-8",
+        )
+
+        targets = (
+            (staged_pages, self._page_file(document_id)),
+            (staged_figures, self._figure_file(document_id)),
+            (staged_images, self.figures_dir / safe_id),
+        )
+        backups: list[tuple[Path, Path]] = []
+        installed: list[Path] = []
+        try:
+            for position, (source, target) in enumerate(targets):
+                backup = stage / f"backup-{position}-{target.name}"
+                if target.exists():
+                    os.replace(target, backup)
+                    backups.append((backup, target))
+                os.replace(source, target)
+                installed.append(target)
+            yield
+        except Exception:
+            for target in reversed(installed):
+                _remove_path(target)
+            for backup, target in reversed(backups):
+                os.replace(backup, target)
+            raise
+        else:
+            for backup, _ in backups:
+                _remove_path(backup)
+
     def load_figures(self, document_id: str) -> list[FigureRecord]:
         path = self._figure_file(document_id)
         if not path.exists():
@@ -167,3 +223,10 @@ class CorpusRegistry:
         if not safe or safe != document_id:
             raise DocumentNotFoundError(document_id)
         return safe
+
+
+def _remove_path(path: Path) -> None:
+    if path.is_dir():
+        shutil.rmtree(path)
+    else:
+        path.unlink(missing_ok=True)

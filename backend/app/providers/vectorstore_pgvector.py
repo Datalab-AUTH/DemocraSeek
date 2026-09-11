@@ -132,13 +132,15 @@ class PgVectorStore:
         self.ensure_index(metadata)
 
     # Data
-    def upsert_chunks(
-        self, collection: str, chunks: list[Chunk], embeddings: list[list[float]]
+    def replace_document_chunks(
+        self,
+        collection: str,
+        document_id: str,
+        chunks: list[Chunk],
+        embeddings: list[list[float]],
     ) -> int:
         if len(chunks) != len(embeddings):
             raise ValueError("chunks and embeddings must have the same length.")
-        if not chunks:
-            return 0
         table = _table_name(collection)
         rows = [
             (
@@ -152,20 +154,22 @@ class PgVectorStore:
             for chunk, embedding in zip(chunks, embeddings, strict=True)
         ]
         with self._pool.connection() as conn, conn.cursor() as cur:
-            cur.executemany(
-                f"""
-                INSERT INTO {table}
-                    (chunk_id, document_id, page_number, chunk_text, metadata, embedding)
-                VALUES (%s, %s, %s, %s, %s::jsonb, %s::vector)
-                ON CONFLICT (chunk_id) DO UPDATE SET
-                    document_id = EXCLUDED.document_id,
-                    page_number = EXCLUDED.page_number,
-                    chunk_text  = EXCLUDED.chunk_text,
-                    metadata    = EXCLUDED.metadata,
-                    embedding   = EXCLUDED.embedding
-                """,
-                rows,
-            )
+            cur.execute(f"DELETE FROM {table} WHERE document_id = %s", (document_id,))
+            if rows:
+                cur.executemany(
+                    f"""
+                    INSERT INTO {table}
+                        (chunk_id, document_id, page_number, chunk_text, metadata, embedding)
+                    VALUES (%s, %s, %s, %s, %s::jsonb, %s::vector)
+                    ON CONFLICT (chunk_id) DO UPDATE SET
+                        document_id = EXCLUDED.document_id,
+                        page_number = EXCLUDED.page_number,
+                        chunk_text  = EXCLUDED.chunk_text,
+                        metadata    = EXCLUDED.metadata,
+                        embedding   = EXCLUDED.embedding
+                    """,
+                    rows,
+                )
         return len(rows)
 
     def delete_document(self, collection: str, document_id: str) -> int:
@@ -180,22 +184,25 @@ class PgVectorStore:
         table = _table_name(collection)
         vector = _to_pgvector(query_embedding)
         with self._pool.connection() as conn, conn.cursor(row_factory=dict_row) as cur:
-            cur.execute(
-                f"""
-                WITH nearest AS MATERIALIZED (
-                    SELECT chunk_id, chunk_text, metadata,
-                           embedding <=> %s::vector AS distance
-                    FROM {table}
-                    ORDER BY embedding <=> %s::vector
+            try:
+                cur.execute(
+                    f"""
+                    WITH nearest AS MATERIALIZED (
+                        SELECT chunk_id, chunk_text, metadata,
+                               embedding <=> %s::vector AS distance
+                        FROM {table}
+                        ORDER BY embedding <=> %s::vector
+                        LIMIT %s
+                    )
+                    SELECT chunk_id, chunk_text, metadata, 1 - distance AS score
+                    FROM nearest
+                    ORDER BY distance, chunk_id
                     LIMIT %s
+                    """,
+                    (vector, vector, top_k, top_k),
                 )
-                SELECT chunk_id, chunk_text, metadata, 1 - distance AS score
-                FROM nearest
-                ORDER BY distance, chunk_id
-                LIMIT %s
-                """,
-                (vector, vector, top_k, top_k),
-            )
+            except psycopg.errors.UndefinedTable:
+                return []
             records = cur.fetchall()
         return [
             RetrievedChunk(

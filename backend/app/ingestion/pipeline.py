@@ -8,6 +8,7 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
+import tempfile
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -286,18 +287,32 @@ class IngestionService:
             entry,
         )
 
-        pages, figures = self._read_source(path, document_id=document_id, title=title)
-        text = self._chunk_pages(pages, document_id, metadata_template, report)
-        figure_chunks = build_figure_chunks(
-            figures,
-            figures_dir=self._registry.figures_dir,
-            vision=self._vision,
-            metadata_template=metadata_template,
-        )
-        chunks = text.chunks + figure_chunks
-
-        self._replace_stored_chunks(document_id, chunks)
-        self._registry.save_pages(document_id, pages)
+        self._settings.index_path.mkdir(parents=True, exist_ok=True)
+        with tempfile.TemporaryDirectory(
+            prefix=f"ingest-{document_id}-", dir=self._settings.index_path
+        ) as temporary:
+            staged_figures = Path(temporary) / "figures"
+            pages, figures = self._read_source(
+                path, document_id=document_id, title=title, output_dir=staged_figures
+            )
+            text = self._chunk_pages(pages, document_id, metadata_template, report)
+            figure_chunks = build_figure_chunks(
+                figures,
+                figures_dir=staged_figures,
+                vision=self._vision,
+                metadata_template=metadata_template,
+            )
+            chunks = text.chunks + figure_chunks
+            vectors = self._embed_chunks(chunks)
+            with self._registry.promote_document_artifacts(
+                document_id, pages, figures, staged_figures
+            ):
+                self._store.replace_document_chunks(
+                    self._settings.vector_store_collection,
+                    document_id,
+                    chunks,
+                    vectors,
+                )
         documents[document_id] = self._document_record(
             document_id=document_id,
             path=path,
@@ -400,24 +415,22 @@ class IngestionService:
         }
 
     def _read_source(
-        self, path: Path, *, document_id: str, title: str
+        self, path: Path, *, document_id: str, title: str, output_dir: Path
     ) -> tuple[list[PageText], list[FigureRecord]]:
-        """Read pages and figures, storing images before vision processing."""
-        self._registry.delete_figures(document_id)
+        """Read pages and figures into an isolated staging directory."""
         if is_image_document(path):
             # A standalone image is a one-page visual document.
             pages, figures = load_image_document(
                 path,
                 document_id=document_id,
                 title=title,
-                output_dir=self._registry.figures_dir,
+                output_dir=output_dir,
             )
         else:
             pages = cleaning.clean_pages(pdf_extract.extract_pages(path))
             figures = extract_figures(
-                path, pages, document_id=document_id, output_dir=self._registry.figures_dir
+                path, pages, document_id=document_id, output_dir=output_dir
             )
-        self._registry.save_figures(document_id, figures)
         return pages, figures
 
     def _chunk_pages(
@@ -461,13 +474,10 @@ class IngestionService:
             chunks=chunks, empty_pages=empty_pages, ocr_review_pages=ocr_review_pages
         )
 
-    def _replace_stored_chunks(self, document_id: str, chunks: list[Chunk]) -> None:
-        """Replace all chunks so updates cannot leave orphaned rows."""
-        collection = self._settings.vector_store_collection
-        self._store.delete_document(collection, document_id)
-        if chunks:
-            vectors = self._embeddings.embed_documents([chunk.chunk_text for chunk in chunks])
-            self._store.upsert_chunks(collection, chunks, vectors)
+    def _embed_chunks(self, chunks: list[Chunk]) -> list[list[float]]:
+        if not chunks:
+            return []
+        return self._embeddings.embed_documents([chunk.chunk_text for chunk in chunks])
 
     def _document_record(
         self,
