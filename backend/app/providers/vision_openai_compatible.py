@@ -38,11 +38,13 @@ class OpenAICompatibleVision:
         model: str,
         timeout_seconds: float,
         max_description_chars: int,
+        reasoning_effort: str = "",
     ) -> None:
         self._base_url = base_url.rstrip("/")
         self._api_key = api_key
         self._model = model
         self._max_chars = max_description_chars
+        self._reasoning_effort = reasoning_effort
         self._client = httpx.Client(
             timeout=httpx.Timeout(timeout_seconds),
             headers={
@@ -86,6 +88,8 @@ class OpenAICompatibleVision:
                 }
             ],
         }
+        if self._reasoning_effort:
+            payload["reasoning_effort"] = self._reasoning_effort
         try:
             response = self._client.post(f"{self._base_url}/chat/completions", json=payload)
         except httpx.HTTPError as exc:

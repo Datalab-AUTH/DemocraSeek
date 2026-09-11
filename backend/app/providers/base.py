@@ -16,6 +16,24 @@ class IndexIncompatibleError(RuntimeError):
     """Stored vectors cannot be used with the current configuration."""
 
 
+def missing_index_message(collection: str) -> str:
+    return f"Index {collection!r} has not been built: run `python -m app.cli ingest`."
+
+
+def incompatible_index_message(existing: IndexMetadata, requested: IndexMetadata) -> str:
+    return (
+        f"Index {existing.collection!r} was built with "
+        f"(provider={existing.embedding_provider}, model={existing.embedding_model}, "
+        f"dims={existing.embedding_dimensions}, chunk_size={existing.chunk_size}, "
+        f"overlap={existing.chunk_overlap}, index_version={existing.index_version}) but the "
+        f"current configuration is (provider={requested.embedding_provider}, "
+        f"model={requested.embedding_model}, dims={requested.embedding_dimensions}, "
+        f"chunk_size={requested.chunk_size}, overlap={requested.chunk_overlap}, "
+        f"index_version={requested.index_version}). Mixing them is not allowed. "
+        f"Run `python -m app.cli reindex --yes` to rebuild from the approved corpus."
+    )
+
+
 # LLM
 class LLMProvider(Protocol):
     """Generate grounded answers as JSON text."""

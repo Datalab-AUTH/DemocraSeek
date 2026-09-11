@@ -23,6 +23,13 @@ VisionProviderName = Literal["none", "openai_compatible"]
 # All queries use hybrid retrieval and cross-encoder reranking.
 RerankProviderName = Literal["cross_encoder"]
 
+# OpenAI ``reasoning_effort``. Reasoning models spend their output budget on
+# hidden thinking before the answer; on a strict single-JSON contract that can
+# leave an empty reply once ``max_tokens`` is exhausted. ``none`` switches the
+# thinking off on servers that honour the parameter (FILOS does). Empty sends
+# nothing, which keeps plain local models untouched.
+ReasoningEffort = Literal["", "none", "low", "medium", "high"]
+
 
 class ConfigurationError(RuntimeError):
     """Raised when the process is not safely configured to start."""
@@ -53,6 +60,7 @@ class Settings(BaseSettings):
     llm_temperature: float = Field(default=0.0, ge=0.0, le=2.0)
     llm_max_output_tokens: int = Field(default=1200, ge=64, le=32000)
     llm_timeout_seconds: float = Field(default=180.0, gt=0)
+    llm_reasoning_effort: ReasoningEffort = ""
 
     # Embeddings
     embedding_provider: EmbeddingProviderName = "openai_compatible"
@@ -68,6 +76,7 @@ class Settings(BaseSettings):
     vision_base_url: str = ""
     vision_api_key: str = ""
     vision_timeout_seconds: float = Field(default=180.0, gt=0)
+    vision_reasoning_effort: ReasoningEffort = ""
     # Maximum generated figure-description length.
     vision_max_description_chars: int = Field(default=900, ge=100, le=4000)
 
@@ -217,6 +226,7 @@ class Settings(BaseSettings):
         return {
             "llm_provider": self.llm_provider,
             "llm_model": self.llm_model,
+            "llm_reasoning_effort": self.llm_reasoning_effort or "default",
             "language_provider": self.llm_provider,
             "language_model": self.llm_model,
             "embedding_provider": self.embedding_provider,
@@ -227,6 +237,7 @@ class Settings(BaseSettings):
             "rerank_model": self.rerank_model,
             "vision_provider": self.vision_provider,
             "vision_model": self.vision_model,
+            "vision_reasoning_effort": self.vision_reasoning_effort or "default",
             "vector_store_provider": self.vector_store_provider,
             "vector_store_collection": self.vector_store_collection,
             "corpus_version": self.corpus_version,

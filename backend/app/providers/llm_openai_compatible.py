@@ -22,12 +22,14 @@ class OpenAICompatibleLLM:
         temperature: float,
         max_output_tokens: int,
         timeout_seconds: float,
+        reasoning_effort: str = "",
     ) -> None:
         self._base_url = base_url.rstrip("/")
         self._api_key = api_key
         self._model = model
         self._temperature = temperature
         self._max_output_tokens = max_output_tokens
+        self._reasoning_effort = reasoning_effort
         self._client = httpx.Client(
             timeout=httpx.Timeout(timeout_seconds),
             headers={
@@ -63,6 +65,8 @@ class OpenAICompatibleLLM:
                 {"role": "user", "content": user_prompt},
             ],
         }
+        if self._reasoning_effort:
+            payload["reasoning_effort"] = self._reasoning_effort
         try:
             response = self._client.post(f"{self._base_url}/chat/completions", json=payload)
         except httpx.HTTPError as exc:

@@ -27,6 +27,11 @@ def chat(
     if not limiter.check(key):
         raise RateLimitExceeded(limiter.retry_after(key))
 
+    # Fail with the documented 503 before any model call. Cheap: one metadata
+    # row. Without it a missing or mismatched index only surfaced deep inside
+    # the dense search - as a raw 500 or, worse, as silently wrong evidence.
+    context.assert_index_compatible()
+
     result = context.chat.answer(
         question=payload.question,
         profile=payload.profile,

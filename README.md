@@ -87,8 +87,8 @@ The shipped configuration targets the AUTH institutional services:
 
 | Function | Configured service and model |
 |---|---|
-| Answering, language routing, translation | FILOS `qwen3.8:27b` |
-| Figure understanding | FILOS `qwen3.8:27b` |
+| Answering, language routing, translation | FILOS `datalab-2:latest` |
+| Figure understanding | FILOS `datalab-vision-1:latest` |
 | Embeddings | FILOS `all-minilm:22m`, 384 dimensions |
 | Vector collection | `innovade_filos_minilm_v1` |
 
@@ -202,8 +202,8 @@ Excluded from the current scope:
 | Citation ID | Reader-facing marker such as `C1` displayed as `[C1]` |
 | Supporting quote | Text the LLM claims to have copied from an evidence item; verified before display |
 | Registry | Trusted JSON records that map stable IDs to documents, pages, and figure files |
-| LLM | The answer-generation model, configured as FILOS `qwen3.8:27b` |
-| VLM | The ingestion-time vision model, configured as FILOS `qwen3.8:27b` |
+| LLM | The answer-generation model, configured as FILOS `datalab-2:latest` |
+| VLM | The ingestion-time vision model, configured as FILOS `datalab-vision-1:latest` |
 | RAG | Retrieve evidence first, then generate an answer from that evidence |
 | Index fingerprint | Identity of all settings/code versions that determine stored chunks and vectors |
 | Re-index | Delete and rebuild derived index state from the approved corpus |
@@ -453,7 +453,7 @@ React + nginx  ---- /api ---->  FastAPI backend
                     |                 |                  |
                     v                 v                  v
               PostgreSQL          FILOS /ollama/v1
-              pgvector HNSW       qwen3.8:27b: answer + vision
+              pgvector HNSW       datalab-2 answer / datalab-vision-1
               pg_textsearch       all-minilm:22m: embeddings (384d)
               registry data
 
@@ -487,7 +487,7 @@ Question + recent history
   -> dense gate + BM25 candidates + cross-encoder rerank
   -> create E1..En evidence context
   -> assemble system and user prompts
-  -> FILOS qwen3.8:27b returns strict JSON
+  -> FILOS datalab-2:latest returns strict JSON
   -> parse and validate citations
   -> hydrate trusted document/page/figure data from index records
   -> split the validated English answer around [C...] markers
@@ -806,7 +806,7 @@ POST /api/chat
   -> assign request-local E1..En identifiers
   -> enforce the context budget
   -> build system and user prompts
-  -> call the configured FILOS qwen3.8:27b
+  -> call the configured FILOS datalab-2:latest
   -> parse strict JSON
   -> validate citation structure and quotes
   -> retry once when required
@@ -847,7 +847,7 @@ routing is a separate call required by the multilingual contract.
 ### 8.3 Language routing and output translation
 
 `LLMLanguageProvider` uses the configured answering model, currently FILOS
-`qwen3.8:27b`; it is not a second provider configuration. Its first
+`datalab-2:latest`; it is not a second provider configuration. Its first
 strict-JSON task detects the dominant language and produces a faithful English
 translation without answering the question. Retrieval, reranking, policy
 compilation, evidence construction, generation, and citation validation then
@@ -1058,11 +1058,11 @@ and retrieval quality rather than replacing the application retrieval API.
 
 | Function | Provider | Model | Why |
 |---|---|---|---|
-| Answer generation | FILOS via OpenAI-compatible adapter | `qwen3.8:27b` | Shared institutional model selected for answering and vision; citation-contract quality must be checked after credentials are installed |
-| Language detection and translation | same FILOS LLM configuration | `qwen3.8:27b` | Keeps retrieval canonical in English and returns the answer in the question's language |
+| Answer generation | FILOS via OpenAI-compatible adapter | `datalab-2:latest` | Institutional reasoning model selected for answering and translation; citation-contract quality must be checked after credentials are installed |
+| Language detection and translation | same FILOS LLM configuration | `datalab-2:latest` | Keeps retrieval canonical in English and returns the answer in the question's language |
 | Embeddings | FILOS via OpenAI-compatible adapter | `all-minilm:22m` | Dedicated 384-dimensional sentence embedding model |
 | Reranking | local `sentence-transformers` | `cross-encoder/ms-marco-MiniLM-L-6-v2` | Improves ordering of dense+BM25 candidate union |
-| Figure understanding | FILOS via OpenAI-compatible adapter | `qwen3.8:27b` | Creates searchable descriptions of charts/diagrams during ingestion |
+| Figure understanding | FILOS via OpenAI-compatible adapter | `datalab-vision-1:latest` | Creates searchable descriptions of charts/diagrams during ingestion |
 | Search storage | PostgreSQL | pgvector 0.8.6 + pg_textsearch 1.4.0 | Persistent chunks/metadata, HNSW cosine search, shared BM25 search |
 
 One root `INSTITUTIONAL_API_KEY` supplies all FILOS calls. A non-empty
@@ -1098,6 +1098,20 @@ A direct Hugging Face embedding provider is not implemented. The type
 accepts exactly one adapter: the real embeddings API client. Any other value
 is rejected by configuration validation.
 
+### Reasoning effort
+
+The FILOS models are reasoning models: the server returns
+their thinking in a separate `reasoning` field, so it never pollutes the JSON -
+but it still consumes the completion budget first. On a real six-evidence prompt
+the thinking alone exhausted `LLM_MAX_OUTPUT_TOKENS`, `content` came back empty,
+and every answer was rejected with `reply was not valid JSON (Expecting value)`.
+The same happened to figure descriptions. `LLM_REASONING_EFFORT=none` and
+`VISION_REASONING_EFFORT=none` send the OpenAI `reasoning_effort` parameter,
+which FILOS honours; measured on the same request this cut completion tokens from
+159 to 27 and answer latency from 60 s to 28 s. Ollama's `think` extension and
+Qwen's `/no_think` soft switch were both ignored by FILOS. Leave both variables
+empty for plain local models, which have no thinking to disable.
+
 ### Reranker
 
 The cross-encoder is downloaded and run inside the backend container. It is not
@@ -1109,7 +1123,7 @@ evaluate a multilingual cross-encoder.
 
 ### VLM
 
-FILOS `qwen3.8:27b` runs as a VLM only during ingestion. It does not receive
+FILOS `datalab-vision-1:latest` runs as the VLM only during ingestion. It does not receive
 every chat question. Its descriptions are embedded as figure chunks so the
 answering path can later reason over text. This keeps online answering simpler
 and avoids a vision call per question.
@@ -1366,7 +1380,7 @@ The active `.env` enables:
 
 ```dotenv
 VISION_PROVIDER=openai_compatible
-VISION_MODEL=qwen3.8:27b
+VISION_MODEL=datalab-vision-1:latest
 VISION_BASE_URL=https://filos.csd.auth.gr/ollama/v1
 VISION_API_KEY=
 ```
@@ -1380,7 +1394,7 @@ ran; merely having the model installed is not enough.
 ```text
 INGESTION TIME
 figure PNG + caption
-  -> FILOS qwen3.8:27b description
+  -> FILOS datalab-vision-1 description
   -> caption + description
   -> FILOS all-minilm:22m vector
   -> pgvector figure chunk
@@ -1388,7 +1402,7 @@ figure PNG + caption
 QUESTION TIME
 question
   -> retrieve figure description like normal text
-  -> FILOS qwen3.8:27b answers from that text
+  -> FILOS datalab-2:latest answers from that text
   -> citation validator labels it figure_description
   -> registry attaches original PNG
   -> reader compares answer with image
@@ -1689,10 +1703,10 @@ versioned product policy, not infrastructure/provider configuration.
 | Area | Active value |
 |---|---|
 | Environment | `development` |
-| Answer LLM | FILOS `qwen3.8:27b` |
-| Language routing | same FILOS `qwen3.8:27b`; automatic per turn |
+| Answer LLM | FILOS `datalab-2:latest` |
+| Language routing | same FILOS `datalab-2:latest`; automatic per turn |
 | Embeddings | FILOS `all-minilm:22m`, 384d |
-| Vision | FILOS `qwen3.8:27b` |
+| Vision | FILOS `datalab-2:latest` |
 | Reranker | `cross-encoder/ms-marco-MiniLM-L-6-v2` |
 | Vector store | pgvector collection `innovade_filos_minilm_v1` |
 | PostgreSQL host port | `5434` |
@@ -1718,12 +1732,13 @@ versioned product policy, not infrastructure/provider configuration.
 | Variable | Active `.env` value | Meaning |
 |---|---|---|
 | `LLM_PROVIDER` | `openai_compatible` | shipped adapter; works with compatible local or remote services |
-| `LLM_MODEL` | `qwen3.8:27b` | active FILOS model identifier |
+| `LLM_MODEL` | `datalab-2:latest` | active FILOS model identifier |
 | `LLM_BASE_URL` | FILOS `/ollama/v1` | endpoint as seen from the backend container |
 | `LLM_API_KEY` | empty | optional override; otherwise uses `INSTITUTIONAL_API_KEY` |
 | `LLM_TEMPERATURE` | `0.0` | deterministic answering recommended |
 | `LLM_MAX_OUTPUT_TOKENS` | `1200` | output ceiling |
 | `LLM_TIMEOUT_SECONDS` | `180` | provider timeout |
+| `LLM_REASONING_EFFORT` | empty | `none`, `low`, `medium`, or `high`; sent as OpenAI `reasoning_effort`. Active value `none`; leave empty for local Ollama |
 
 ### Embeddings
 
@@ -1741,10 +1756,11 @@ versioned product policy, not infrastructure/provider configuration.
 | Variable | Active `.env` value | Meaning |
 |---|---|---|
 | `VISION_PROVIDER` | `openai_compatible` | use `none` to disable descriptions |
-| `VISION_MODEL` | `qwen3.8:27b` | active FILOS VLM identifier |
+| `VISION_MODEL` | `datalab-vision-1:latest` | active FILOS VLM identifier; `datalab-2` is text-only and rejects images |
 | `VISION_BASE_URL` | FILOS `/ollama/v1` | endpoint as seen from the backend container |
 | `VISION_API_KEY` | empty | optional override; otherwise uses `INSTITUTIONAL_API_KEY` |
 | `VISION_TIMEOUT_SECONDS` | `180` | per-image call timeout |
+| `VISION_REASONING_EFFORT` | empty | same semantics as `LLM_REASONING_EFFORT`, for the VLM. Active value `none` |
 | `VISION_MAX_DESCRIPTION_CHARS` | `900` | stored description cap |
 
 ### Reranking and retrieval
@@ -1859,6 +1875,7 @@ combinations.
 |---|---|---|---:|---:|
 | Answer LLM model/URL/key | `.env` `LLM_*` | restart backend | no | yes, citation/style quality |
 | Temperature/output limit | `.env` `LLM_*` | restart backend | no | recommended |
+| Reasoning effort | `.env` `*_REASONING_EFFORT` | restart backend | no | yes, JSON/citation acceptance rate |
 | Top-K/candidate-K/threshold/budget | `.env` `RETRIEVAL_*` | restart backend | no | **yes** |
 | Reranker model | `.env` `RERANK_MODEL` | rebuild/restart if model cache changes | no | **yes** |
 | Embedding provider/model/dimensions | `.env` `EMBEDDING_*` | restart | **yes** | **yes** |
@@ -1877,7 +1894,7 @@ The active institutional configuration is:
 
 ```dotenv
 LLM_PROVIDER=openai_compatible
-LLM_MODEL=qwen3.8:27b
+LLM_MODEL=datalab-2:latest
 LLM_BASE_URL=https://filos.csd.auth.gr/ollama/v1
 LLM_API_KEY=
 ```

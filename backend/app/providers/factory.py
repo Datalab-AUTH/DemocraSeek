@@ -30,6 +30,7 @@ def build_llm(settings: Settings) -> LLMProvider:
         temperature=settings.llm_temperature,
         max_output_tokens=settings.llm_max_output_tokens,
         timeout_seconds=settings.llm_timeout_seconds,
+        reasoning_effort=settings.llm_reasoning_effort,
     )
     provider.validate_configuration()
     return provider
@@ -65,6 +66,7 @@ def build_vision(settings: Settings) -> VisionProvider | None:
             model=settings.vision_model,
             timeout_seconds=settings.vision_timeout_seconds,
             max_description_chars=settings.vision_max_description_chars,
+            reasoning_effort=settings.vision_reasoning_effort,
         )
     else:
         raise ValueError(f"Unknown VISION_PROVIDER: {settings.vision_provider!r}")
