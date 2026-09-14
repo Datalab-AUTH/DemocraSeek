@@ -48,7 +48,9 @@ No onboarding question wording is hard-coded in the frontend.
 8. `ChatPanel.tsx` owns current in-memory conversation and request state.
 9. `AnswerMessage.tsx` renders safe answer text and interactive markers.
 10. `SourceDrawer.tsx` provides evidence, page context, image, and original file.
-11. A new conversation clears chat context; reset profile also removes stored
+11. `Footer.tsx` renders the reviewed INNOVADE and EU funding marks plus legal
+   copy across application states.
+12. A new conversation clears chat context; reset profile also removes stored
    preference codes.
 
 The welcome acknowledgement is stored in `sessionStorage`, so it is shown once
@@ -86,6 +88,7 @@ verification one action away.
 ## Scroll behavior and accessibility
 
 The conversation area is independently scrollable while the composer remains
-available. Visual scrollbars can be hidden in onboarding without disabling
-keyboard/wheel scrolling. Controls use semantic buttons, visible focus states,
-labels, and light/dark theme support.
+available. The responsive header condenses its controls on narrow screens and
+the footer remains outside the main content region. Visual scrollbars can be
+hidden in onboarding without disabling keyboard/wheel scrolling. Controls use
+semantic buttons, visible focus states, labels, and light/dark theme support.

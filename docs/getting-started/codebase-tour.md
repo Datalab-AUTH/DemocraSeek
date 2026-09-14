@@ -117,6 +117,7 @@ Start code reading with:
 | `src/components/SourceDrawer.tsx` | evidence/page/figure/original source |
 | `src/components/FigureGallery.tsx` | cited figures |
 | `src/components/Header.tsx` | app identity and profile controls |
+| `src/components/Footer.tsx` | INNOVADE/EU marks and application-wide legal copy |
 | `src/hooks/useProfile.ts` | versioned local profile |
 | `src/hooks/useOnboardingLocale.ts` | persistent local interface-language preference (legacy key retained) |
 | `src/hooks/useTheme.ts` | theme preference |
@@ -136,5 +137,8 @@ Start code reading with:
 | `scripts/start-demo.ps1` | guarded one-command startup |
 | `scripts/stop-demo.ps1` | non-destructive stop |
 | `scripts/ingest.ps1` | guarded corpus ingestion, status, and reindex |
+
+Reviewed frontend marks are served from `frontend/public/`, including
+`logo.svg`, `logo_innovade_full.svg`, and `eu_funded_en.svg`.
 
 ---
