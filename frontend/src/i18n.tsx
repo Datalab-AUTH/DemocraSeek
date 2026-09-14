@@ -130,6 +130,14 @@ export interface UiCopy {
     publishedLabel: string;
     visitExternal: string;
   };
+  footer: {
+    logosLabel: string;
+    innovadeLogoAlt: string;
+    euLogoAlt: string;
+    copyright: string;
+    madeBy: string;
+    terms: string;
+  };
 }
 
 const EN: UiCopy = {
@@ -205,6 +213,14 @@ const EN: UiCopy = {
     authorsLabel: "Authors", publishersLabel: "Publisher", publishedLabel: "Publication date",
     visitExternal: "Visit original source",
   },
+  footer: {
+    logosLabel: "Partner logos",
+    innovadeLogoAlt: "INNOVADE",
+    euLogoAlt: "Funded by the European Union",
+    copyright: "© {year} {appName}",
+    madeBy: "Made by DATALAB for {project}",
+    terms: "Privacy Policy",
+  },
 };
 
 const EL: UiCopy = {
@@ -278,6 +294,14 @@ const EL: UiCopy = {
     authorsLabel: "Συγγραφείς", publishersLabel: "Εκδότης", publishedLabel: "Ημερομηνία δημοσίευσης",
     visitExternal: "Μετάβαση στην αρχική πηγή",
   },
+  footer: {
+    logosLabel: "Λογότυπα συνεργατών",
+    innovadeLogoAlt: "INNOVADE",
+    euLogoAlt: "Χρηματοδοτείται από την Ευρωπαϊκή Ένωση",
+    copyright: "© {year} {appName}",
+    madeBy: "Από το DATALAB για το {project}",
+    terms: "Πολιτική απορρήτου",
+  },
 };
 
 const FR: UiCopy = {
@@ -343,6 +367,14 @@ const FR: UiCopy = {
     authorsLabel: "Auteurs", publishersLabel: "Éditeur", publishedLabel: "Date de publication",
     visitExternal: "Consulter la source originale",
   },
+  footer: {
+    logosLabel: "Logos des partenaires",
+    innovadeLogoAlt: "INNOVADE",
+    euLogoAlt: "Financé par l’Union européenne",
+    copyright: "© {year} {appName}",
+    madeBy: "Réalisé par DATALAB pour {project}",
+    terms: "Politique de confidentialité",
+  },
 };
 
 const ES: UiCopy = {
@@ -407,6 +439,14 @@ const ES: UiCopy = {
     authorsLabel: "Autores", publishersLabel: "Editorial", publishedLabel: "Fecha de publicación",
     visitExternal: "Visitar la fuente original",
   },
+  footer: {
+    logosLabel: "Logotipos de socios",
+    innovadeLogoAlt: "INNOVADE",
+    euLogoAlt: "Financiado por la Unión Europea",
+    copyright: "© {year} {appName}",
+    madeBy: "Hecho por DATALAB para {project}",
+    terms: "Política de privacidad",
+  },
 };
 
 const NL_BE: UiCopy = {
@@ -470,6 +510,14 @@ const NL_BE: UiCopy = {
     externalAboutText: "Deze publicatie onderbouwt het antwoord. De lokale kopie wordt alleen voor zoeken gebruikt en is hier niet beschikbaar.",
     authorsLabel: "Auteurs", publishersLabel: "Uitgever", publishedLabel: "Publicatiedatum",
     visitExternal: "Naar de oorspronkelijke bron",
+  },
+  footer: {
+    logosLabel: "Partnerlogo’s",
+    innovadeLogoAlt: "INNOVADE",
+    euLogoAlt: "Gefinancierd door de Europese Unie",
+    copyright: "© {year} {appName}",
+    madeBy: "Gemaakt door DATALAB voor {project}",
+    terms: "Privacybeleid",
   },
 };
 

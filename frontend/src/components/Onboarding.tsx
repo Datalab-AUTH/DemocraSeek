@@ -2,7 +2,13 @@
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 
-import type { Dimension, OnboardingConfig, OnboardingUI, Profile, Question } from "../api/types";
+import type {
+  Dimension,
+  OnboardingConfig,
+  OnboardingUI,
+  Profile,
+  Question,
+} from "../api/types";
 
 interface Props {
   config: OnboardingConfig;
@@ -26,10 +32,13 @@ function initialAnswers(profile: Profile | null): Answers {
 
 function localizedPresentation(
   config: OnboardingConfig,
-  locale: string,
+  locale: string
 ): { questions: Question[]; ui: OnboardingUI } {
-  const translation = config.translations.find((item) => item.locale === locale);
-  if (!translation) return { questions: config.questions, ui: config.onboarding_ui };
+  const translation = config.translations.find(
+    (item) => item.locale === locale
+  );
+  if (!translation)
+    return { questions: config.questions, ui: config.onboarding_ui };
 
   return {
     ui: translation.ui,
@@ -44,7 +53,8 @@ function localizedPresentation(
         choices: question.choices.map((choice) => ({
           ...choice,
           label: localized.choices[choice.code]?.label ?? choice.label,
-          description: localized.choices[choice.code]?.description ?? choice.description,
+          description:
+            localized.choices[choice.code]?.description ?? choice.description,
         })),
       };
     }),
@@ -60,15 +70,17 @@ export function Onboarding({
 }: Props): JSX.Element {
   const presentation = useMemo(
     () => localizedPresentation(config, locale),
-    [config, locale],
+    [config, locale]
   );
   const questions = useMemo(
     () => [...presentation.questions].sort((a, b) => a.order - b.order),
-    [presentation.questions],
+    [presentation.questions]
   );
   const ui = presentation.ui;
   const [step, setStep] = useState(0);
-  const [answers, setAnswers] = useState<Answers>(() => initialAnswers(initialProfile));
+  const [answers, setAnswers] = useState<Answers>(() =>
+    initialAnswers(initialProfile)
+  );
   const [error, setError] = useState<string | null>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const errorId = useId();
@@ -107,7 +119,11 @@ export function Onboarding({
   }
 
   return (
-    <section className="onboarding" aria-labelledby="onboarding-heading" lang={locale}>
+    <section
+      className="onboarding"
+      aria-labelledby="onboarding-heading"
+      lang={locale}
+    >
       <p className="onboarding__progress" aria-live="polite">
         {ui.progress
           .replace("{current}", String(step + 1))
@@ -121,7 +137,8 @@ export function Onboarding({
           const label = chosen
             ? item.choices.find((choice) => choice.code === chosen)?.label
             : null;
-          const state = index === step ? "is-current" : chosen ? "is-done" : "is-todo";
+          const state =
+            index === step ? "is-current" : chosen ? "is-done" : "is-todo";
           return (
             <li key={item.id} className={`stepper__step ${state}`}>
               <button
@@ -129,7 +146,9 @@ export function Onboarding({
                 className="stepper__button"
                 disabled={index > step && !chosen}
                 aria-current={index === step ? "step" : undefined}
-                aria-label={`${ui.step_titles[item.dimension]}: ${label ?? ui.not_chosen}`}
+                aria-label={`${ui.step_titles[item.dimension]}: ${
+                  label ?? ui.not_chosen
+                }`}
                 title={label ?? ui.not_chosen}
                 onClick={() => {
                   setError(null);
@@ -140,8 +159,12 @@ export function Onboarding({
                   {chosen && index !== step ? "✓" : index + 1}
                 </span>
                 <span className="stepper__copy">
-                  <span className="stepper__title">{ui.step_titles[item.dimension]}</span>
-                  {label ? <span className="stepper__selection">{label}</span> : null}
+                  <span className="stepper__title">
+                    {ui.step_titles[item.dimension]}
+                  </span>
+                  {label ? (
+                    <span className="stepper__selection">{label}</span>
+                  ) : null}
                 </span>
               </button>
             </li>
@@ -192,7 +215,9 @@ export function Onboarding({
                   <span className="choice__body">
                     <span className="choice__label">{choice.label}</span>
                     {choice.description ? (
-                      <span className="choice__description">{choice.description}</span>
+                      <span className="choice__description">
+                        {choice.description}
+                      </span>
                     ) : null}
                   </span>
                 </label>
@@ -203,12 +228,20 @@ export function Onboarding({
 
         <div className="onboarding__actions">
           {step > 0 ? (
-            <button type="button" className="button button--ghost" onClick={() => setStep(step - 1)}>
+            <button
+              type="button"
+              className="button button--ghost"
+              onClick={() => setStep(step - 1)}
+            >
               {ui.back}
             </button>
           ) : null}
           {onCancel ? (
-            <button type="button" className="button button--ghost" onClick={onCancel}>
+            <button
+              type="button"
+              className="button button--ghost"
+              onClick={onCancel}
+            >
               {ui.cancel}
             </button>
           ) : null}
