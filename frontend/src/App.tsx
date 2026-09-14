@@ -7,6 +7,7 @@ import type { Citation, CorpusDocument, OnboardingConfig } from "./api/types";
 import { AnswerMessage } from "./components/AnswerMessage";
 import { ChatPanel, type Turn } from "./components/ChatPanel";
 import { EmptyState } from "./components/EmptyState";
+import { Footer } from "./components/Footer";
 import { Header } from "./components/Header";
 import { Onboarding } from "./components/Onboarding";
 import { SourceDrawer } from "./components/SourceDrawer";
@@ -130,6 +131,7 @@ export function App(): JSX.Element {
             </p>
           </div>
         </main>
+        <Footer />
       </div>,
     );
   }
@@ -143,6 +145,7 @@ export function App(): JSX.Element {
             <p aria-live="polite">{ui.app.loading}</p>
           </div>
         </main>
+        <Footer />
       </div>,
     );
   }
@@ -195,6 +198,8 @@ export function App(): JSX.Element {
           />
         )}
       </main>
+
+      <Footer />
 
       {openCitation ? (
         <SourceDrawer
