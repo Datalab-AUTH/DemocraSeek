@@ -102,8 +102,11 @@ Invoke-RestMethod http://localhost:8000/api/ready
 Then open `http://localhost:8080` or run:
 
 ```powershell
-.\start-demo.cmd
+pnpm dev
 ```
+
+This is a short alias for the existing Windows launcher. `\.\start-demo.cmd`
+remains available when Node and pnpm are not installed.
 
 ## 7. Pre-presentation check
 

@@ -20,7 +20,11 @@ rag_index: true
 
 # Daily development workflow
 
+After the first installation, `pnpm dev` starts the complete local application.
+It runs the existing `start-demo.ps1` launcher; it does not start a separate development stack.
+
 ```powershell
+pnpm dev                    # starts Ollama + Docker, waits for /api/ready, opens the UI
 .\start-demo.cmd            # validates .env, starts Ollama + Docker, waits for /api/ready, opens the UI
 .\start-demo.cmd -Build     # after code, dependency, or frontend changes
 .\start-demo.cmd -NoBrowser
