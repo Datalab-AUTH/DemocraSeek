@@ -20,9 +20,10 @@ rag_index: true
 # Corpus management
 
 All commands below run from the repository root through the backend image.
-`ingest.cmd` wraps the common ones with the same Ollama and Docker checks the
+`ingest.cmd` wraps the common ones with the same provider and Docker checks the
 demo launcher performs: `.\ingest.cmd`, `-Only "<file>"`, `-Force`, `-Status`,
-and `-Reindex -Yes`. Removing a single document has no launcher flag and uses the
+and `-Reindex -Yes`. Local Ollama is checked only when a configured endpoint
+points to it. Removing a single document has no launcher flag and uses the
 explicit command below.
 
 ## Status

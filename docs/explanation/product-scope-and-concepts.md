@@ -47,24 +47,16 @@ rag_index: true
    absent, the user receives an
    insufficient-evidence response rather than an unsupported answer.
 
-### Current verified corpus snapshot
+### Shipped provider profile
 
-The readiness and corpus endpoints of the cleaned local deployment reported:
+The versioned `.env.example` points answer and language work to FILOS
+`datalab-2:latest`, embeddings to `nomic-embed-text:latest`, and vision work to
+`datalab-vision-1:latest`. The vector collection is
+`innovade_filos_nomic_v1`.
 
-| Item | Verified value |
-|---|---:|
-| Approved source files | 1 |
-| Processed pages | 338 |
-| Searchable chunks | 1,086 |
-| Extracted figures kept | 35 |
-| Embedding model | `nomic-embed-text`, 768 dimensions |
-| Vision model | `qwen2.5vl:7b` |
-| Collection | `innovade_v1` |
-
-This snapshot describes the approved D2.1 corpus in the current local Docker
-volumes. Generated indexes and reports are intentionally not committed; a fresh
-deployment creates its own report during ingestion. This is operational state,
-not a universal benchmark.
+Corpus counts belong to the running deployment, not the repository. Check
+`/api/ready`, `/api/corpus`, and the latest ingestion report instead of relying
+on copied counts in documentation.
 
 ### The two main architectural promises
 
@@ -151,7 +143,7 @@ Excluded from the current scope:
 - analytics and behavioral tracking;
 - distributed queues or microservices;
 - Kubernetes or cloud-specific manifests;
-- automated test suites, fixtures, and CI pipelines;
+- automated test suites, fixtures, and evaluation harnesses;
 - public-production operational controls.
 
 ---

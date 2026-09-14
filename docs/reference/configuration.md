@@ -29,8 +29,7 @@ are no secondary Docker-specific environment files and no duplicated
 
 `backend/app/config.py` provides typed validation, safe fallback values, and
 cross-field checks; it is not a second operator configuration file.
-`.env.example` contains the exact same 57 variable names as `.env`, with safe
-template values. `config/onboarding.v2.yaml` remains separate because it is
+`.env.example` contains the complete versioned template. `config/onboarding.v2.yaml` remains separate because it is
 versioned product policy, not infrastructure/provider configuration.
 
 ## Active demo configuration
@@ -38,12 +37,12 @@ versioned product policy, not infrastructure/provider configuration.
 | Area | Active value |
 |---|---|
 | Environment | `development` |
-| Answer LLM | local Ollama `llama3.1:8b` |
-| Language routing | same local Ollama `llama3.1:8b`; automatic per turn |
-| Embeddings | local Ollama `nomic-embed-text`, 768d |
-| Vision | local Ollama `qwen2.5vl:7b` |
+| Answer LLM | FILOS `datalab-2:latest` |
+| Language routing | same FILOS model; automatic per turn |
+| Embeddings | FILOS `nomic-embed-text:latest`, 768d |
+| Vision | FILOS `datalab-vision-1:latest` |
 | Reranker | `cross-encoder/ms-marco-MiniLM-L-6-v2` |
-| Vector store | pgvector collection `innovade_v1` |
+| Vector store | pgvector collection `innovade_filos_nomic_v1` |
 | PostgreSQL host port | `5434` |
 | Chunking | 1,200 chars, 180 overlap |
 | Retrieval | 10 candidates per branch, top 6, threshold 0.65, 4,000-token budget |
@@ -61,26 +60,33 @@ versioned product policy, not infrastructure/provider configuration.
 | `FRONTEND_HOST_PORT` | `8080` | host port for the user interface |
 | `BACKEND_HOST_PORT` | `8000` | host port for API/operator access |
 
+## Shared institutional credential
+
+| Variable | Shipped value | Meaning |
+|---|---|---|
+| `INSTITUTIONAL_API_KEY` | empty | shared FILOS credential used when a provider-specific key is empty |
+
 ## Answer LLM
 
 | Variable | Default | Meaning |
 |---|---|---|
 | `LLM_PROVIDER` | `openai_compatible` | shipped adapter; works with compatible local or remote services |
-| `LLM_MODEL` | `llama3.1:8b` | model identifier |
-| `LLM_BASE_URL` | required | endpoint as seen from the backend container |
-| `LLM_API_KEY` | empty | non-empty required for compatible adapter; Ollama accepts `ollama` |
+| `LLM_MODEL` | `datalab-2:latest` | shipped FILOS model identifier |
+| `LLM_BASE_URL` | `https://filos.csd.auth.gr/ollama/v1` | endpoint as seen from the backend container |
+| `LLM_API_KEY` | empty | provider-specific override for `INSTITUTIONAL_API_KEY` |
 | `LLM_TEMPERATURE` | `0.0` | deterministic answering recommended |
 | `LLM_MAX_OUTPUT_TOKENS` | `1200` | output ceiling |
 | `LLM_TIMEOUT_SECONDS` | `180` | provider timeout |
+| `LLM_REASONING_EFFORT` | `none` | disables hidden reasoning on FILOS; leave empty for plain local models |
 
 ## Embeddings
 
 | Variable | Default | Meaning |
 |---|---|---|
 | `EMBEDDING_PROVIDER` | `openai_compatible` | shipped embedding adapter |
-| `EMBEDDING_MODEL` | `nomic-embed-text` | embedding model identifier |
-| `EMBEDDING_BASE_URL` | required | endpoint as seen from the backend container |
-| `EMBEDDING_API_KEY` | empty | required by adapter |
+| `EMBEDDING_MODEL` | `nomic-embed-text:latest` | shipped FILOS embedding model identifier |
+| `EMBEDDING_BASE_URL` | `https://filos.csd.auth.gr/ollama/v1` | endpoint as seen from the backend container |
+| `EMBEDDING_API_KEY` | empty | provider-specific override for `INSTITUTIONAL_API_KEY` |
 | `EMBEDDING_DIMENSIONS` | `768` | must match returned vectors |
 | `EMBEDDING_BATCH_SIZE` | `16` | ingestion batch size |
 
@@ -88,11 +94,12 @@ versioned product policy, not infrastructure/provider configuration.
 
 | Variable | Default | Meaning |
 |---|---|---|
-| `VISION_PROVIDER` | `none` | `none` or `openai_compatible` |
-| `VISION_MODEL` | empty | VLM identifier |
-| `VISION_BASE_URL` | empty | endpoint as seen from the backend container |
-| `VISION_API_KEY` | empty | required for compatible adapter |
+| `VISION_PROVIDER` | `openai_compatible` | `none` or `openai_compatible` |
+| `VISION_MODEL` | `datalab-vision-1:latest` | shipped FILOS VLM identifier |
+| `VISION_BASE_URL` | `https://filos.csd.auth.gr/ollama/v1` | endpoint as seen from the backend container |
+| `VISION_API_KEY` | empty | provider-specific override for `INSTITUTIONAL_API_KEY` |
 | `VISION_TIMEOUT_SECONDS` | `180` | per-image call timeout |
+| `VISION_REASONING_EFFORT` | `none` | disables hidden reasoning on FILOS; leave empty for plain local models |
 | `VISION_MAX_DESCRIPTION_CHARS` | `900` | stored description cap |
 
 ## Reranking and retrieval
@@ -115,10 +122,10 @@ are safe generic defaults, not evidence that the active runtime uses them.
 |---|---|---|
 | `VECTOR_STORE_PROVIDER` | `pgvector` | persistent production store |
 | `VECTOR_STORE_URL` | required | container-visible PostgreSQL DSN |
-| `VECTOR_STORE_COLLECTION` | `innovade_v1` | safe alphanumeric/underscore collection |
+| `VECTOR_STORE_COLLECTION` | `innovade_filos_nomic_v1` | safe alphanumeric/underscore collection |
 | `POSTGRES_HOST_PORT` | `5434` | host mapping only |
 | `POSTGRES_USER` | `democraseek` | Compose database user |
-| `POSTGRES_PASSWORD` | `democraseek` | Compose local password |
+| `POSTGRES_PASSWORD` | `change-this-password` | Compose password placeholder; replace it |
 | `POSTGRES_DB` | `democraseek` | Compose database name |
 
 Inside Compose, the backend always connects to `db:5432`; host port selection
@@ -164,7 +171,7 @@ Passed to the frontend image as build arguments and embedded into the bundle:
 | `VITE_API_BASE_URL` | empty | leave empty for same-origin `/api` |
 | `VITE_APP_NAME` | `DemocraSeek` | UI application name |
 | `VITE_PROJECT_NAME` | `INNOVADE` | UI project label |
-| `VITE_LOGO_URL` | empty | optional reviewed logo URL |
+| `VITE_LOGO_URL` | `/logo.svg` | reviewed logo bundled with the frontend |
 
 These four are baked in when the image is built, so changing any of them requires
 rebuilding the frontend image.

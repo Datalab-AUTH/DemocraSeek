@@ -11,6 +11,7 @@ canonical_sources:
   - "deployment/docker-compose.yml"
   - "start-demo.cmd"
   - "backend/app/api/routes_health.py"
+  - "Jenkinsfile"
 related_docs:
   - "docs/getting-started/quickstart.md"
   - "docs/reference/troubleshooting.md"
@@ -19,10 +20,11 @@ rag_index: true
 
 # Build and release verification
 
-The delivery repository intentionally contains no automated test suites,
-fixtures, fake providers, in-memory substitute stores, evaluation harness, or
-test-only dependencies. Generated dependencies and build output are also not
-stored; Docker reconstructs them from the pinned manifests.
+The delivery repository contains no tracked automated test suite or evaluation
+harness. The Jenkins pipeline builds and pushes the database, backend, and
+frontend images; it does not run behavioral tests. Generated dependencies and
+build output are not stored because Docker reconstructs them from the pinned
+manifests.
 
 Before publishing or handing over a revision, run these checks from the
 repository root:
@@ -46,3 +48,11 @@ Invoke-RestMethod http://localhost:8000/api/corpus
 
 This is runtime verification, not a substitute for an independently reviewed
 quality benchmark when the corpus, models, or retrieval parameters change.
+
+## Jenkins delivery pipeline
+
+`Jenkinsfile` checks out the selected revision, builds all three Docker images,
+and pushes them to the configured registry. Registry destination and credential
+IDs are operator-owned Jenkins settings. A successful Jenkins build proves that
+the images built and were pushed; it does not prove readiness, ingestion, or
+grounded-answer quality.

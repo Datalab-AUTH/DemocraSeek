@@ -32,8 +32,8 @@ rag_index: true
 | Citation ID | Reader-facing marker such as `C1` displayed as `[C1]` |
 | Supporting quote | Text the LLM claims to have copied from an evidence item; verified before display |
 | Registry | Trusted JSON records that map stable IDs to documents, pages, and figure files |
-| LLM | The answer-generation model, currently `llama3.1:8b` |
-| VLM | The ingestion-time vision-language model, currently `qwen2.5vl:7b` |
+| LLM | The answer-generation model, shipped as FILOS `datalab-2:latest` |
+| VLM | The ingestion-time vision-language model, shipped as FILOS `datalab-vision-1:latest` |
 | RAG | Retrieve evidence first, then generate an answer from that evidence |
 | Index fingerprint | Identity of all settings/code versions that determine stored chunks and vectors |
 | Re-index | Delete and rebuild derived index state from the approved corpus |

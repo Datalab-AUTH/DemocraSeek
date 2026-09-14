@@ -21,7 +21,7 @@ rag_index: true
 # Daily development workflow
 
 ```powershell
-.\start-demo.cmd            # validates .env, starts Ollama + Docker, waits for /api/ready, opens the UI
+.\start-demo.cmd            # validates providers + .env, starts Docker, waits for /api/ready, opens the UI
 .\start-demo.cmd -Build     # after code, dependency, or frontend changes
 .\start-demo.cmd -NoBrowser
 .\stop-demo.cmd             # stops, keeps database and index

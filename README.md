@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <b>A local-first, profile-aware, citation-grounded RAG application for the approved INNOVADE knowledge base.</b>
+  <b>A locally deployed, profile-aware, citation-grounded RAG application for the approved INNOVADE knowledge base.</b>
 </p>
 
 <p align="center">
@@ -55,10 +55,10 @@ Read [Product scope and core concepts](docs/explanation/product-scope-and-concep
 |                                 SQL + vectors        |          | OpenAI API    |
 |                                                      v          v compatible    |
 |                                            +-------------+  +----------------+  |
-|                                            | PostgreSQL  |  | Host Ollama    |  |
-|                                            | pgvector    |  | llama3.1:8b    |  |
+|                                            | PostgreSQL  |  | FILOS services |  |
+|                                            | pgvector    |  | datalab-2      |  |
 |                                            | + HNSW      |  | nomic-embed    |  |
-|                                            | pg_text-    |  | qwen2.5vl:7b   |  |
+|                                            | pg_text-    |  | datalab-vision |  |
 |                                            | search+BM25 |  +----------------+  |
 |                                            +-------------+                      |
 |                                                                                |
@@ -73,7 +73,7 @@ Read [Product scope and core concepts](docs/explanation/product-scope-and-concep
 | React + nginx | Serve the UI and proxy same-origin `/api` requests |
 | FastAPI | Validate requests, compile onboarding policy, orchestrate RAG, validate citations, and serve source data |
 | PostgreSQL | Store chunks, vectors, metadata, and dense/BM25 indexes |
-| Host Ollama | Provide answer generation, language handling, embeddings, and optional vision |
+| FILOS services | Provide answer generation, language handling, embeddings, and vision through OpenAI-compatible APIs |
 | Operator CLI | Approve and ingest corpus files; maintain derived index state |
 
 See [System overview](docs/architecture/system-overview.md) for the full runtime topology and design choices.
@@ -84,9 +84,9 @@ See [System overview](docs/architecture/system-overview.md) for the full runtime
 
 - Windows 10/11 with PowerShell for the included launchers
 - Docker Desktop with Compose v2
-- Ollama
-- Enough disk and RAM for the configured models, Docker images, and reranker
-- Internet access for first-time image and model downloads unless artifacts are already available
+- Access to the AUTH FILOS services and an institutional API key
+- Enough disk and RAM for Docker images and the local reranker
+- Network access for FILOS, image downloads, and the reranker model
 
 Python and Node are not required on the host for normal Docker runtime.
 
@@ -96,21 +96,13 @@ Python and Node are not required on the host for normal Docker runtime.
 Copy-Item .env.example .env
 ```
 
-Review the local ports, model names, corpus version, vision setting, and retrieval values. Do not commit `.env`.
+Set `INSTITUTIONAL_API_KEY`, then review the local ports, corpus version, and retrieval values. Do not commit `.env`.
 
-### 2. Pull the default local models
-
-```powershell
-ollama pull llama3.1:8b
-ollama pull nomic-embed-text
-ollama pull qwen2.5vl:7b
-```
-
-### 3. Add approved corpus files
+### 2. Add approved corpus files
 
 Place INNOVADE documents in `data/corpus/internal/` and downloaded third-party documents in `data/corpus/external/`. Record external attribution and URLs in `data/corpus/corpus.metadata.yaml`.
 
-### 4. Build, start, and ingest
+### 3. Build, start, and ingest
 
 ```powershell
 docker compose -f deployment\docker-compose.yml --env-file .env up -d --build
@@ -119,7 +111,7 @@ docker compose -f deployment\docker-compose.yml --env-file .env up -d --build
 
 A new index can remain unavailable until ingestion completes.
 
-### 5. Verify and open
+### 4. Verify and open
 
 ```powershell
 docker compose -f deployment\docker-compose.yml --env-file .env run --rm backend python -m app.cli status

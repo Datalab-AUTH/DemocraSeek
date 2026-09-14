@@ -167,9 +167,9 @@ The active `.env` enables:
 
 ```dotenv
 VISION_PROVIDER=openai_compatible
-VISION_MODEL=qwen2.5vl:7b
-VISION_BASE_URL=http://host.docker.internal:11434/v1
-VISION_API_KEY=ollama
+VISION_MODEL=datalab-vision-1:latest
+VISION_BASE_URL=https://filos.csd.auth.gr/ollama/v1
+INSTITUTIONAL_API_KEY=<institutional-key>
 ```
 
 After ingestion, the generated report records kept figures and retrievable
@@ -181,7 +181,7 @@ ran; merely having the model installed is not enough.
 ```text
 INGESTION TIME
 figure PNG + caption
-  -> qwen2.5vl:7b description
+  -> FILOS datalab-vision-1 description
   -> caption + description
   -> nomic-embed-text vector
   -> pgvector figure chunk
@@ -189,7 +189,7 @@ figure PNG + caption
 QUESTION TIME
 question
   -> retrieve figure description like normal text
-  -> llama3.1:8b answers from that text
+  -> FILOS datalab-2 answers from that text
   -> citation validator labels it figure_description
   -> registry attaches original PNG
   -> reader compares answer with image

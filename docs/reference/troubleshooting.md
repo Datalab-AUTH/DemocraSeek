@@ -42,13 +42,24 @@ docker compose -f deployment\docker-compose.yml --env-file .env logs --tail 100 
 Common causes:
 
 - no ingested corpus in the Docker `ingestdata18` volume;
-- model unavailable;
+- FILOS credential or model unavailable;
 - incompatible fingerprint;
 - database unavailable;
 - pending approved files;
 - reranker download/cache failure.
 
-## Missing Ollama model
+## FILOS rejects provider requests
+
+Confirm that `.env` contains the institutional credential without printing it:
+
+```powershell
+Select-String -Path .env -Pattern '^INSTITUTIONAL_API_KEY=.+'
+```
+
+The shipped LLM, embedding, and vision endpoints all use that shared key unless
+a provider-specific key is set. Do not commit `.env` or paste the key into logs.
+
+## Missing Ollama model in an explicit local configuration
 
 ```powershell
 ollama list
@@ -59,7 +70,7 @@ ollama pull qwen2.5vl:7b
 
 Model names in `.env` must match installed tags.
 
-## Container cannot reach Ollama
+## Container cannot reach an explicitly configured local Ollama
 
 Ensure:
 

@@ -40,7 +40,7 @@ POST /api/chat
   -> assign request-local E1..En identifiers
   -> enforce the context budget
   -> build system and user prompts
-  -> call llama3.1:8b
+  -> call the configured FILOS answer model
   -> parse strict JSON
   -> validate citation structure and quotes
   -> retry once when required
@@ -80,8 +80,8 @@ routing is a separate call required by the multilingual contract.
 
 ### Language routing and output translation
 
-`LLMLanguageProvider` uses the configured local `llama3.1:8b`; it is not a
-second external service and has no duplicate environment block. Its first
+`LLMLanguageProvider` uses the configured `datalab-2:latest` FILOS model; it
+shares the answer provider and has no duplicate environment block. Its first
 strict-JSON task detects the dominant language and produces a faithful English
 translation without answering the question. Retrieval, reranking, policy
 compilation, evidence construction, generation, and citation validation then
@@ -235,10 +235,9 @@ trusted section delimiter.
 ### Why Support and Mode are repeated near the task
 
 The full compiled policy appears before potentially thousands of characters of
-evidence. Measurements with the local 8B model showed that presentation modes
-could otherwise converge to nearly identical responses. Repeating the highest
-support-adaptation instructions and the selected mode immediately before
-generation improved compliance.
+evidence, which can make presentation instructions less prominent. Repeating
+the highest support-adaptation instructions and the selected mode immediately
+before generation reinforces the requested response shape.
 
 The repetition does not create a second policy and does not change evidence.
 

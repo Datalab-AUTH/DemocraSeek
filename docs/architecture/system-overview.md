@@ -42,10 +42,10 @@ rag_index: true
 |                                 SQL + vectors        |          | OpenAI API    |
 |                                                      v          v compatible    |
 |                                            +-------------+  +----------------+  |
-|                                            | PostgreSQL  |  | Host Ollama    |  |
-|                                            | pgvector    |  | llama3.1:8b    |  |
+|                                            | PostgreSQL  |  | FILOS services |  |
+|                                            | pgvector    |  | datalab-2      |  |
 |                                            | + HNSW      |  | nomic-embed    |  |
-|                                            | pg_text-    |  | qwen2.5vl:7b   |  |
+|                                            | pg_text-    |  | datalab-vision |  |
 |                                            | search+BM25 |  +----------------+  |
 |                                            +-------------+                      |
 |                                                                                |
@@ -81,7 +81,7 @@ Question + recent history
   -> dense gate + BM25 candidates + cross-encoder rerank
   -> create E1..En evidence context
   -> assemble system and user prompts
-  -> llama3.1:8b returns strict JSON
+  -> configured FILOS answer model returns strict JSON
   -> parse and validate citations
   -> hydrate trusted document/page/figure data from index records
   -> split the validated English answer around [C...] markers
@@ -124,7 +124,7 @@ once, then discarded.
 
 | Service | Technology | Purpose | Host port |
 |---|---|---|---:|
-| `frontend` | nginx 1.31.4 + Vite-built React bundle | UI and same-origin `/api` proxy | `8080` |
+| `frontend` | nginx stable-alpine + Vite-built React bundle | UI and same-origin `/api` proxy | `8080` |
 | `backend` | Python 3.13 + FastAPI + Uvicorn | API, RAG orchestration, source serving | `8000` |
 | `db` | PostgreSQL 18 + pgvector 0.8.6 + pg_textsearch 1.4.0 | chunks, metadata, embeddings, HNSW and BM25 indexes | configurable, active `5434` |
 
@@ -139,15 +139,14 @@ three normal containers. Seeing one group does not mean pgvector is missing.
 
 ### What remains outside Docker
 
-Ollama runs on the host:
+The shipped profile calls the AUTH FILOS OpenAI-compatible endpoints for answer
+generation, language handling, embeddings, and vision. The operator supplies
+`INSTITUTIONAL_API_KEY`; individual provider keys may override it. The local
+cross-encoder reranker still runs inside the backend container.
 
-- it can use the workstation's model installation and acceleration;
-- large model files are not duplicated in application images;
-- containers reach it through `host.docker.internal:11434`.
-
-The project therefore has a Dockerized application stack, but not a
-"nothing installed except Docker" runtime. Docker Desktop and Ollama are both
-required for the configured local deployment.
+Ollama remains an optional local provider target when `.env` explicitly points
+the compatible adapters at `host.docker.internal:11434`; it is not required by
+the shipped FILOS profile.
 
 ### Persistent storage
 

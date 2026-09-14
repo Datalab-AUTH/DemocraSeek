@@ -1,3 +1,20 @@
+---
+title: "Legacy full README"
+doc_type: archive
+layer: archive
+audience: "maintainer"
+reader_goal: "inspect the pre-modularization project handbook"
+reader_state: "understands this material is historical"
+source_of_truth: false
+status: deprecated
+rag_index: false
+---
+
+# Legacy full README
+
+> Historical snapshot from `main` before the documentation was modularized.
+> It is preserved for reference and is not active project documentation.
+
 # DemocraSeek
 
 DemocraSeek is a local-first, profile-aware, citation-grounded Retrieval-Augmented
@@ -16,7 +33,7 @@ product purpose, requirements, onboarding policy, architecture, ingestion,
 retrieval, prompting, citations, images, configuration, operation,
 deployment, and troubleshooting.
 
-**Just need to run it?** Read [README.dev.md](README.dev.md) instead: a short
+**Just need to run it?** Read [legacy-README.dev.md](legacy-README.dev.md) instead: a short
 developer quick guide covering how to start the stack, how the ingestion and
 answering flows work, and where to change configuration or onboarding. This
 handbook holds the full detail behind every one of those points.
@@ -1946,7 +1963,7 @@ Python and Node are not required on the host for normal Docker runtime.
 
 This section covers the first installation. For the day-to-day workflow after
 that (`start-demo.cmd`, `-Build`, `stop-demo.cmd`, status checks, and logs),
-see [README.dev.md](README.dev.md).
+see [legacy-README.dev.md](legacy-README.dev.md).
 
 ### 19.1 Configure
 

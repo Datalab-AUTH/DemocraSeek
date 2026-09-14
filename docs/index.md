@@ -79,4 +79,10 @@ Maintainer and corpus-operator procedures.
 - Reference pages provide exact lookup facts.
 - Operations pages are maintainer runbooks.
 
-There is no archive in the current documentation set because no historical document was identified that needs to remain available as inactive project truth.
+## Archive
+
+Historical snapshots retained for comparison. They are not active setup or
+architecture documentation and are excluded from RAG indexing.
+
+- [Legacy full README](archive/legacy-README.md)
+- [Legacy developer quick guide](archive/legacy-README.dev.md)
