@@ -685,8 +685,10 @@ the document's substantive text.
 ### 7.6 Contents pages and headings
 
 Likely table-of-contents pages are not chunked because dot leaders and heading
-lists can outrank real prose. Heading detection is heuristic and also supplies
-topics used for starter questions. It is not a full document-layout model.
+lists can outrank real prose. Heading detection is heuristic and records
+section topics in the registry; it is not a full document-layout model. The
+starter questions on the chat start screen are no longer derived from these
+topics but curated by hand in `config/starter_questions.yaml`.
 
 ### 7.7 Text chunking
 
@@ -1614,7 +1616,7 @@ Interactive OpenAPI documentation is available at
 |---|---|
 | `GET /api/health` | Process liveness; does not require provider/database readiness |
 | `GET /api/ready` | Database, index compatibility, registry, corpus, and pending-file readiness |
-| `GET /api/corpus` | Indexed documents, counts, pending files, starter questions |
+| `GET /api/corpus` | Indexed documents, counts, pending files, curated starter questions per locale |
 | `GET /api/onboarding/config` | Versioned questions, translations, locale metadata, labels, codes |
 | `POST /api/onboarding/compile` | Validate a profile and inspect compiled policy |
 | `POST /api/chat` | Grounded or insufficient-evidence response |
@@ -1825,6 +1827,7 @@ active root `.env` values.
 | Variable | Active `.env` value | Meaning |
 |---|---|---|
 | `ONBOARDING_CONFIG_PATH` | `config/onboarding.v2.yaml` | versioned policy |
+| `STARTER_QUESTIONS_PATH` | `config/starter_questions.yaml` | hand-written start-screen questions, every locale per entry; validated at startup |
 | `MAX_USER_INPUT_CHARS` | `2000` | normalized question limit |
 | `MAX_CONVERSATION_MESSAGES` | `12` | recent messages sent to generation |
 | `RATE_LIMIT_REQUESTS` | `60` | requests per process/window |
@@ -1891,6 +1894,7 @@ combinations.
 | Vision provider/model | `.env` `VISION_*` | restart | **yes** | yes |
 | Corpus add/update/delete | `data/corpus/` | none | incremental `ingest` | review report |
 | Onboarding wording/policy | new versioned YAML + path | rebuild/restart | no | profile review/demo |
+| Starter questions | `config/starter_questions.yaml` | rebuild/restart | no | check each locale on the start screen |
 | Frontend branding/API URL | Vite build variables | rebuild frontend | no | UI check |
 | PostgreSQL host port | `.env` `POSTGRES_HOST_PORT` | recreate port mapping | no | connectivity only |
 | Vector-store implementation | new adapter/factory/config | rebuild | re-ingest | full |
@@ -2144,6 +2148,7 @@ quality benchmark when the corpus, models, or retrieval parameters change.
 democraseek/
 |-- backend/app/                    backend application
 |-- config/onboarding.v2.yaml       onboarding source of truth
+|-- config/starter_questions.yaml   curated start-screen questions, all locales
 |-- data/
 |   |-- corpus/                     approved source files
 |   |-- index/                      generated registry/page/figure artefacts
@@ -2185,6 +2190,7 @@ reports are deliberately absent. They are reconstructed from pinned manifests.
 | `app/services/multilingual_chat.py` | language detection, English canonical context, final translation |
 | `app/onboarding/config_loader.py` | YAML validation |
 | `app/onboarding/compiler.py` | four codes to deterministic policy |
+| `app/starter_questions.py` | loads and validates the curated start-screen questions |
 | `app/ingestion/pipeline.py` | complete ingestion orchestration |
 | `app/ingestion/pdf_extract.py` | pages, checksum, OCR-review signals |
 | `app/ingestion/cleaning.py` | repeated header/footer cleanup |

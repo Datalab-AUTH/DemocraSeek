@@ -421,7 +421,7 @@ Key groups in `.env`:
 | Retrieval | `RETRIEVAL_CANDIDATE_K` (10), `RETRIEVAL_TOP_K` (6), `RETRIEVAL_SCORE_THRESHOLD` (0.65), `RETRIEVAL_MAX_CONTEXT_TOKENS` (4000), `RERANK_MODEL` | the actual tuning knobs |
 | Store | `VECTOR_STORE_COLLECTION`, `VECTOR_STORE_URL`, `POSTGRES_HOST_PORT`, `POSTGRES_USER` / `PASSWORD` / `DB` | inside Compose the backend always talks to `db:5432` |
 | Corpus | `CORPUS_PATH`, `INDEX_PATH`, `REPORT_PATH`, `CHUNK_SIZE` (1200), `CHUNK_OVERLAP` (180), `INDEX_VERSION` | |
-| Limits | `ONBOARDING_CONFIG_PATH`, `MAX_USER_INPUT_CHARS`, `MAX_CONVERSATION_MESSAGES`, `RATE_LIMIT_*` | |
+| Limits | `ONBOARDING_CONFIG_PATH`, `STARTER_QUESTIONS_PATH`, `MAX_USER_INPUT_CHARS`, `MAX_CONVERSATION_MESSAGES`, `RATE_LIMIT_*` | |
 | Frontend (build-time) | `VITE_API_BASE_URL` (leave empty for same-origin), `VITE_APP_NAME`, `VITE_PROJECT_NAME`, `VITE_LOGO_URL` | baked into the image; needs `-Build` |
 | Frontend (dev server only) | `VITE_DEV_API_TARGET` | where `npm run dev` proxies `/api`, default `http://127.0.0.1:8000`; Compose never passes it |
 
@@ -443,6 +443,7 @@ docker compose -f deployment\docker-compose.yml --env-file .env run --rm backend
 | Vision provider / model | `.env` `VISION_*` | restart | **yes** |
 | Corpus add / update / delete | `data/corpus/` | none | incremental `ingest` |
 | Onboarding wording or policy | new versioned YAML + `ONBOARDING_CONFIG_PATH` | rebuild/restart | no |
+| Starter questions on the chat start screen | `config/starter_questions.yaml` | rebuild/restart | no |
 | Frontend branding / API URL | `VITE_*` | rebuild frontend | no |
 | PostgreSQL host port | `.env` `POSTGRES_HOST_PORT` | recreate port mapping | no |
 | Chunking algorithm code | ingestion code + bump `CHUNKING_VERSION` | rebuild | **yes** |
@@ -498,6 +499,33 @@ For a translation fix that does not change meaning, edit the entry under
 meaning of a label, code, or instruction is a policy change → use the versioned
 procedure above.
 
+### Starter questions ("Not sure where to start?")
+
+The example questions on the chat start screen are **hand-written**, not derived
+from the corpus: [config/starter_questions.yaml](config/starter_questions.yaml).
+Each entry carries the question in **every** interface locale:
+
+```yaml
+questions:
+  - en: "What is digital democracy?"
+    el: "Τι είναι η ψηφιακή δημοκρατία;"
+    fr: "Qu’est-ce que la démocratie numérique ?"
+    es: "¿Qué es la democracia digital?"
+    nl-BE: "Wat is digitale democratie?"
+```
+
+The loader refuses the file at startup if any question lacks a locale, has an
+empty text, or names a locale that `onboarding.v2.yaml` does not define — so no
+language can ever show fewer questions than another. Order in the file is order
+on screen; an empty list hides the section. To apply a change: edit the file and
+`.\start-demo.cmd -Build` (the `config/` folder is baked into the image). No
+re-index, no `policy_version` change.
+
+Pick questions the approved corpus can actually answer and that show the system
+at its best — for example one that resolves to a figure description, one that
+mixes an internal deliverable with an external publication, and one plain
+concept question.
+
 ---
 
 ## 9. HTTP API
@@ -508,7 +536,7 @@ Interactive docs: `http://localhost:8000/docs`.
 |---|---|
 | `GET /api/health` | liveness only |
 | `GET /api/ready` | database, index compatibility, registry, corpus, pending files |
-| `GET /api/corpus` | indexed documents, counts, pending files, starter questions |
+| `GET /api/corpus` | indexed documents, counts, pending files, curated starter questions (`suggested_questions_by_locale`) |
 | `GET /api/onboarding/config` | versioned questions, translations, locale metadata |
 | `POST /api/onboarding/compile` | validate a profile, inspect the compiled policy |
 | `POST /api/chat` | grounded or insufficient-evidence response |

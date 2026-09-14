@@ -1,0 +1,43 @@
+# DemocraSeek starter questions
+#
+# The example questions shown on the chat start screen ("Not sure where to
+# start?"). They are curated by hand, not derived from the corpus: pick
+# questions that show the system at its best and that the approved corpus can
+# actually answer.
+#
+# Rules, enforced at startup:
+#   - every question carries every locale listed in config/onboarding.v2.yaml
+#     (currently en, el, fr, es, nl-BE), so no language ever shows fewer
+#     questions than another;
+#   - texts are non-empty;
+#   - the list may be empty, in which case the section is hidden.
+#
+# Applying a change: the config folder is baked into the backend image, so
+# rebuild and restart the backend (.\start-demo.cmd -Build). No re-index.
+#
+# Order here is the order on screen.
+
+questions:
+  - en: "In Figure 9.1, which five areas surround Digital Democracy?"
+    el: "Στο Σχήμα 9.1, ποιες πέντε περιοχές περιβάλλουν την Ψηφιακή Δημοκρατία;"
+    fr: "Dans la figure 9.1, quelles sont les cinq zones qui entourent la démocratie numérique ?"
+    es: "En la Figura 9.1, ¿qué cinco áreas rodean a la democracia digital?"
+    nl-BE: "Welke vijf gebieden omringen digitale democratie in figuur 9.1?"
+
+  - en: "What is the Digital Democracy Score and what does it measure?"
+    el: "Τι είναι το Digital Democracy Score και τι μετράει;"
+    fr: "Qu’est-ce que le Digital Democracy Score et que mesure-t-il ?"
+    es: "¿Qué es el Digital Democracy Score y qué mide?"
+    nl-BE: "Wat is de Digital Democracy Score en wat meet die?"
+
+  - en: "What does the counter-publics position of digital democracy emphasise, and how does the DDS treat participation?"
+    el: "Τι τονίζει η θέση των counter-publics στην ψηφιακή δημοκρατία, και πώς αντιμετωπίζει το DDS τη συμμετοχή;"
+    fr: "Que met en avant la position des contre-publics en démocratie numérique, et comment le DDS traite-t-il la participation ?"
+    es: "¿Qué destaca la posición de los contrapúblicos en la democracia digital y cómo trata el DDS la participación?"
+    nl-BE: "Wat benadrukt de tegenpublieken-positie in digitale democratie, en hoe behandelt de DDS participatie?"
+
+  - en: "What is digital democracy?"
+    el: "Τι είναι η ψηφιακή δημοκρατία;"
+    fr: "Qu’est-ce que la démocratie numérique ?"
+    es: "¿Qué es la democracia digital?"
+    nl-BE: "Wat is digitale democratie?"

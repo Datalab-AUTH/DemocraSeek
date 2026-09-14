@@ -7,7 +7,7 @@ import logging
 from fastapi import APIRouter, Depends, Response
 
 from app.api.deps import ApplicationContext, get_context
-from app.schemas.chunks import DocumentRecord
+from app.starter_questions import by_locale
 
 logger = logging.getLogger(__name__)
 
@@ -109,37 +109,14 @@ def corpus_contents(context: ApplicationContext = Depends(get_context)) -> dict[
             }
             for record in ordered
         ],
-        "suggested_questions": suggested_questions(ordered),
+        # Curated in config/starter_questions.yaml, complete for every locale.
+        # The flat English list stays for older clients; the UI reads by locale.
+        "suggested_questions": [
+            question[context.onboarding_config.default_locale]
+            for question in context.starter_questions
+        ],
+        "suggested_questions_by_locale": by_locale(
+            context.starter_questions,
+            [locale.code for locale in context.onboarding_config.locales],
+        ),
     }
-
-
-# Neutral wrapper for detected section headings.
-_QUESTION_TEMPLATE = "What does the evidence say about {topic}?"
-MAX_SUGGESTIONS = 4
-
-
-def _as_question(topic: str) -> str:
-    """Turn a section heading into a readable question."""
-    cleaned = topic.strip()
-    if cleaned.endswith("?"):
-        return cleaned
-    return _QUESTION_TEMPLATE.format(topic=cleaned)
-
-
-def suggested_questions(records: list[DocumentRecord]) -> list[str]:
-    """Build starter questions from indexed topics in document rotation."""
-    questions: list[str] = []
-    seen: set[str] = set()
-    for index in range(max((len(record.topics) for record in records), default=0)):
-        for record in records:
-            if index >= len(record.topics):
-                continue
-            topic = record.topics[index]
-            key = topic.lower()
-            if key in seen:
-                continue
-            seen.add(key)
-            questions.append(_as_question(topic))
-            if len(questions) >= MAX_SUGGESTIONS:
-                return questions
-    return questions

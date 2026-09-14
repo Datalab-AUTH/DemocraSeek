@@ -43,6 +43,8 @@ def check_config() -> None:
         problems.append(f"CORPUS_PATH does not exist: {settings.corpus_path}")
     if not settings.onboarding_config_path.is_file():
         problems.append(f"ONBOARDING_CONFIG_PATH does not exist: {settings.onboarding_config_path}")
+    if not settings.starter_questions_path.is_file():
+        problems.append(f"STARTER_QUESTIONS_PATH does not exist: {settings.starter_questions_path}")
 
     try:
         build_embeddings(settings)

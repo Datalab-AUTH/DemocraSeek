@@ -175,6 +175,8 @@ export interface CorpusResponse {
   documents: CorpusDocument[];
   /** Files sitting in the corpus directory that have not been ingested yet. */
   pending_files: string[];
-  /** Starter questions derived from indexed headings. */
+  /** Curated starter questions in the default locale (kept for older clients). */
   suggested_questions: string[];
+  /** The same questions per interface locale, same order and length everywhere. */
+  suggested_questions_by_locale: Record<string, string[]>;
 }

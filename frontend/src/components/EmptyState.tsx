@@ -2,11 +2,12 @@
 
 import type { CorpusDocument } from "../api/types";
 import { branding } from "../branding";
-import { formatUi, localizeExamples, useUi } from "../i18n";
+import { formatUi, useUi } from "../i18n";
 
 interface Props {
   documents: CorpusDocument[];
-  exampleQuestions: string[];
+  /** Curated starter questions keyed by interface locale. */
+  exampleQuestions: Record<string, string[]>;
   pendingFiles: string[];
   onPickExample: (question: string) => void;
 }
@@ -18,7 +19,9 @@ export function EmptyState({
   onPickExample,
 }: Props): JSX.Element {
   const { locale, ui } = useUi();
-  const localizedQuestions = localizeExamples(locale, exampleQuestions);
+  // Every locale carries the full list (the backend refuses incomplete files),
+  // so this fallback only matters if the API and the UI disagree on locales.
+  const localizedQuestions = exampleQuestions[locale] ?? exampleQuestions.en ?? [];
   return (
     <div className="empty">
       <div className="empty__hero">
