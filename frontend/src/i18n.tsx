@@ -48,7 +48,6 @@ export interface UiCopy {
     libraryNotReady: string;
     pendingMaterial: string;
     examplesTitle: string;
-    exampleTranslations: Record<string, string>;
   };
   answer: {
     copied: string;
@@ -171,7 +170,7 @@ const EN: UiCopy = {
     lead: "Ask about {project} or choose a question below. Each answer lets you open the source and check where the information came from.",
     libraryNotReady: "The information library is not ready yet. Please contact the person managing DemocraSeek.",
     pendingMaterial: "Some new material is still being prepared and is not available in answers yet.",
-    examplesTitle: "Not sure where to start?", exampleTranslations: {},
+    examplesTitle: "Not sure where to start?",
   },
   answer: {
     copied: "Copied", copy: "Copy answer", unconfirmedTitle: "We could not confirm this answer",
@@ -253,14 +252,6 @@ const EL: UiCopy = {
     libraryNotReady: "Η βιβλιοθήκη πληροφοριών δεν είναι ακόμη έτοιμη. Επικοινωνήστε με τον υπεύθυνο του DemocraSeek.",
     pendingMaterial: "Κάποιο νέο υλικό προετοιμάζεται ακόμη και δεν είναι διαθέσιμο στις απαντήσεις.",
     examplesTitle: "Δεν ξέρετε από πού να ξεκινήσετε;",
-    exampleTranslations: {
-      "What does the evidence say about Resources and skills that enable participation?": "Τι αναφέρουν τα τεκμήρια για τους πόρους και τις δεξιότητες που διευκολύνουν τη συμμετοχή;",
-      "What does the evidence say about Why Digital Democracy Matters?": "Τι αναφέρουν τα τεκμήρια για τη σημασία της ψηφιακής δημοκρατίας;",
-      "What is Digital Democracy?": "Τι είναι η ψηφιακή δημοκρατία;",
-      "What does the evidence say about Digital Democracy?": "Τι αναφέρουν τα τεκμήρια για την ψηφιακή δημοκρατία;",
-      "What does the evidence say about barriers to participation?": "Τι αναφέρουν τα τεκμήρια για τα εμπόδια στη συμμετοχή;",
-      "What does the evidence say about recommendations for public administrations?": "Τι αναφέρουν τα τεκμήρια για τις συστάσεις προς τις δημόσιες διοικήσεις;",
-    },
   },
   answer: {
     copied: "Αντιγράφηκε", copy: "Αντιγραφή απάντησης", unconfirmedTitle: "Δεν μπορέσαμε να επιβεβαιώσουμε αυτή την απάντηση",
@@ -340,14 +331,6 @@ const FR: UiCopy = {
     libraryNotReady: "La bibliothèque d’informations n’est pas encore prête. Contactez la personne responsable de DemocraSeek.",
     pendingMaterial: "De nouveaux contenus sont encore en préparation et ne sont pas encore disponibles dans les réponses.",
     examplesTitle: "Vous ne savez pas par où commencer ?",
-    exampleTranslations: {
-      "What does the evidence say about Resources and skills that enable participation?": "Que disent les preuves sur les ressources et compétences qui favorisent la participation ?",
-      "What does the evidence say about Why Digital Democracy Matters?": "Que disent les preuves sur l’importance de la démocratie numérique ?",
-      "What is Digital Democracy?": "Qu’est-ce que la démocratie numérique ?",
-      "What does the evidence say about Digital Democracy?": "Que disent les preuves sur la démocratie numérique ?",
-      "What does the evidence say about barriers to participation?": "Que disent les preuves sur les obstacles à la participation ?",
-      "What does the evidence say about recommendations for public administrations?": "Que disent les preuves sur les recommandations destinées aux administrations publiques ?",
-    },
   },
   answer: {
     copied: "Copié", copy: "Copier la réponse", unconfirmedTitle: "Nous n’avons pas pu confirmer cette réponse",
@@ -420,14 +403,6 @@ const ES: UiCopy = {
     lead: "Pregunte sobre {project} o elija una pregunta de las siguientes. Cada respuesta le permite abrir la fuente y comprobar de dónde procede la información.",
     libraryNotReady: "La biblioteca de información aún no está lista. Póngase en contacto con la persona responsable de DemocraSeek.",
     pendingMaterial: "Todavía se está preparando material nuevo y aún no está disponible en las respuestas.", examplesTitle: "¿No sabe por dónde empezar?",
-    exampleTranslations: {
-      "What does the evidence say about Resources and skills that enable participation?": "¿Qué dicen las pruebas sobre los recursos y capacidades que facilitan la participación?",
-      "What does the evidence say about Why Digital Democracy Matters?": "¿Qué dicen las pruebas sobre la importancia de la democracia digital?",
-      "What is Digital Democracy?": "¿Qué es la democracia digital?",
-      "What does the evidence say about Digital Democracy?": "¿Qué dicen las pruebas sobre la democracia digital?",
-      "What does the evidence say about barriers to participation?": "¿Qué dicen las pruebas sobre los obstáculos a la participación?",
-      "What does the evidence say about recommendations for public administrations?": "¿Qué dicen las pruebas sobre las recomendaciones para las administraciones públicas?",
-    },
   },
   answer: {
     copied: "Copiado", copy: "Copiar respuesta", unconfirmedTitle: "No hemos podido confirmar esta respuesta",
@@ -500,14 +475,6 @@ const NL_BE: UiCopy = {
     lead: "Stel een vraag over {project} of kies hieronder een vraag. Bij elk antwoord kunt u de bron openen en controleren waar de informatie vandaan komt.",
     libraryNotReady: "De informatiebibliotheek is nog niet klaar. Neem contact op met de beheerder van DemocraSeek.",
     pendingMaterial: "Nieuw materiaal wordt nog voorbereid en is nog niet beschikbaar in antwoorden.", examplesTitle: "Weet u niet waar te beginnen?",
-    exampleTranslations: {
-      "What does the evidence say about Resources and skills that enable participation?": "Wat zegt het bewijs over middelen en vaardigheden die participatie mogelijk maken?",
-      "What does the evidence say about Why Digital Democracy Matters?": "Wat zegt het bewijs over het belang van digitale democratie?",
-      "What is Digital Democracy?": "Wat is digitale democratie?",
-      "What does the evidence say about Digital Democracy?": "Wat zegt het bewijs over digitale democratie?",
-      "What does the evidence say about barriers to participation?": "Wat zegt het bewijs over belemmeringen voor participatie?",
-      "What does the evidence say about recommendations for public administrations?": "Wat zegt het bewijs over aanbevelingen voor overheidsdiensten?",
-    },
   },
   answer: {
     copied: "Gekopieerd", copy: "Antwoord kopiëren", unconfirmedTitle: "We konden dit antwoord niet bevestigen",
@@ -568,15 +535,6 @@ export function formatUi(template: string, values: Record<string, string | numbe
   return template.replace(/\{(\w+)\}/g, (whole, key: string) =>
     Object.hasOwn(values, key) ? String(values[key]) : whole,
   );
-}
-
-export function localizeExamples(locale: UiLocale, questions: string[]): string[] {
-  if (locale === "en") return questions;
-  const translations = COPY[locale].empty.exampleTranslations;
-  return questions.flatMap((question) => {
-    const translated = translations[question];
-    return translated ? [translated] : [];
-  });
 }
 
 const UiContext = createContext<{ locale: UiLocale; ui: UiCopy }>({ locale: "en", ui: EN });

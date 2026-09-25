@@ -107,6 +107,8 @@ class Settings(BaseSettings):
 
     # Onboarding and request limits
     onboarding_config_path: Path = Path("config/onboarding.v2.yaml")
+    # Curated example questions for the chat start screen, one entry per locale.
+    starter_questions_path: Path = Path("config/starter_questions.yaml")
     max_user_input_chars: int = Field(default=2000, ge=50, le=20000)
     max_conversation_messages: int = Field(default=12, ge=2, le=100)
     rate_limit_requests: int = Field(default=60, ge=1, le=10000)
@@ -117,7 +119,13 @@ class Settings(BaseSettings):
     report_path: Path = Path("data/reports")
 
     # Paths
-    @field_validator("corpus_path", "onboarding_config_path", "index_path", "report_path")
+    @field_validator(
+        "corpus_path",
+        "onboarding_config_path",
+        "starter_questions_path",
+        "index_path",
+        "report_path",
+    )
     @classmethod
     def _absolutise(cls, value: Path) -> Path:
         """Resolve relative paths against the project root, never the CWD."""

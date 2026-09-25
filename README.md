@@ -143,6 +143,7 @@ The two flows share one approved knowledge layer. Starting the API or copying a 
 DemocraSeek/
 |-- backend/app/                    FastAPI application, ingestion, RAG, providers
 |-- config/onboarding.v2.yaml       onboarding source of truth
+|-- config/starter_questions.yaml   curated start-screen questions, all locales
 |-- data/                           corpus mount, registry/reports, generated index data
 |-- deployment/                     Dockerfiles, Compose, nginx
 |-- docs/                           project documentation

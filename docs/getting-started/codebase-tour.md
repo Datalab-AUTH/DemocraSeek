@@ -26,6 +26,7 @@ rag_index: true
 democraseek/
 |-- backend/app/                    backend application
 |-- config/onboarding.v2.yaml       onboarding source of truth
+|-- config/starter_questions.yaml   curated start-screen questions, all locales
 |-- data/
 |   |-- corpus/                     approved source files
 |   |-- index/                      generated registry/page/figure artefacts
@@ -67,6 +68,7 @@ reports are deliberately absent. They are reconstructed from pinned manifests.
 | `app/services/multilingual_chat.py` | language detection, English canonical context, final translation |
 | `app/onboarding/config_loader.py` | YAML validation |
 | `app/onboarding/compiler.py` | four codes to deterministic policy |
+| `app/starter_questions.py` | loads and validates curated start-screen questions |
 | `app/ingestion/pipeline.py` | complete ingestion orchestration |
 | `app/ingestion/pdf_extract.py` | pages, checksum, OCR-review signals |
 | `app/ingestion/cleaning.py` | repeated header/footer cleanup |

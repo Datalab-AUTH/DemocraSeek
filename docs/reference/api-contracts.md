@@ -25,7 +25,7 @@ Interactive OpenAPI documentation is available at
 |---|---|
 | `GET /api/health` | Process liveness; does not require provider/database readiness |
 | `GET /api/ready` | Database, index compatibility, registry, corpus, and pending-file readiness |
-| `GET /api/corpus` | Indexed documents, counts, pending files, starter questions |
+| `GET /api/corpus` | Indexed documents, counts, pending files, curated starter questions per locale |
 | `GET /api/onboarding/config` | Versioned questions, translations, locale metadata, labels, codes |
 | `POST /api/onboarding/compile` | Validate a profile and inspect compiled policy |
 | `POST /api/chat` | Grounded or insufficient-evidence response |

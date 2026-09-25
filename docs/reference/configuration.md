@@ -29,8 +29,8 @@ are no secondary Docker-specific environment files and no duplicated
 
 `backend/app/config.py` provides typed validation, safe fallback values, and
 cross-field checks; it is not a second operator configuration file.
-`.env.example` contains the complete versioned template. `config/onboarding.v2.yaml` remains separate because it is
-versioned product policy, not infrastructure/provider configuration.
+`.env.example` contains the complete versioned template. `config/onboarding.v2.yaml` and `config/starter_questions.yaml` remain separate because they are
+versioned product policy and curated start-screen questions, not infrastructure/provider configuration.
 
 ## Active demo configuration
 
@@ -157,6 +157,7 @@ is the code default: `.env.example` sets container-absolute values such as
 | Variable | Default | Meaning |
 |---|---|---|
 | `ONBOARDING_CONFIG_PATH` | `config/onboarding.v2.yaml` | versioned policy |
+| `STARTER_QUESTIONS_PATH` | `config/starter_questions.yaml` | hand-written start-screen questions, every locale per entry; validated at startup |
 | `MAX_USER_INPUT_CHARS` | `2000` | normalized question limit |
 | `MAX_CONVERSATION_MESSAGES` | `12` | recent messages sent to generation |
 | `RATE_LIMIT_REQUESTS` | `60` | requests per process/window |

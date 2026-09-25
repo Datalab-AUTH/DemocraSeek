@@ -1,0 +1,55 @@
+# DemocraSeek starter questions
+#
+# The example questions shown on the chat start screen ("Not sure where to
+# start?"). They are curated by hand, not derived from the corpus: pick
+# questions that show the system at its best and that the approved corpus can
+# actually answer.
+#
+# Rules, enforced at startup:
+#   - every question carries every locale listed in config/onboarding.v2.yaml
+#     (currently en, el, fr, es, nl-BE), so no language ever shows fewer
+#     questions than another;
+#   - texts are non-empty;
+#   - the list may be empty, in which case the section is hidden.
+#
+# Applying a change: the config folder is baked into the backend image, so
+# rebuild and restart the backend (.\start-demo.cmd -Build). No re-index.
+#
+# Order here is the order on screen.
+
+questions:
+  - en: "What is the definition of Digital Democracy?"
+    el: "Ποιος είναι ο ορισμός της Ψηφιακής Δημοκρατίας;"
+    fr: "Quelle est la définition de la démocratie numérique ?"
+    es: "¿Cuál es la definición de democracia digital?"
+    nl-BE: "Wat is de definitie van digitale democratie?"
+
+  - en: "Which are the main challenges in Digital Democracy?"
+    el: "Ποιες είναι οι κύριες προκλήσεις στην Ψηφιακή Δημοκρατία;"
+    fr: "Quels sont les principaux défis de la démocratie numérique ?"
+    es: "¿Cuáles son los principales desafíos de la democracia digital?"
+    nl-BE: "Wat zijn de belangrijkste uitdagingen van digitale democratie?"
+
+  - en: "What do we mean with the term Digital Deliberation?"
+    el: "Τι εννοούμε με τον όρο Ψηφιακή Διαβούλευση;"
+    fr: "Qu’entend-on par le terme « délibération numérique » ?"
+    es: "¿Qué entendemos por el término deliberación digital?"
+    nl-BE: "Wat bedoelen we met de term digitale deliberatie?"
+
+  - en: "What is the relation among Open Governance and Digital Democracy?"
+    el: "Ποια είναι η σχέση μεταξύ Ανοικτής Διακυβέρνησης και Ψηφιακής Δημοκρατίας;"
+    fr: "Quelle est la relation entre la gouvernance ouverte et la démocratie numérique ?"
+    es: "¿Cuál es la relación entre la gobernanza abierta y la democracia digital?"
+    nl-BE: "Wat is de relatie tussen open bestuur en digitale democratie?"
+
+  - en: "What is the role of Artificial Intelligence in Governance and Digital Democracy?"
+    el: "Ποιος είναι ο ρόλος της Τεχνητής Νοημοσύνης στη Διακυβέρνηση και την Ψηφιακή Δημοκρατία;"
+    fr: "Quel est le rôle de l’intelligence artificielle dans la gouvernance et la démocratie numérique ?"
+    es: "¿Cuál es el papel de la inteligencia artificial en la gobernanza y la democracia digital?"
+    nl-BE: "Wat is de rol van artificiële intelligentie in bestuur en digitale democratie?"
+
+  - en: "What is Foreign Information Manipulation and Interference (FIMI), and how does it impact digital democracy?"
+    el: "Τι είναι η Ξένη Χειραγώγηση Πληροφοριών και Παρέμβαση (FIMI), και πώς επηρεάζει την ψηφιακή δημοκρατία;"
+    fr: "Qu’est-ce que la manipulation de l’information et l’ingérence étrangères (FIMI), et quel est leur impact sur la démocratie numérique ?"
+    es: "¿Qué es la manipulación de información e injerencia extranjeras (FIMI) y cómo afecta a la democracia digital?"
+    nl-BE: "Wat is buitenlandse informatiemanipulatie en inmenging (FIMI), en welke impact heeft dit op digitale democratie?"

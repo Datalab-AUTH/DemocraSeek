@@ -123,8 +123,10 @@ the document's substantive text.
 ## Contents pages and headings
 
 Likely table-of-contents pages are not chunked because dot leaders and heading
-lists can outrank real prose. Heading detection is heuristic and also supplies
-topics used for starter questions. It is not a full document-layout model.
+lists can outrank real prose. Heading detection is heuristic and records
+section topics in the registry; it is not a full document-layout model. The
+starter questions on the chat start screen are no longer derived from these
+topics but curated by hand in `config/starter_questions.yaml`.
 
 ## Text chunking
 

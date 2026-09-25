@@ -33,6 +33,7 @@ from app.rag.retriever import Retriever
 from app.schemas.chunks import IndexMetadata
 from app.schemas.onboarding import OnboardingConfig
 from app.services.multilingual_chat import MultilingualChatService
+from app.starter_questions import load_starter_questions
 
 
 @dataclass(frozen=True, slots=True)
@@ -71,6 +72,8 @@ class ApplicationContext:
     orchestrator: RagOrchestrator
     chat: MultilingualChatService
     registry: CorpusRegistry
+    # One {locale: text} mapping per curated starter question, in display order.
+    starter_questions: list[dict[str, str]]
 
     def expected_index_metadata(self) -> IndexMetadata:
         """The index identity this configuration requires. Mirrors ingestion."""
@@ -127,6 +130,10 @@ class ApplicationContext:
 
 def build_context(settings: Settings) -> ApplicationContext:
     onboarding_config = load_onboarding_config(settings.onboarding_config_path)
+    starter_questions = load_starter_questions(
+        settings.starter_questions_path,
+        [locale.code for locale in onboarding_config.locales],
+    )
     llm = build_llm(settings)
     language = build_language_provider(settings, llm)
     embeddings = build_embeddings(settings)
@@ -172,6 +179,7 @@ def build_context(settings: Settings) -> ApplicationContext:
         orchestrator=orchestrator,
         chat=chat,
         registry=registry,
+        starter_questions=starter_questions,
     )
 
 

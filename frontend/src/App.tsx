@@ -32,7 +32,7 @@ export function App(): JSX.Element {
   const [configError, setConfigError] = useState<string | null>(null);
   const [documents, setDocuments] = useState<CorpusDocument[]>([]);
   const [pendingFiles, setPendingFiles] = useState<string[]>([]);
-  const [examples, setExamples] = useState<string[]>([]);
+  const [examples, setExamples] = useState<Record<string, string[]>>({});
   const { profile, saveProfile, resetProfile } = useProfile();
   const { locale: storedLocale, saveLocale } = useOnboardingLocale();
   const { theme, setTheme } = useTheme();
@@ -56,7 +56,7 @@ export function App(): JSX.Element {
         if (cancelled) return;
         setDocuments(result.documents);
         setPendingFiles(result.pending_files ?? []);
-        setExamples(result.suggested_questions ?? []);
+        setExamples(result.suggested_questions_by_locale ?? {});
       })
       .catch(() => undefined);
     return () => {
