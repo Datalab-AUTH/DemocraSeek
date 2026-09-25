@@ -1,6 +1,23 @@
+---
+title: "Legacy developer quick guide"
+doc_type: archive
+layer: archive
+audience: "maintainer"
+reader_goal: "inspect the pre-modularization developer guide"
+reader_state: "understands this material is historical"
+source_of_truth: false
+status: deprecated
+rag_index: false
+---
+
+# Legacy developer quick guide
+
+> Historical snapshot from `main` before the documentation was modularized.
+> Use [`docs/index.md`](../index.md) for active documentation.
+
 # DemocraSeek — Developer Quick Guide
 
-Short, practical version of the full handbook in [README.md](README.md).
+Short, practical version of the full handbook in [legacy-README.md](legacy-README.md).
 
 ---
 ## 1. What it is
@@ -451,8 +468,8 @@ docker compose -f deployment\docker-compose.yml --env-file .env run --rm backend
 Switching to another OpenAI-compatible endpoint is just `LLM_PROVIDER`,
 `LLM_MODEL`, `LLM_BASE_URL`, `LLM_API_KEY` plus a restart — the answer model does
 not create stored vectors. For a non-compatible API, implement `LLMProvider` in
-[backend/app/providers/base.py](backend/app/providers/base.py) and add an explicit
-branch in [backend/app/providers/factory.py](backend/app/providers/factory.py).
+[backend/app/providers/base.py](../../backend/app/providers/base.py) and add an explicit
+branch in [backend/app/providers/factory.py](../../backend/app/providers/factory.py).
 Switching embeddings means updating provider, model, URL, key **and** dimensions
 together, then re-indexing — vectors from different models cannot be compared.
 
@@ -460,7 +477,7 @@ together, then re-indexing — vectors from different models cannot be compared.
 
 ## 8. Onboarding — where to change what
 
-[config/onboarding.v2.yaml](config/onboarding.v2.yaml) is the single source of
+[config/onboarding.v2.yaml](../../config/onboarding.v2.yaml) is the single source of
 truth: `policy_version`, the five locales (`en`, `el`, `fr`, `es`, `nl-BE`) with
 full translations, all form copy, five global guardrails, four ordered questions
 with stable codes, per-choice instruction lines, and optional combination overrides.
@@ -473,7 +490,7 @@ code, startup fails.
 The four questions: **Role** `R1`–`R7`, **Intent** `I1`–`I6`, **Support need**
 `S1`–`S6`, **Presentation mode** `M1`–`M5` → 7 × 6 × 6 × 5 = 1,260 profiles.
 
-[backend/app/onboarding/compiler.py](backend/app/onboarding/compiler.py) turns the
+[backend/app/onboarding/compiler.py](../../backend/app/onboarding/compiler.py) turns the
 four codes into a policy string by deterministic composition — no LLM, no
 retrieval, no randomness, so the same codes always produce byte-identical output:
 
@@ -570,29 +587,29 @@ Read the backend in this order:
 
 | Order | File | Why |
 |---:|---|---|
-| 1 | [backend/app/rag/orchestrator.py](backend/app/rag/orchestrator.py) | the entire online flow in one file — no LangChain/LlamaIndex hiding steps |
-| 2 | [backend/app/rag/retriever.py](backend/app/rag/retriever.py) | dense gate, hybrid candidates, reranking |
-| 3 | [backend/app/rag/prompt.py](backend/app/rag/prompt.py) | system prompt + user prompt assembly |
-| 4 | [backend/app/rag/citations.py](backend/app/rag/citations.py) | structural citation validation |
-| 5 | [backend/app/ingestion/pipeline.py](backend/app/ingestion/pipeline.py) | complete ingestion orchestration |
-| 6 | [backend/app/api/deps.py](backend/app/api/deps.py) | builds the provider/store/orchestrator object graph once |
+| 1 | [backend/app/rag/orchestrator.py](../../backend/app/rag/orchestrator.py) | the entire online flow in one file — no LangChain/LlamaIndex hiding steps |
+| 2 | [backend/app/rag/retriever.py](../../backend/app/rag/retriever.py) | dense gate, hybrid candidates, reranking |
+| 3 | [backend/app/rag/prompt.py](../../backend/app/rag/prompt.py) | system prompt + user prompt assembly |
+| 4 | [backend/app/rag/citations.py](../../backend/app/rag/citations.py) | structural citation validation |
+| 5 | [backend/app/ingestion/pipeline.py](../../backend/app/ingestion/pipeline.py) | complete ingestion orchestration |
+| 6 | [backend/app/api/deps.py](../../backend/app/api/deps.py) | builds the provider/store/orchestrator object graph once |
 
-Other useful entry points: [backend/app/cli.py](backend/app/cli.py) (all operator
-commands), [backend/app/config.py](backend/app/config.py) (typed settings and
-fingerprint), [backend/app/providers/factory.py](backend/app/providers/factory.py)
+Other useful entry points: [backend/app/cli.py](../../backend/app/cli.py) (all operator
+commands), [backend/app/config.py](../../backend/app/config.py) (typed settings and
+fingerprint), [backend/app/providers/factory.py](../../backend/app/providers/factory.py)
 (adapter selection),
-[backend/app/providers/vectorstore_pgvector.py](backend/app/providers/vectorstore_pgvector.py)
+[backend/app/providers/vectorstore_pgvector.py](../../backend/app/providers/vectorstore_pgvector.py)
 (HNSW cosine + BM25 search),
-[backend/app/services/multilingual_chat.py](backend/app/services/multilingual_chat.py)
+[backend/app/services/multilingual_chat.py](../../backend/app/services/multilingual_chat.py)
 (language routing and citation-safe translation).
 
-Frontend: [frontend/src/App.tsx](frontend/src/App.tsx) (config, profile, and
+Frontend: [frontend/src/App.tsx](../../frontend/src/App.tsx) (config, profile, and
 conversation lifecycle),
-[Onboarding.tsx](frontend/src/components/Onboarding.tsx) (backend-driven form),
-[ChatPanel.tsx](frontend/src/components/ChatPanel.tsx),
-[SourceDrawer.tsx](frontend/src/components/SourceDrawer.tsx) (evidence, page,
-figure, original source), [useProfile.ts](frontend/src/hooks/useProfile.ts)
-(versioned local profile), [i18n.tsx](frontend/src/i18n.tsx).
+[Onboarding.tsx](../../frontend/src/components/Onboarding.tsx) (backend-driven form),
+[ChatPanel.tsx](../../frontend/src/components/ChatPanel.tsx),
+[SourceDrawer.tsx](../../frontend/src/components/SourceDrawer.tsx) (evidence, page,
+figure, original source), [useProfile.ts](../../frontend/src/hooks/useProfile.ts)
+(versioned local profile), [i18n.tsx](../../frontend/src/i18n.tsx).
 
 The backend is deliberately synchronous — FastAPI runs sync handlers in its thread
 pool, and there is no token streaming.
