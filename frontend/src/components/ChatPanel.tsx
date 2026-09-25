@@ -3,7 +3,12 @@
 import { useEffect, useRef, useState } from "react";
 
 import { sendQuestion } from "../api/client";
-import type { ChatResponse, Citation, ConversationMessage, Profile } from "../api/types";
+import type {
+  ChatResponse,
+  Citation,
+  ConversationMessage,
+  Profile,
+} from "../api/types";
 import { useUi } from "../i18n";
 
 export interface Turn {
@@ -68,7 +73,7 @@ export function ChatPanel({
               language_name: turn.response.language_name,
             },
           ]
-        : [],
+        : []
     );
 
     setDraft("");
@@ -99,17 +104,25 @@ export function ChatPanel({
         {turns.map((turn, index) => (
           <article key={index} className="turn">
             <div className="turn__question">
-              <span className="turn__avatar turn__avatar--user" aria-hidden="true">
+              <span
+                className="turn__avatar turn__avatar--user"
+                aria-hidden="true"
+              >
                 {ui.chat.you}
               </span>
               <p>{turn.question}</p>
             </div>
             {turn.response ? (
               <div className="turn__answer">
-                <span className="turn__avatar turn__avatar--app" aria-hidden="true">
+                <span
+                  className="turn__avatar turn__avatar--app"
+                  aria-hidden="true"
+                >
                   DS
                 </span>
-                <div className="turn__answer-body">{renderAnswer(turn.response)}</div>
+                <div className="turn__answer-body">
+                  {renderAnswer(turn.response)}
+                </div>
               </div>
             ) : null}
           </article>
@@ -150,7 +163,12 @@ export function ChatPanel({
                 }
               }}
             />
-            <button type="submit" className="button button--primary composer__submit" disabled={!canSend}>
+            <button
+              type="submit"
+              className="button button--primary composer__submit"
+              disabled={!canSend}
+              aria-label={pending ? ui.chat.working : ui.chat.ask}
+            >
               <span>{pending ? ui.chat.working : ui.chat.ask}</span>
               <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false">
                 <path d="m4 10 11-6-3.2 12-2.2-4.1L4 10Z" />
