@@ -161,6 +161,7 @@ export function Header({
                 className="button button--ghost header__new-conversation"
                 onClick={onNewConversation}
                 disabled={!canStartNewConversation}
+                aria-label={ui.header.newConversation}
               >
                 <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false">
                   <path d="M10 4v12M4 10h12" />
