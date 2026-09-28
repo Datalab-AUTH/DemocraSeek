@@ -64,6 +64,24 @@ export function EmptyState({
           </div>
         </section>
       ) : null}
+
+      <div className="empty__scope" role="note">
+        <svg
+          className="empty__scope-icon"
+          viewBox="0 0 20 20"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <circle cx="10" cy="10" r="8.2" />
+          <path d="M10 9.2v4.9" />
+          <circle cx="10" cy="6.3" r="0.6" fill="currentColor" />
+        </svg>
+        <p>{formatUi(ui.empty.scope, { project: branding.projectName })}</p>
+      </div>
     </div>
   );
 }

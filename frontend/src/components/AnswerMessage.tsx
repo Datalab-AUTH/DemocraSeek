@@ -86,14 +86,6 @@ export function AnswerMessage({
       uniqueFigures.push({ figure, citation });
     }
   }
-  const externalSources = Array.from(
-    new Map(
-      response.citations
-        .filter((citation) => citation.source_type === "external" && citation.external_url)
-        .map((citation) => [citation.document_id, citation]),
-    ).values(),
-  );
-
   return (
     <div className="answer">
       {response.answer.split("\n\n").map((paragraph, index) => (
@@ -136,26 +128,6 @@ export function AnswerMessage({
             if (owner) onOpenSource(owner.citation);
           }}
         />
-      ) : null}
-
-      {externalSources.length > 0 ? (
-        <aside className="external-reading" aria-label={ui.answer.moreIn}>
-          <p>{ui.answer.moreIn}</p>
-          <ul>
-            {externalSources.map((citation) => (
-              <li key={citation.document_id}>
-                <a href={citation.external_url} target="_blank" rel="noreferrer noopener">
-                  {citation.document_title}
-                </a>
-                <span>
-                  {[...citation.publishers, citation.publication_date]
-                    .filter(Boolean)
-                    .join(" · ")}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </aside>
       ) : null}
 
       {response.citations.length > 0 ? (
