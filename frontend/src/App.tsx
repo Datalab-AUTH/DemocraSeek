@@ -69,6 +69,19 @@ export function App(): JSX.Element {
     setOpenCitation(null);
   }, []);
 
+  // Back to the welcome screen; the profile and conversation stay for the return.
+  const goHome = useCallback(() => {
+    try {
+      window.sessionStorage.removeItem(WELCOME_SESSION_KEY);
+    } catch {
+      /* The in-memory state is sufficient when session storage is unavailable. */
+    }
+    setOpenCitation(null);
+    setEditingProfile(false);
+    setHasEntered(false);
+    window.scrollTo(0, 0);
+  }, []);
+
   // A policy-version change requires fresh onboarding.
   const activeProfile =
     config && profile?.policy_version === config.policy_version ? profile : null;
@@ -117,6 +130,7 @@ export function App(): JSX.Element {
       }}
       onNewConversation={newConversation}
       canStartNewConversation={turns.length > 0}
+      onGoHome={goHome}
     />
   );
 

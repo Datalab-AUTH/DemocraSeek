@@ -21,6 +21,8 @@ interface Props {
   onResetProfile: () => void;
   onNewConversation: () => void;
   canStartNewConversation: boolean;
+  /** Return to the welcome (landing) screen. */
+  onGoHome: () => void;
 }
 
 function labelFor(
@@ -83,6 +85,7 @@ export function Header({
   onResetProfile,
   onNewConversation,
   canStartNewConversation,
+  onGoHome,
 }: Props): JSX.Element {
   const { ui } = useUi();
   const [open, setOpen] = useState(false);
@@ -133,7 +136,15 @@ export function Header({
   return (
     <header className="app__header">
       <div className="app__header-inner">
-        <div className="app__brand">
+        <a
+          className="app__brand"
+          href="/"
+          onClick={(event) => {
+            // Stay in the app so the conversation and profile are kept.
+            event.preventDefault();
+            onGoHome();
+          }}
+        >
           {branding.logoUrl ? (
             <img src={branding.logoUrl} alt="" height={34} />
           ) : (
@@ -142,7 +153,7 @@ export function Header({
           <div className="app__names">
             <h1>{branding.appName}</h1>
           </div>
-        </div>
+        </a>
 
         <div className="app__actions">
           <div className="display-controls">

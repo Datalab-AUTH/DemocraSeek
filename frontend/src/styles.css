@@ -335,6 +335,10 @@ kbd {
   gap: 0.7rem;
   align-items: center;
   min-width: 0;
+  /* A link back to the welcome screen that still looks like the brand. */
+  color: inherit;
+  text-decoration: none;
+  border-radius: 10px;
 }
 
 .app__mark {
