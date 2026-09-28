@@ -48,6 +48,8 @@ export interface UiCopy {
     libraryNotReady: string;
     pendingMaterial: string;
     examplesTitle: string;
+    /** What the answers are based on, shown under the starter questions. */
+    scope: string;
   };
   answer: {
     copied: string;
@@ -70,7 +72,6 @@ export interface UiCopy {
     sourceExcerpt: string;
     image: string;
     externalSource: string;
-    moreIn: string;
   };
   figures: {
     label: string;
@@ -171,6 +172,7 @@ const EN: UiCopy = {
     libraryNotReady: "The information library is not ready yet. Please contact the person managing DemocraSeek.",
     pendingMaterial: "Some new material is still being prepared and is not available in answers yet.",
     examplesTitle: "Not sure where to start?",
+    scope: "DemocraSeek answers only from the documents in the {project} knowledge base: project deliverables and selected publications. It does not search the internet and does not use general knowledge. If the documents do not cover a question, it says so.",
   },
   answer: {
     copied: "Copied", copy: "Copy answer", unconfirmedTitle: "We could not confirm this answer",
@@ -182,7 +184,7 @@ const EN: UiCopy = {
     sourcesTitle: "Check the sources", sourcesSummary: "Open a source to see where the answer came from",
     viewSource: "View source details {id}: {document}, page {page}", page: "Page {page}",
     exactQuote: "Exact quote", fromImage: "From an image", sourceExcerpt: "Source excerpt", image: "image",
-    externalSource: "External source", moreIn: "You can see more in",
+    externalSource: "External source",
   },
   figures: {
     label: "Figures from the cited source", figureFrom: "Figure from {document}, page {page}",
@@ -209,7 +211,7 @@ const EN: UiCopy = {
     passageBadge: "From the source", passageTitle: "Taken from this page",
     passageDetail: "This excerpt comes directly from the original source.", loadError: "We could not load the source details.",
     externalBadge: "External source", externalAboutTitle: "About this publication",
-    externalAboutText: "This publication supported the answer. Its local copy is used only for search and is not available here.",
+    externalAboutText: "This publication was used to prepare the answer. To respect copyright, we do not display excerpts from external publications. You can read the full text on the publisher's website.",
     authorsLabel: "Authors", publishersLabel: "Publisher", publishedLabel: "Publication date",
     visitExternal: "Visit original source",
   },
@@ -252,6 +254,7 @@ const EL: UiCopy = {
     libraryNotReady: "Η βιβλιοθήκη πληροφοριών δεν είναι ακόμη έτοιμη. Επικοινωνήστε με τον υπεύθυνο του DemocraSeek.",
     pendingMaterial: "Κάποιο νέο υλικό προετοιμάζεται ακόμη και δεν είναι διαθέσιμο στις απαντήσεις.",
     examplesTitle: "Δεν ξέρετε από πού να ξεκινήσετε;",
+    scope: "Το DemocraSeek απαντά μόνο από τα έγγραφα της βάσης γνώσης {project}: παραδοτέα του έργου και επιλεγμένες δημοσιεύσεις. Δεν αναζητά στο διαδίκτυο και δεν χρησιμοποιεί γενική γνώση. Αν τα έγγραφα δεν καλύπτουν μια ερώτηση, το αναφέρει.",
   },
   answer: {
     copied: "Αντιγράφηκε", copy: "Αντιγραφή απάντησης", unconfirmedTitle: "Δεν μπορέσαμε να επιβεβαιώσουμε αυτή την απάντηση",
@@ -263,7 +266,7 @@ const EL: UiCopy = {
     sourcesTitle: "Ελέγξτε τις πηγές", sourcesSummary: "Ανοίξτε μια πηγή για να δείτε από πού προήλθε η απάντηση",
     viewSource: "Προβολή στοιχείων πηγής {id}: {document}, σελίδα {page}", page: "Σελίδα {page}",
     exactQuote: "Ακριβές απόσπασμα", fromImage: "Από εικόνα", sourceExcerpt: "Απόσπασμα πηγής", image: "εικόνα",
-    externalSource: "Εξωτερική πηγή", moreIn: "Μπορείτε να δείτε περισσότερα στο",
+    externalSource: "Εξωτερική πηγή",
   },
   figures: {
     label: "Εικόνες από την αναφερόμενη πηγή", figureFrom: "Εικόνα από {document}, σελίδα {page}",
@@ -290,7 +293,7 @@ const EL: UiCopy = {
     passageBadge: "Από την πηγή", passageTitle: "Λήφθηκε από αυτή τη σελίδα",
     passageDetail: "Αυτό το απόσπασμα προέρχεται απευθείας από την αρχική πηγή.", loadError: "Δεν ήταν δυνατή η φόρτωση των στοιχείων της πηγής.",
     externalBadge: "Εξωτερική πηγή", externalAboutTitle: "Σχετικά με τη δημοσίευση",
-    externalAboutText: "Η δημοσίευση υποστήριξε την απάντηση. Το τοπικό αντίγραφό της χρησιμοποιείται μόνο για αναζήτηση και δεν είναι διαθέσιμο εδώ.",
+    externalAboutText: "Αυτή η δημοσίευση χρησιμοποιήθηκε για τη διαμόρφωση της απάντησης. Για λόγους πνευματικών δικαιωμάτων, δεν εμφανίζουμε αποσπάσματα από εξωτερικές δημοσιεύσεις. Μπορείτε να διαβάσετε ολόκληρο το κείμενο στον ιστότοπο του εκδότη.",
     authorsLabel: "Συγγραφείς", publishersLabel: "Εκδότης", publishedLabel: "Ημερομηνία δημοσίευσης",
     visitExternal: "Μετάβαση στην αρχική πηγή",
   },
@@ -331,6 +334,7 @@ const FR: UiCopy = {
     libraryNotReady: "La bibliothèque d’informations n’est pas encore prête. Contactez la personne responsable de DemocraSeek.",
     pendingMaterial: "De nouveaux contenus sont encore en préparation et ne sont pas encore disponibles dans les réponses.",
     examplesTitle: "Vous ne savez pas par où commencer ?",
+    scope: "DemocraSeek répond uniquement à partir des documents de la base de connaissances {project} : livrables du projet et publications sélectionnées. Il ne fait pas de recherche sur Internet et n'utilise pas de connaissances générales. Si les documents ne couvrent pas une question, il l'indique.",
   },
   answer: {
     copied: "Copié", copy: "Copier la réponse", unconfirmedTitle: "Nous n’avons pas pu confirmer cette réponse",
@@ -341,7 +345,7 @@ const FR: UiCopy = {
     openSource: "Ouvrir la source {id} : {document}, page {page}", sourcesLabel: "Sources de cette réponse", sourcesTitle: "Vérifiez les sources",
     sourcesSummary: "Ouvrez une source pour voir d’où vient la réponse", viewSource: "Voir les détails de la source {id} : {document}, page {page}",
     page: "Page {page}", exactQuote: "Citation exacte", fromImage: "Issu d’une image", sourceExcerpt: "Extrait de la source", image: "image",
-    externalSource: "Source externe", moreIn: "Pour en savoir plus, consultez",
+    externalSource: "Source externe",
   },
   figures: {
     label: "Figures de la source citée", figureFrom: "Figure de {document}, page {page}", fromDocument: "De {document}, page {page}",
@@ -363,7 +367,7 @@ const FR: UiCopy = {
     passageBadge: "Issu de la source", passageTitle: "Extrait de cette page", passageDetail: "Cet extrait provient directement de la source originale.",
     loadError: "Nous n’avons pas pu charger les détails de la source.",
     externalBadge: "Source externe", externalAboutTitle: "À propos de cette publication",
-    externalAboutText: "Cette publication étaye la réponse. Sa copie locale sert uniquement à la recherche et n’est pas accessible ici.",
+    externalAboutText: "Cette publication a servi à élaborer la réponse. Par respect du droit d’auteur, nous n’affichons pas d’extraits de publications externes. Vous pouvez lire le texte intégral sur le site de l’éditeur.",
     authorsLabel: "Auteurs", publishersLabel: "Éditeur", publishedLabel: "Date de publication",
     visitExternal: "Consulter la source originale",
   },
@@ -403,6 +407,7 @@ const ES: UiCopy = {
     lead: "Pregunte sobre {project} o elija una pregunta de las siguientes. Cada respuesta le permite abrir la fuente y comprobar de dónde procede la información.",
     libraryNotReady: "La biblioteca de información aún no está lista. Póngase en contacto con la persona responsable de DemocraSeek.",
     pendingMaterial: "Todavía se está preparando material nuevo y aún no está disponible en las respuestas.", examplesTitle: "¿No sabe por dónde empezar?",
+    scope: "DemocraSeek responde únicamente a partir de los documentos de la base de conocimiento de {project}: entregables del proyecto y publicaciones seleccionadas. No busca en internet ni utiliza conocimiento general. Si los documentos no cubren una pregunta, lo indica.",
   },
   answer: {
     copied: "Copiado", copy: "Copiar respuesta", unconfirmedTitle: "No hemos podido confirmar esta respuesta",
@@ -413,7 +418,7 @@ const ES: UiCopy = {
     openSource: "Abrir fuente {id}: {document}, página {page}", sourcesLabel: "Fuentes de esta respuesta", sourcesTitle: "Compruebe las fuentes",
     sourcesSummary: "Abra una fuente para ver de dónde procede la respuesta", viewSource: "Ver detalles de la fuente {id}: {document}, página {page}",
     page: "Página {page}", exactQuote: "Cita exacta", fromImage: "Procedente de una imagen", sourceExcerpt: "Extracto de la fuente", image: "imagen",
-    externalSource: "Fuente externa", moreIn: "Puede consultar más información en",
+    externalSource: "Fuente externa",
   },
   figures: {
     label: "Figuras de la fuente citada", figureFrom: "Figura de {document}, página {page}", fromDocument: "De {document}, página {page}",
@@ -435,7 +440,7 @@ const ES: UiCopy = {
     passageBadge: "Procedente de la fuente", passageTitle: "Tomado de esta página", passageDetail: "Este extracto procede directamente de la fuente original.",
     loadError: "No hemos podido cargar los detalles de la fuente.",
     externalBadge: "Fuente externa", externalAboutTitle: "Acerca de esta publicación",
-    externalAboutText: "Esta publicación respalda la respuesta. Su copia local solo se utiliza para la búsqueda y no está disponible aquí.",
+    externalAboutText: "Esta publicación se utilizó para elaborar la respuesta. Por respeto a los derechos de autor, no mostramos extractos de publicaciones externas. Puede leer el texto completo en el sitio web de la editorial.",
     authorsLabel: "Autores", publishersLabel: "Editorial", publishedLabel: "Fecha de publicación",
     visitExternal: "Visitar la fuente original",
   },
@@ -475,6 +480,7 @@ const NL_BE: UiCopy = {
     lead: "Stel een vraag over {project} of kies hieronder een vraag. Bij elk antwoord kunt u de bron openen en controleren waar de informatie vandaan komt.",
     libraryNotReady: "De informatiebibliotheek is nog niet klaar. Neem contact op met de beheerder van DemocraSeek.",
     pendingMaterial: "Nieuw materiaal wordt nog voorbereid en is nog niet beschikbaar in antwoorden.", examplesTitle: "Weet u niet waar te beginnen?",
+    scope: "DemocraSeek antwoordt alleen op basis van de documenten in de {project}-kennisbank: projectdeliverables en geselecteerde publicaties. Het zoekt niet op het internet en gebruikt geen algemene kennis. Als de documenten een vraag niet behandelen, zegt het dat.",
   },
   answer: {
     copied: "Gekopieerd", copy: "Antwoord kopiëren", unconfirmedTitle: "We konden dit antwoord niet bevestigen",
@@ -485,7 +491,7 @@ const NL_BE: UiCopy = {
     openSource: "Bron {id} openen: {document}, pagina {page}", sourcesLabel: "Bronnen voor dit antwoord", sourcesTitle: "Controleer de bronnen",
     sourcesSummary: "Open een bron om te zien waar het antwoord vandaan komt", viewSource: "Details van bron {id} bekijken: {document}, pagina {page}",
     page: "Pagina {page}", exactQuote: "Exact citaat", fromImage: "Uit een afbeelding", sourceExcerpt: "Bronfragment", image: "afbeelding",
-    externalSource: "Externe bron", moreIn: "Meer informatie vindt u in",
+    externalSource: "Externe bron",
   },
   figures: {
     label: "Figuren uit de geciteerde bron", figureFrom: "Figuur uit {document}, pagina {page}", fromDocument: "Uit {document}, pagina {page}",
@@ -507,7 +513,7 @@ const NL_BE: UiCopy = {
     passageBadge: "Uit de bron", passageTitle: "Overgenomen van deze pagina", passageDetail: "Dit fragment komt rechtstreeks uit de oorspronkelijke bron.",
     loadError: "We konden de brondetails niet laden.",
     externalBadge: "Externe bron", externalAboutTitle: "Over deze publicatie",
-    externalAboutText: "Deze publicatie onderbouwt het antwoord. De lokale kopie wordt alleen voor zoeken gebruikt en is hier niet beschikbaar.",
+    externalAboutText: "Deze publicatie is gebruikt om het antwoord op te stellen. Uit respect voor het auteursrecht tonen we geen fragmenten uit externe publicaties. U kunt de volledige tekst lezen op de website van de uitgever.",
     authorsLabel: "Auteurs", publishersLabel: "Uitgever", publishedLabel: "Publicatiedatum",
     visitExternal: "Naar de oorspronkelijke bron",
   },
