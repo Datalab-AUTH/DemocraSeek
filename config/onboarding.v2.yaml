@@ -305,13 +305,13 @@ translations:
             label: "Πολίτης / κάτοικος"
             description: "Εξερευνώ τι σημαίνει η ψηφιακή δημοκρατία για εμένα ή την κοινότητά μου."
           R2:
-            label: "Δημόσιος λειτουργός / υπεύθυνος χάραξης πολιτικής"
+            label: "Δημόσιος/α λειτουργός / υπεύθυνος/η χάραξης πολιτικής"
             description: "Εργάζομαι στη δημόσια διοίκηση ή στη χάραξη πολιτικής, ή συνεργάζομαι με αυτές."
           R3:
-            label: "Ερευνητής / φοιτητής"
+            label: "Ερευνητής/τρια / φοιτητής/τρια"
             description: "Μελετώ ή ερευνώ την ψηφιακή δημοκρατία."
           R4:
-            label: "Υπεύθυνος έργου ψηφιακής δημοκρατίας / προγραμματιστής τεχνολογίας"
+            label: "Υπεύθυνος/η έργου ψηφιακής δημοκρατίας / προγραμματιστής/τρια τεχνολογίας"
             description: "Σχεδιάζω, διαχειρίζομαι, προμηθεύομαι ή αναπτύσσω λύσεις ψηφιακής δημοκρατίας."
           R5:
             label: "Οργάνωση της κοινωνίας των πολιτών / κοινότητας"
@@ -320,8 +320,8 @@ translations:
             label: "Επιχείρηση / επαγγελματίας"
             description: "Εξερευνώ το θέμα στο πλαίσιο εμπορικής ή επαγγελματικής δραστηριότητας."
           R7:
-            label: "Άλλο / δεν είμαι βέβαιος"
-            description: "Καμία επιλογή δεν με περιγράφει ή δεν είμαι βέβαιος."
+            label: "Άλλο / δεν είμαι βέβαιος/η"
+            description: "Καμία επιλογή δεν με περιγράφει ή δεν είμαι βέβαιος/η."
       q_intent:
         prompt: "Τι θα θέλατε να κάνετε;"
         help_text: "Η επιλογή καθορίζει τι προσπαθεί να σας βοηθήσει να πετύχετε η απάντηση."
@@ -362,7 +362,7 @@ translations:
             description: "Συσχετίστε το θέμα με την τοπική συμμετοχή και τις ανάγκες της κοινότητας."
           S5:
             label: "Κατανόηση θεσμικών ρόλων, διαδικασιών ή αρμοδιοτήτων"
-            description: "Διευκρινίστε ποιος είναι υπεύθυνος, πώς συνδέονται οι διαδικασίες και τι μπορεί να ακολουθήσει."
+            description: "Διευκρινίστε ποιος/α είναι υπεύθυνος/η, πώς συνδέονται οι διαδικασίες και τι μπορεί να ακολουθήσει."
           S6:
             label: "Δεν χρειάζομαι συγκεκριμένη υποστήριξη"
             description: "Χρησιμοποιήστε τη συνήθη σαφήνεια χωρίς πρόσθετη ειδική προσαρμογή."
@@ -408,22 +408,22 @@ translations:
         help_text: "Ce choix modifie la pertinence et l’angle des explications, jamais le contenu des éléments probants."
         choices:
           R1:
-            label: "Citoyen / résident"
+            label: "Citoyen·ne / résident·e"
             description: "J’explore ce que la démocratie numérique signifie pour moi ou ma communauté."
           R2:
-            label: "Agent public / décideur politique"
+            label: "Agent·e public·que / décideur·euse politique"
             description: "Je travaille dans ou avec l’administration publique ou l’élaboration des politiques."
           R3:
-            label: "Chercheur / étudiant"
+            label: "Chercheur·euse / étudiant·e"
             description: "J’étudie ou je mène des recherches sur la démocratie numérique."
           R4:
-            label: "Chef de projet en démocratie numérique / développeur technologique"
+            label: "Chef·fe de projet en démocratie numérique / développeur·euse technologique"
             description: "Je conçois, gère, achète ou déploie des solutions de démocratie numérique."
           R5:
             label: "Organisation de la société civile / communautaire"
             description: "Je travaille avec ou représente une communauté, une association ou une ONG."
           R6:
-            label: "Entreprise / professionnel"
+            label: "Entreprise / professionnel·le"
             description: "J’explore ce sujet dans un cadre commercial ou professionnel."
           R7:
             label: "Autre / je ne sais pas"
@@ -514,16 +514,16 @@ translations:
         help_text: "Esta elección cambia la relevancia y el enfoque de las explicaciones, pero nunca lo que dicen las pruebas."
         choices:
           R1:
-            label: "Ciudadano / residente"
+            label: "Ciudadano/a / residente"
             description: "Estoy explorando qué significa la democracia digital para mí o para mi comunidad."
           R2:
-            label: "Empleado público / responsable de políticas"
+            label: "Empleado/a público/a / responsable de políticas"
             description: "Trabajo en la administración pública o la formulación de políticas, o colaboro con ellas."
           R3:
-            label: "Investigador / estudiante"
+            label: "Investigador/a / estudiante"
             description: "Estudio o investigo la democracia digital."
           R4:
-            label: "Responsable de proyectos de democracia digital / desarrollador tecnológico"
+            label: "Responsable de proyectos de democracia digital / desarrollador/a tecnológico/a"
             description: "Diseño, gestiono, adquiero o implemento soluciones de democracia digital."
           R5:
             label: "Organización de la sociedad civil / comunitaria"
@@ -532,8 +532,8 @@ translations:
             label: "Empresa / profesional"
             description: "Exploro el tema desde una perspectiva comercial o profesional."
           R7:
-            label: "Otro / no estoy seguro"
-            description: "Ninguna opción encaja conmigo o no estoy seguro."
+            label: "Otro / no estoy seguro/a"
+            description: "Ninguna opción encaja conmigo o no estoy seguro/a."
       q_intent:
         prompt: "¿Qué le gustaría hacer?"
         help_text: "Esta elección determina lo que la respuesta intentará ayudarle a conseguir."

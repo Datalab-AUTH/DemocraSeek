@@ -251,7 +251,7 @@ const EL: UiCopy = {
   empty: {
     eyebrow: "Ρωτήστε με δικά σας λόγια", title: "Τι θα θέλατε να μάθετε;",
     lead: "Ρωτήστε για το {project} ή επιλέξτε μία από τις παρακάτω ερωτήσεις. Κάθε απάντηση σας επιτρέπει να ανοίξετε την πηγή και να ελέγξετε από πού προήλθε η πληροφορία.",
-    libraryNotReady: "Η βιβλιοθήκη πληροφοριών δεν είναι ακόμη έτοιμη. Επικοινωνήστε με τον υπεύθυνο του DemocraSeek.",
+    libraryNotReady: "Η βιβλιοθήκη πληροφοριών δεν είναι ακόμη έτοιμη. Επικοινωνήστε με τον υπεύθυνο ή την υπεύθυνη του DemocraSeek.",
     pendingMaterial: "Κάποιο νέο υλικό προετοιμάζεται ακόμη και δεν είναι διαθέσιμο στις απαντήσεις.",
     examplesTitle: "Δεν ξέρετε από πού να ξεκινήσετε;",
     scope: "Το DemocraSeek απαντά μόνο από τα έγγραφα της βάσης γνώσης {project}: παραδοτέα του έργου και επιλεγμένες δημοσιεύσεις. Δεν αναζητά στο διαδίκτυο και δεν χρησιμοποιεί γενική γνώση. Αν τα έγγραφα δεν καλύπτουν μια ερώτηση, το αναφέρει.",
@@ -314,7 +314,7 @@ const FR: UiCopy = {
     eyebrow: "Les connaissances d’INNOVADE, plus faciles à explorer", title: "Explorez la démocratie numérique avec des preuves vérifiables.",
     lead: "DemocraSeek vous aide à poser des questions sur la démocratie numérique et à recevoir des réponses claires, fondées sur des sources et adaptées à vos besoins.",
     start: "Commencer votre conversation", aboutLabel: "À propos d’INNOVADE", aboutTitle: "À propos d’INNOVADE",
-    aboutText: "INNOVADE étudie la démocratie numérique et la manière de rendre la participation numérique plus inclusive, fiable et utile aux citoyens, aux communautés et aux institutions.",
+    aboutText: "INNOVADE étudie la démocratie numérique et la manière de rendre la participation numérique plus inclusive, fiable et utile aux citoyennes et aux citoyens, aux communautés et aux institutions.",
   },
   app: { configError: "DemocraSeek ne peut pas démarrer sans sa configuration d’onboarding.", loading: "Chargement de DemocraSeek…" },
   header: {
@@ -368,7 +368,7 @@ const FR: UiCopy = {
     loadError: "Nous n’avons pas pu charger les détails de la source.",
     externalBadge: "Source externe", externalAboutTitle: "À propos de cette publication",
     externalAboutText: "Cette publication a servi à élaborer la réponse. Par respect du droit d’auteur, nous n’affichons pas d’extraits de publications externes. Vous pouvez lire le texte intégral sur le site de l’éditeur.",
-    authorsLabel: "Auteurs", publishersLabel: "Éditeur", publishedLabel: "Date de publication",
+    authorsLabel: "Auteur·rices", publishersLabel: "Éditeur", publishedLabel: "Date de publication",
     visitExternal: "Consulter la source originale",
   },
   footer: {
@@ -388,7 +388,7 @@ const ES: UiCopy = {
     eyebrow: "El conocimiento de INNOVADE, más fácil de explorar", title: "Explore la democracia digital con pruebas que puede comprobar.",
     lead: "DemocraSeek le ayuda a formular preguntas sobre democracia digital y a recibir respuestas claras, basadas en fuentes y adaptadas a sus necesidades.",
     start: "Iniciar su conversación", aboutLabel: "Acerca de INNOVADE", aboutTitle: "Acerca de INNOVADE",
-    aboutText: "INNOVADE estudia la democracia digital y cómo la participación digital puede ser más inclusiva, fiable y útil para ciudadanos, comunidades e instituciones.",
+    aboutText: "INNOVADE estudia la democracia digital y cómo la participación digital puede ser más inclusiva, fiable y útil para ciudadanos y ciudadanas, comunidades e instituciones.",
   },
   app: { configError: "DemocraSeek no puede iniciarse sin la configuración del onboarding.", loading: "Cargando DemocraSeek…" },
   header: {
@@ -441,7 +441,7 @@ const ES: UiCopy = {
     loadError: "No hemos podido cargar los detalles de la fuente.",
     externalBadge: "Fuente externa", externalAboutTitle: "Acerca de esta publicación",
     externalAboutText: "Esta publicación se utilizó para elaborar la respuesta. Por respeto a los derechos de autor, no mostramos extractos de publicaciones externas. Puede leer el texto completo en el sitio web de la editorial.",
-    authorsLabel: "Autores", publishersLabel: "Editorial", publishedLabel: "Fecha de publicación",
+    authorsLabel: "Autores/as", publishersLabel: "Editorial", publishedLabel: "Fecha de publicación",
     visitExternal: "Visitar la fuente original",
   },
   footer: {

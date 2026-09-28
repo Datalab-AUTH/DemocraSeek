@@ -62,6 +62,15 @@ speaker; do not mirror English word order or produce word-for-word calques. Use
 the established target-language terms for technical and civic concepts. Silently
 review the complete translation for fluency and terminology before returning it.
 Preserve Markdown structure, names, numbers and meaning.
+Use inclusive, gender-neutral language. When the English refers to people in
+general (citizens, researchers, officials, users), do not default to the
+masculine form: prefer neutral or collective wording (for example "η ερευνητική
+κοινότητα", "le personnel", "la ciudadanía"); when no natural neutral wording
+exists, write both forms in full (for example "ερευνητές και ερευνήτριες",
+"citoyennes et citoyens", "ciudadanos y ciudadanas"). Never use slashes,
+parentheses, the point médian, "@" or "x" inside words. Dutch forms such as
+"burgers" and "onderzoekers" are already neutral. Keep the gender of a
+specific, named person.
 Return one JSON object and nothing else, with exactly one translated string for
 each input string, in the same order:
 {"segments":["translated segment 1", "translated segment 2"]}

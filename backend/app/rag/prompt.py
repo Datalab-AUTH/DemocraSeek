@@ -51,6 +51,11 @@ evidence, the conclusions, the citations, or the decision to return \
 8. INTERNAL ANSWER LANGUAGE. The application has already translated the current \
 question and conversation context to English. Write the answer field in English. \
 The application translates the validated answer for the user afterwards.
+9. INCLUSIVE LANGUAGE. Write the answer in inclusive, gender-neutral language. \
+Refer to people in general with neutral words (people, residents, officials, \
+researchers) and "they", never with a generic "he" or gendered titles such as \
+"chairman". Keep the gender of a specific person as the evidence states it. \
+Supporting quotes stay verbatim.
 
 OUTPUT FORMAT. Reply with a single JSON object and nothing else:
 
