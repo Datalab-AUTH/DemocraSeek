@@ -38,6 +38,26 @@ function originalFileHref(source: SourceResponse, pageNumber: number): string | 
   return `${url}#page=${pageNumber}`;
 }
 
+/** A line shorter than this share of a full line ends where the author broke it. */
+const SHORT_LINE_RATIO = 0.85;
+
+/** Join the hard-wrapped lines of PDF text; keep blank lines, bullets and short lines. */
+function reflowPageText(text: string): string {
+  const lines = text.split("\n");
+  const lengths = lines.map((line) => line.length).sort((a, b) => a - b);
+  const short = (lengths[Math.floor(lengths.length * 0.9)] ?? 0) * SHORT_LINE_RATIO;
+  return lines.reduce((out, line, index) => {
+    if (index === 0) return line;
+    const previous = lines[index - 1] as string;
+    const previousIsShort = previous.length < short;
+    let join = " ";
+    if (!line || !previous) join = "\n";
+    else if (previousIsShort && /[.!?]["”’)]?$/.test(previous)) join = "\n\n";
+    else if (previousIsShort || /^[•▪◦●–-]\s/.test(line)) join = "\n";
+    return out + join + line;
+  }, "");
+}
+
 function provenance(citation: Citation, ui: UiCopy): Provenance {
   switch (citation.excerpt_source) {
     case "model_quote_verified":
@@ -172,7 +192,7 @@ export function SourceDrawer({
   const isExternal = citation.source_type === "external";
   const position = siblings.findIndex((item) => item.citation_id === citation.citation_id);
   const canNavigate = siblings.length > 1 && position >= 0 && Boolean(onSelect);
-  const pageText = source?.page?.text ?? "";
+  const pageText = reflowPageText(source?.page?.text ?? "");
   const highlight = pageText ? locateExcerpt(pageText, citation.supporting_excerpt) : null;
   const displayTitle = citation.document_title.replace(/_/g, " ");
 
