@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 import type { Citation, ChatResponse, Figure } from "../api/types";
-import { formatUi, useUi } from "../i18n";
+import { formatUi, type UiCopy, useUi } from "../i18n";
 import { FigureGallery } from "./FigureGallery";
 
 interface Props {
@@ -14,6 +14,45 @@ interface Props {
 }
 
 const MARKER = /(\[C\d+\])/g;
+
+/** Explain why there is no answer, using the reason the backend reports. */
+function refusalCopy(
+  response: ChatResponse,
+  ui: UiCopy,
+): { title: string; body: string; hint: string } {
+  switch (response.reason_code) {
+    case "no_relevant_evidence":
+      return {
+        title: ui.answer.noEvidenceTitle,
+        body: ui.answer.noEvidenceBody,
+        hint: ui.answer.noEvidenceHint,
+      };
+    case "model_reported_insufficient":
+      return {
+        title: ui.answer.notAnsweredTitle,
+        body: ui.answer.notAnsweredBody,
+        hint: ui.answer.notAnsweredHint,
+      };
+    case "unverifiable_answer":
+      return {
+        title: ui.answer.unconfirmedTitle,
+        body: ui.answer.unconfirmedBody,
+        hint: ui.answer.retryDifferent,
+      };
+    case "generation_unavailable":
+      return {
+        title: ui.answer.unavailableTitle,
+        body: response.answer,
+        hint: ui.answer.retryLater,
+      };
+    default:
+      return {
+        title: ui.answer.insufficientTitle,
+        body: response.answer,
+        hint: ui.answer.insufficientHint,
+      };
+  }
+}
 
 function CopyButton({ text }: { text: string }): JSX.Element {
   const { ui } = useUi();
@@ -44,31 +83,14 @@ export function AnswerMessage({
 }: Props): JSX.Element {
   const { ui } = useUi();
   if (response.status === "insufficient_evidence") {
-    // Distinguish missing evidence from an unverifiable generated answer.
-    const foundButUnusable = response.reason_code === "unverifiable_answer";
-    const unavailable = response.reason_code === "generation_unavailable";
+    const refusal = refusalCopy(response, ui);
     return (
       <div className="answer answer--insufficient" role="note">
         <p className="answer__badge">
-          <span aria-hidden="true">⚠</span>{" "}
-          {foundButUnusable
-            ? ui.answer.unconfirmedTitle
-            : unavailable
-              ? ui.answer.unavailableTitle
-              : ui.answer.insufficientTitle}
+          <span aria-hidden="true">⚠</span> {refusal.title}
         </p>
-        <p>
-          {foundButUnusable
-            ? ui.answer.unconfirmedBody
-            : response.answer}
-        </p>
-        <p className="answer__hint">
-          {foundButUnusable
-            ? ui.answer.retryDifferent
-            : unavailable
-              ? ui.answer.retryLater
-              : ui.answer.insufficientHint}
-        </p>
+        <p>{refusal.body}</p>
+        <p className="answer__hint">{refusal.hint}</p>
       </div>
     );
   }

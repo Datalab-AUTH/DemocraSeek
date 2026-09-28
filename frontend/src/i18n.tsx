@@ -61,6 +61,14 @@ export interface UiCopy {
     retryDifferent: string;
     retryLater: string;
     insufficientHint: string;
+    /** No passage was relevant enough to the question. */
+    noEvidenceTitle: string;
+    noEvidenceBody: string;
+    noEvidenceHint: string;
+    /** Relevant passages were found, but they do not answer the question. */
+    notAnsweredTitle: string;
+    notAnsweredBody: string;
+    notAnsweredHint: string;
     openSource: string;
     sourcesLabel: string;
     sourcesTitle: string;
@@ -180,6 +188,12 @@ const EN: UiCopy = {
     unconfirmedBody: "We found relevant information, but could not confirm that the answer matched its sources, so we did not show it.",
     retryDifferent: "Try asking the same thing in a slightly different way.", retryLater: "Please wait a moment and try again.",
     insufficientHint: "The available documents do not support a reliable answer, so DemocraSeek will not guess. Try rephrasing the question or ask about a different topic.",
+    noEvidenceTitle: "No related documents found",
+    noEvidenceBody: "We could not find documents in the knowledge base related to this question.",
+    noEvidenceHint: "Try different keywords, or ask about another topic related to digital democracy.",
+    notAnsweredTitle: "The documents do not answer this question",
+    notAnsweredBody: "We found related documents, but they do not answer this specific question, so DemocraSeek will not guess.",
+    notAnsweredHint: "Try asking about the topic more generally, or rephrase the question.",
     openSource: "Open source {id}: {document}, page {page}", sourcesLabel: "Sources for this answer",
     sourcesTitle: "Check the sources", sourcesSummary: "Open a source to see where the answer came from",
     viewSource: "View source details {id}: {document}, page {page}", page: "Page {page}",
@@ -262,6 +276,12 @@ const EL: UiCopy = {
     unconfirmedBody: "Βρήκαμε σχετικές πληροφορίες, αλλά δεν μπορέσαμε να επιβεβαιώσουμε ότι η απάντηση συμφωνούσε με τις πηγές της, γι’ αυτό δεν την εμφανίσαμε.",
     retryDifferent: "Δοκιμάστε να ρωτήσετε το ίδιο με λίγο διαφορετικό τρόπο.", retryLater: "Περιμένετε λίγο και δοκιμάστε ξανά.",
     insufficientHint: "Τα διαθέσιμα έγγραφα δεν υποστηρίζουν μια αξιόπιστη απάντηση, επομένως το DemocraSeek δεν θα μαντέψει. Διατυπώστε διαφορετικά την ερώτηση ή ρωτήστε για άλλο θέμα.",
+    noEvidenceTitle: "Δεν βρέθηκαν σχετικά έγγραφα",
+    noEvidenceBody: "Δεν βρήκαμε έγγραφα στη βάση γνώσης που να σχετίζονται με αυτή την ερώτηση.",
+    noEvidenceHint: "Δοκιμάστε διαφορετικές λέξεις-κλειδιά ή ρωτήστε για άλλο θέμα σχετικό με την ψηφιακή δημοκρατία.",
+    notAnsweredTitle: "Τα έγγραφα δεν απαντούν σε αυτή την ερώτηση",
+    notAnsweredBody: "Βρήκαμε σχετικά έγγραφα, αλλά δεν απαντούν στη συγκεκριμένη ερώτηση, επομένως το DemocraSeek δεν θα μαντέψει.",
+    notAnsweredHint: "Ρωτήστε για το θέμα πιο γενικά ή διατυπώστε διαφορετικά την ερώτηση.",
     openSource: "Άνοιγμα πηγής {id}: {document}, σελίδα {page}", sourcesLabel: "Πηγές αυτής της απάντησης",
     sourcesTitle: "Ελέγξτε τις πηγές", sourcesSummary: "Ανοίξτε μια πηγή για να δείτε από πού προήλθε η απάντηση",
     viewSource: "Προβολή στοιχείων πηγής {id}: {document}, σελίδα {page}", page: "Σελίδα {page}",
@@ -342,6 +362,12 @@ const FR: UiCopy = {
     unconfirmedBody: "Nous avons trouvé des informations pertinentes, mais nous n’avons pas pu confirmer que la réponse correspondait à ses sources ; elle n’a donc pas été affichée.",
     retryDifferent: "Essayez de poser la même question d’une manière légèrement différente.", retryLater: "Patientez un instant puis réessayez.",
     insufficientHint: "Les documents disponibles ne permettent pas de fournir une réponse fiable ; DemocraSeek ne va donc pas deviner. Reformulez la question ou choisissez un autre sujet.",
+    noEvidenceTitle: "Aucun document lié trouvé",
+    noEvidenceBody: "Nous n’avons trouvé aucun document de la base de connaissances lié à cette question.",
+    noEvidenceHint: "Essayez d’autres mots-clés, ou posez une question sur un autre sujet lié à la démocratie numérique.",
+    notAnsweredTitle: "Les documents ne répondent pas à cette question",
+    notAnsweredBody: "Nous avons trouvé des documents liés, mais ils ne répondent pas à cette question précise ; DemocraSeek ne va donc pas deviner.",
+    notAnsweredHint: "Posez une question plus générale sur ce sujet, ou reformulez la question.",
     openSource: "Ouvrir la source {id} : {document}, page {page}", sourcesLabel: "Sources de cette réponse", sourcesTitle: "Vérifiez les sources",
     sourcesSummary: "Ouvrez une source pour voir d’où vient la réponse", viewSource: "Voir les détails de la source {id} : {document}, page {page}",
     page: "Page {page}", exactQuote: "Citation exacte", fromImage: "Issu d’une image", sourceExcerpt: "Extrait de la source", image: "image",
@@ -415,6 +441,12 @@ const ES: UiCopy = {
     unconfirmedBody: "Encontramos información pertinente, pero no pudimos confirmar que la respuesta coincidiera con sus fuentes, por lo que no la mostramos.",
     retryDifferent: "Intente formular la misma pregunta de una forma ligeramente diferente.", retryLater: "Espere un momento e inténtelo de nuevo.",
     insufficientHint: "Los documentos disponibles no permiten ofrecer una respuesta fiable, por lo que DemocraSeek no hará suposiciones. Reformule la pregunta o consulte otro tema.",
+    noEvidenceTitle: "No se encontraron documentos relacionados",
+    noEvidenceBody: "No hemos encontrado documentos de la base de conocimiento relacionados con esta pregunta.",
+    noEvidenceHint: "Pruebe con otras palabras clave o pregunte por otro tema relacionado con la democracia digital.",
+    notAnsweredTitle: "Los documentos no responden a esta pregunta",
+    notAnsweredBody: "Hemos encontrado documentos relacionados, pero no responden a esta pregunta concreta, por lo que DemocraSeek no hará suposiciones.",
+    notAnsweredHint: "Pregunte sobre el tema de forma más general o reformule la pregunta.",
     openSource: "Abrir fuente {id}: {document}, página {page}", sourcesLabel: "Fuentes de esta respuesta", sourcesTitle: "Compruebe las fuentes",
     sourcesSummary: "Abra una fuente para ver de dónde procede la respuesta", viewSource: "Ver detalles de la fuente {id}: {document}, página {page}",
     page: "Página {page}", exactQuote: "Cita exacta", fromImage: "Procedente de una imagen", sourceExcerpt: "Extracto de la fuente", image: "imagen",
@@ -488,6 +520,12 @@ const NL_BE: UiCopy = {
     unconfirmedBody: "We vonden relevante informatie, maar konden niet bevestigen dat het antwoord met de bronnen overeenkwam. Daarom hebben we het niet getoond.",
     retryDifferent: "Probeer dezelfde vraag iets anders te formuleren.", retryLater: "Wacht even en probeer het opnieuw.",
     insufficientHint: "De beschikbare documenten ondersteunen geen betrouwbaar antwoord, dus DemocraSeek zal niet gokken. Formuleer de vraag anders of vraag naar een ander onderwerp.",
+    noEvidenceTitle: "Geen verwante documenten gevonden",
+    noEvidenceBody: "We vonden geen documenten in de kennisbank die verband houden met deze vraag.",
+    noEvidenceHint: "Probeer andere trefwoorden, of stel een vraag over een ander onderwerp rond digitale democratie.",
+    notAnsweredTitle: "De documenten beantwoorden deze vraag niet",
+    notAnsweredBody: "We vonden verwante documenten, maar ze beantwoorden deze specifieke vraag niet. Daarom zal DemocraSeek niet gokken.",
+    notAnsweredHint: "Stel een algemenere vraag over het onderwerp, of formuleer de vraag anders.",
     openSource: "Bron {id} openen: {document}, pagina {page}", sourcesLabel: "Bronnen voor dit antwoord", sourcesTitle: "Controleer de bronnen",
     sourcesSummary: "Open een bron om te zien waar het antwoord vandaan komt", viewSource: "Details van bron {id} bekijken: {document}, pagina {page}",
     page: "Pagina {page}", exactQuote: "Exact citaat", fromImage: "Uit een afbeelding", sourceExcerpt: "Bronfragment", image: "afbeelding",
