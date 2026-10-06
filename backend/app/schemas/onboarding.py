@@ -55,6 +55,8 @@ class OnboardingUIConfig(BaseModel):
     progress: str
     not_chosen: str
     choose_option_error: str
+    # Why each question allows only one choice.
+    single_choice_note: str = ""
     back: str
     cancel: str
     next: str

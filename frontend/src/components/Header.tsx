@@ -91,6 +91,8 @@ export function Header({
   const [open, setOpen] = useState(false);
   const popoverRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const confirmRef = useRef<HTMLDialogElement>(null);
+  const newConversationRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -168,9 +170,10 @@ export function Header({
           {profile && config ? (
             <>
               <button
+                ref={newConversationRef}
                 type="button"
                 className="button button--ghost header__new-conversation"
-                onClick={onNewConversation}
+                onClick={() => confirmRef.current?.showModal()}
                 disabled={!canStartNewConversation}
                 aria-label={ui.header.newConversation}
               >
@@ -179,6 +182,45 @@ export function Header({
                 </svg>
                 <span>{ui.header.newConversation}</span>
               </button>
+
+              {/* Conversations are not saved, so deleting one cannot be undone. */}
+              <dialog
+                ref={confirmRef}
+                className="confirm-dialog"
+                role="alertdialog"
+                aria-labelledby="confirm-new-title"
+                aria-describedby="confirm-new-body"
+                onClose={() => newConversationRef.current?.focus()}
+                onClick={(event) => {
+                  // Only the backdrop is the dialog itself; the content is a child.
+                  if (event.target === event.currentTarget) confirmRef.current?.close();
+                }}
+              >
+                <div className="confirm-dialog__content">
+                  <h2 id="confirm-new-title">{ui.header.newConversationTitle}</h2>
+                  <p id="confirm-new-body">{ui.header.newConversationBody}</p>
+                  <div className="confirm-dialog__actions">
+                    {/* First, so the safe choice has focus when the dialog opens. */}
+                    <button
+                      type="button"
+                      className="button button--ghost"
+                      onClick={() => confirmRef.current?.close()}
+                    >
+                      {ui.header.cancel}
+                    </button>
+                    <button
+                      type="button"
+                      className="button button--primary"
+                      onClick={() => {
+                        confirmRef.current?.close();
+                        onNewConversation();
+                      }}
+                    >
+                      {ui.header.newConversation}
+                    </button>
+                  </div>
+                </div>
+              </dialog>
 
               <div className="profile-chip__wrap">
                 <button

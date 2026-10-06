@@ -187,6 +187,9 @@ export function Onboarding({
           {question.help_text ? (
             <p className="onboarding__help">{question.help_text}</p>
           ) : null}
+          {ui.single_choice_note ? (
+            <p className="onboarding__note">{ui.single_choice_note}</p>
+          ) : null}
 
           {error ? (
             <p className="form-error" id={errorId} role="alert">

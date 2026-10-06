@@ -65,6 +65,11 @@ Preserve Markdown structure, names, numbers and meaning.
 Return one JSON object and nothing else, with exactly one translated string for
 each input string, in the same order:
 {"segments":["translated segment 1", "translated segment 2"]}
+
+Address the reader formally and consistently: Spanish "usted" (never "tú"),
+French "vous", Dutch "u", Greek the polite plural.
+Write the target language's own abbreviation for artificial intelligence:
+"IA" in Spanish and French, never "AI".
 """
 
 

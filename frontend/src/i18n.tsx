@@ -30,10 +30,13 @@ export interface UiCopy {
     update: string;
     startOver: string;
     privacy: string;
+    /** Confirmation before the current conversation is deleted. */
+    newConversationTitle: string;
+    newConversationBody: string;
+    cancel: string;
   };
   chat: {
     conversation: string;
-    you: string;
     finding: string;
     questionLabel: string;
     placeholder: string;
@@ -50,6 +53,8 @@ export interface UiCopy {
     examplesTitle: string;
     /** What the answers are based on, shown under the starter questions. */
     scope: string;
+    /** Conversations live only in the open page. */
+    notSaved: string;
   };
   answer: {
     copied: string;
@@ -106,6 +111,8 @@ export interface UiCopy {
     fullPageTab: string;
     whyShown: string;
     excerptHeading: string;
+    /** Why the excerpt is not translated. */
+    originalLanguage: string;
     seeOnPage: string;
     figureSection: string;
     imageFromPage: string;
@@ -168,9 +175,12 @@ const EN: UiCopy = {
     role: "You are asking as", intent: "You want to", support: "What supports you", mode: "Answer style",
     note: "These choices only change how the answer is explained.", update: "Update preferences",
     startOver: "Start over", privacy: "Saved only in this browser.",
+    newConversationTitle: "Start a new conversation?",
+    newConversationBody: "The current conversation will be deleted and cannot be recovered.",
+    cancel: "Cancel",
   },
   chat: {
-    conversation: "Conversation", you: "You", finding: "Finding the most helpful information…",
+    conversation: "Conversation", finding: "Finding the most helpful information…",
     questionLabel: "Your question", placeholder: "Ask a question about digital democracy…",
     working: "Working…", ask: "Ask", error: "We could not send your question. Please try again.",
   },
@@ -181,6 +191,7 @@ const EN: UiCopy = {
     pendingMaterial: "Some new material is still being prepared and is not available in answers yet.",
     examplesTitle: "Not sure where to start?",
     scope: "DemocraSeek answers only from the documents in the {project} knowledge base: project deliverables and selected publications. It does not search the internet and does not use general knowledge. If the documents do not cover a question, it says so.",
+    notSaved: "Conversations are not saved. They are deleted when you select “{newConversation}” or close the page.",
   },
   answer: {
     copied: "Copied", copy: "Copy answer", unconfirmedTitle: "We could not confirm this answer",
@@ -211,7 +222,9 @@ const EN: UiCopy = {
     next: "Next source", close: "Close source panel", source: "Source", metadata: "Source metadata",
     page: "Page {page}", pageLabel: "Cited page", pageOf: "Page {page} of {total}", views: "Source views",
     excerptTab: "Source excerpt", fullPageTab: "Full page", whyShown: "Why this source is shown",
-    excerptHeading: "Source excerpt", seeOnPage: "See this excerpt on the full page",
+    excerptHeading: "Source excerpt",
+    originalLanguage: "The excerpt is shown in the original language of the document, word for word, so that it stays accurate and easy to check in the source.",
+    seeOnPage: "See this excerpt on the full page",
     figureSection: "Figure on the cited page", imageFromPage: "Image from this page",
     imageOnPage: "Image on page {page}", loadingDetails: "Loading source details…",
     textFromSource: "Text from the source", highlighted: "Excerpt highlighted",
@@ -256,9 +269,12 @@ const EL: UiCopy = {
     role: "Ρωτάτε ως", intent: "Θέλετε να", support: "Τι σας υποστηρίζει", mode: "Μορφή απάντησης",
     note: "Αυτές οι επιλογές αλλάζουν μόνο τον τρόπο εξήγησης της απάντησης.", update: "Αλλαγή προτιμήσεων",
     startOver: "Επανεκκίνηση", privacy: "Αποθηκεύεται μόνο σε αυτόν τον browser.",
+    newConversationTitle: "Να ξεκινήσει νέα συζήτηση;",
+    newConversationBody: "Η τρέχουσα συζήτηση θα διαγραφεί και δεν μπορεί να ανακτηθεί.",
+    cancel: "Ακύρωση",
   },
   chat: {
-    conversation: "Συζήτηση", you: "Εσείς", finding: "Αναζήτηση των πιο χρήσιμων πληροφοριών…",
+    conversation: "Συζήτηση", finding: "Αναζήτηση των πιο χρήσιμων πληροφοριών…",
     questionLabel: "Η ερώτησή σας", placeholder: "Κάντε μια ερώτηση για την ψηφιακή δημοκρατία…",
     working: "Επεξεργασία…", ask: "Ρώτησε", error: "Δεν ήταν δυνατή η αποστολή της ερώτησης. Δοκιμάστε ξανά.",
   },
@@ -269,6 +285,7 @@ const EL: UiCopy = {
     pendingMaterial: "Κάποιο νέο υλικό προετοιμάζεται ακόμη και δεν είναι διαθέσιμο στις απαντήσεις.",
     examplesTitle: "Δεν ξέρετε από πού να ξεκινήσετε;",
     scope: "Το DemocraSeek απαντά μόνο από τα έγγραφα της βάσης γνώσης {project}: παραδοτέα του έργου και επιλεγμένες δημοσιεύσεις. Δεν αναζητά στο διαδίκτυο και δεν χρησιμοποιεί γενική γνώση. Αν τα έγγραφα δεν καλύπτουν μια ερώτηση, το αναφέρει.",
+    notSaved: "Οι συζητήσεις δεν αποθηκεύονται. Διαγράφονται όταν επιλέξετε «{newConversation}» ή κλείσετε τη σελίδα.",
   },
   answer: {
     copied: "Αντιγράφηκε", copy: "Αντιγραφή απάντησης", unconfirmedTitle: "Δεν μπορέσαμε να επιβεβαιώσουμε αυτή την απάντηση",
@@ -299,7 +316,9 @@ const EL: UiCopy = {
     next: "Επόμενη πηγή", close: "Κλείσιμο πηγής", source: "Πηγή", metadata: "Στοιχεία πηγής",
     page: "Σελίδα {page}", pageLabel: "Σελίδα παραπομπής", pageOf: "Σελίδα {page} από {total}", views: "Προβολές πηγής",
     excerptTab: "Απόσπασμα πηγής", fullPageTab: "Πλήρης σελίδα", whyShown: "Γιατί εμφανίζεται αυτή η πηγή",
-    excerptHeading: "Απόσπασμα πηγής", seeOnPage: "Δείτε το απόσπασμα στην πλήρη σελίδα",
+    excerptHeading: "Απόσπασμα πηγής",
+    originalLanguage: "Το απόσπασμα εμφανίζεται αυτούσιο, στην αρχική γλώσσα του εγγράφου, ώστε να παραμένει ακριβές και να ελέγχεται εύκολα στην πηγή.",
+    seeOnPage: "Δείτε το απόσπασμα στην πλήρη σελίδα",
     figureSection: "Εικόνα στην αναφερόμενη σελίδα", imageFromPage: "Εικόνα από αυτή τη σελίδα",
     imageOnPage: "Εικόνα στη σελίδα {page}", loadingDetails: "Φόρτωση στοιχείων πηγής…",
     textFromSource: "Κείμενο από την πηγή", highlighted: "Το απόσπασμα επισημαίνεται",
@@ -342,9 +361,12 @@ const FR: UiCopy = {
     tailoredTitle: "Comment les réponses sont adaptées", role: "Vous posez la question en tant que", intent: "Vous souhaitez",
     support: "Le soutien choisi", mode: "Format de réponse", note: "Ces choix modifient uniquement la manière dont la réponse est expliquée.",
     update: "Modifier les préférences", startOver: "Recommencer", privacy: "Enregistré uniquement dans ce navigateur.",
+    newConversationTitle: "Commencer une nouvelle conversation ?",
+    newConversationBody: "La conversation en cours sera supprimée et ne pourra pas être récupérée.",
+    cancel: "Annuler",
   },
   chat: {
-    conversation: "Conversation", you: "Vous", finding: "Recherche des informations les plus utiles…", questionLabel: "Votre question",
+    conversation: "Conversation", finding: "Recherche des informations les plus utiles…", questionLabel: "Votre question",
     placeholder: "Posez une question sur la démocratie numérique…", working: "Traitement…", ask: "Demander",
     error: "Nous n’avons pas pu envoyer votre question. Veuillez réessayer.",
   },
@@ -355,6 +377,7 @@ const FR: UiCopy = {
     pendingMaterial: "De nouveaux contenus sont encore en préparation et ne sont pas encore disponibles dans les réponses.",
     examplesTitle: "Vous ne savez pas par où commencer ?",
     scope: "DemocraSeek répond uniquement à partir des documents de la base de connaissances {project} : livrables du projet et publications sélectionnées. Il ne fait pas de recherche sur Internet et n'utilise pas de connaissances générales. Si les documents ne couvrent pas une question, il l'indique.",
+    notSaved: "Les conversations ne sont pas enregistrées. Elles sont supprimées lorsque vous choisissez « {newConversation} » ou fermez la page.",
   },
   answer: {
     copied: "Copié", copy: "Copier la réponse", unconfirmedTitle: "Nous n’avons pas pu confirmer cette réponse",
@@ -382,6 +405,7 @@ const FR: UiCopy = {
     pager: "Naviguer entre les sources", previous: "Source précédente", next: "Source suivante", close: "Fermer le panneau des sources",
     source: "Source", metadata: "Métadonnées de la source", page: "Page {page}", pageLabel: "Page citée", pageOf: "Page {page} sur {total}", views: "Vues de la source",
     excerptTab: "Extrait de la source", fullPageTab: "Page complète", whyShown: "Pourquoi cette source est affichée", excerptHeading: "Extrait de la source",
+    originalLanguage: "L’extrait est affiché mot pour mot, dans la langue originale du document, afin de rester exact et facile à vérifier dans la source.",
     seeOnPage: "Voir cet extrait sur la page complète", figureSection: "Figure sur la page citée", imageFromPage: "Image de cette page",
     imageOnPage: "Image à la page {page}", loadingDetails: "Chargement des détails de la source…", textFromSource: "Texte de la source",
     highlighted: "Extrait surligné", loadingText: "Chargement du texte de la page…", imageNoText: "Cette source est une image et ne comporte pas de page de texte distincte.",
@@ -422,9 +446,12 @@ const ES: UiCopy = {
     tailoredTitle: "Cómo se adaptan las respuestas", role: "Pregunta como", intent: "Quiere", support: "Apoyo elegido", mode: "Formato de respuesta",
     note: "Estas opciones solo cambian la manera de explicar la respuesta.", update: "Modificar preferencias", startOver: "Empezar de nuevo",
     privacy: "Guardado únicamente en este navegador.",
+    newConversationTitle: "¿Iniciar una nueva conversación?",
+    newConversationBody: "La conversación actual se eliminará y no se podrá recuperar.",
+    cancel: "Cancelar",
   },
   chat: {
-    conversation: "Conversación", you: "Usted", finding: "Buscando la información más útil…", questionLabel: "Su pregunta",
+    conversation: "Conversación", finding: "Buscando la información más útil…", questionLabel: "Su pregunta",
     placeholder: "Haga una pregunta sobre democracia digital…", working: "Procesando…", ask: "Preguntar",
     error: "No hemos podido enviar su pregunta. Inténtelo de nuevo.",
   },
@@ -434,6 +461,7 @@ const ES: UiCopy = {
     libraryNotReady: "La biblioteca de información aún no está lista. Póngase en contacto con la persona responsable de DemocraSeek.",
     pendingMaterial: "Todavía se está preparando material nuevo y aún no está disponible en las respuestas.", examplesTitle: "¿No sabe por dónde empezar?",
     scope: "DemocraSeek responde únicamente a partir de los documentos de la base de conocimiento de {project}: entregables del proyecto y publicaciones seleccionadas. No busca en internet ni utiliza conocimiento general. Si los documentos no cubren una pregunta, lo indica.",
+    notSaved: "Las conversaciones no se guardan. Se eliminan cuando selecciona «{newConversation}» o cierra la página.",
   },
   answer: {
     copied: "Copiado", copy: "Copiar respuesta", unconfirmedTitle: "No hemos podido confirmar esta respuesta",
@@ -461,6 +489,7 @@ const ES: UiCopy = {
     pager: "Moverse entre las fuentes", previous: "Fuente anterior", next: "Fuente siguiente", close: "Cerrar panel de fuentes",
     source: "Fuente", metadata: "Metadatos de la fuente", page: "Página {page}", pageLabel: "Página citada", pageOf: "Página {page} de {total}", views: "Vistas de la fuente",
     excerptTab: "Extracto de la fuente", fullPageTab: "Página completa", whyShown: "Por qué se muestra esta fuente", excerptHeading: "Extracto de la fuente",
+    originalLanguage: "El extracto se muestra palabra por palabra, en el idioma original del documento, para que sea exacto y fácil de comprobar en la fuente.",
     seeOnPage: "Ver este extracto en la página completa", figureSection: "Figura en la página citada", imageFromPage: "Imagen de esta página",
     imageOnPage: "Imagen en la página {page}", loadingDetails: "Cargando detalles de la fuente…", textFromSource: "Texto de la fuente",
     highlighted: "Extracto resaltado", loadingText: "Cargando texto de la página…", imageNoText: "Esta fuente es una imagen y no tiene una página de texto independiente.",
@@ -501,9 +530,12 @@ const NL_BE: UiCopy = {
     tailoredTitle: "Hoe antwoorden worden aangepast", role: "U vraagt als", intent: "U wilt", support: "Gekozen ondersteuning", mode: "Antwoordstijl",
     note: "Deze keuzes veranderen alleen hoe het antwoord wordt uitgelegd.", update: "Voorkeuren aanpassen", startOver: "Opnieuw beginnen",
     privacy: "Alleen in deze browser opgeslagen.",
+    newConversationTitle: "Een nieuw gesprek starten?",
+    newConversationBody: "Het huidige gesprek wordt verwijderd en kan niet worden hersteld.",
+    cancel: "Annuleren",
   },
   chat: {
-    conversation: "Gesprek", you: "U", finding: "De nuttigste informatie zoeken…", questionLabel: "Uw vraag",
+    conversation: "Gesprek", finding: "De nuttigste informatie zoeken…", questionLabel: "Uw vraag",
     placeholder: "Stel een vraag over digitale democratie…", working: "Bezig…", ask: "Vraag stellen",
     error: "We konden uw vraag niet verzenden. Probeer het opnieuw.",
   },
@@ -513,6 +545,7 @@ const NL_BE: UiCopy = {
     libraryNotReady: "De informatiebibliotheek is nog niet klaar. Neem contact op met de beheerder van DemocraSeek.",
     pendingMaterial: "Nieuw materiaal wordt nog voorbereid en is nog niet beschikbaar in antwoorden.", examplesTitle: "Weet u niet waar te beginnen?",
     scope: "DemocraSeek antwoordt alleen op basis van de documenten in de {project}-kennisbank: projectdeliverables en geselecteerde publicaties. Het zoekt niet op het internet en gebruikt geen algemene kennis. Als de documenten een vraag niet behandelen, zegt het dat.",
+    notSaved: "Gesprekken worden niet opgeslagen. Ze worden verwijderd wanneer u “{newConversation}” kiest of de pagina sluit.",
   },
   answer: {
     copied: "Gekopieerd", copy: "Antwoord kopiëren", unconfirmedTitle: "We konden dit antwoord niet bevestigen",
@@ -540,6 +573,7 @@ const NL_BE: UiCopy = {
     pager: "Tussen antwoordbronnen navigeren", previous: "Vorige bron", next: "Volgende bron", close: "Bronnenpaneel sluiten",
     source: "Bron", metadata: "Bronmetadata", page: "Pagina {page}", pageLabel: "Geciteerde pagina", pageOf: "Pagina {page} van {total}", views: "Bronweergaven",
     excerptTab: "Bronfragment", fullPageTab: "Volledige pagina", whyShown: "Waarom deze bron wordt getoond", excerptHeading: "Bronfragment",
+    originalLanguage: "Het fragment wordt woordelijk en in de oorspronkelijke taal van het document getoond, zodat het nauwkeurig blijft en eenvoudig in de bron te controleren is.",
     seeOnPage: "Bekijk dit fragment op de volledige pagina", figureSection: "Figuur op de geciteerde pagina", imageFromPage: "Afbeelding van deze pagina",
     imageOnPage: "Afbeelding op pagina {page}", loadingDetails: "Brondetails laden…", textFromSource: "Tekst uit de bron",
     highlighted: "Fragment gemarkeerd", loadingText: "Paginatekst laden…", imageNoText: "Deze bron is een afbeelding en heeft geen aparte tekstpagina.",

@@ -30,6 +30,7 @@ export interface OnboardingUI {
   progress: string;
   not_chosen: string;
   choose_option_error: string;
+  single_choice_note?: string;
   back: string;
   cancel: string;
   next: string;

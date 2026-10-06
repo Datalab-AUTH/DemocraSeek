@@ -80,7 +80,10 @@ export function EmptyState({
           <path d="M10 9.2v4.9" />
           <circle cx="10" cy="6.3" r="0.6" fill="currentColor" />
         </svg>
-        <p>{formatUi(ui.empty.scope, { project: branding.projectName })}</p>
+        <div>
+          <p>{formatUi(ui.empty.scope, { project: branding.projectName })}</p>
+          <p>{formatUi(ui.empty.notSaved, { newConversation: ui.header.newConversation })}</p>
+        </div>
       </div>
     </div>
   );

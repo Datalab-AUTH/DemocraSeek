@@ -123,7 +123,7 @@ export function SourceDrawer({
   onSelect,
   onClose,
 }: Props): JSX.Element {
-  const { ui } = useUi();
+  const { locale, ui } = useUi();
   const [source, setSource] = useState<SourceResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [view, setView] = useState<DrawerView>("evidence");
@@ -284,7 +284,9 @@ export function SourceDrawer({
                 isExternal ? "external" : said.tone
               }`}
             >
-              <span aria-hidden="true">{isExternal ? "↗" : said.tone === "verified" ? "✓" : "i"}</span>
+              {isExternal || said.tone === "verified" ? (
+                <span aria-hidden="true">{isExternal ? "↗" : "✓"}</span>
+              ) : null}
               {isExternal ? ui.source.externalBadge : said.badge}
             </span>
           </div>
@@ -363,6 +365,10 @@ export function SourceDrawer({
                   <div>
                     <strong>{said.title}</strong>
                     <p>{said.detail}</p>
+                    {/* The corpus is in English; quotes stay verbatim. */}
+                    {locale !== "en" && said.tone !== "figure" ? (
+                      <p>{ui.source.originalLanguage}</p>
+                    ) : null}
                   </div>
                 </div>
                 {source?.document_type !== "image" ? (

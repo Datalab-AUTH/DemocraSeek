@@ -802,6 +802,45 @@ kbd {
   margin: 0.75rem 0;
 }
 
+/* Confirmation before a conversation is deleted */
+.confirm-dialog {
+  width: min(400px, calc(100vw - 2rem));
+  padding: 0;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lift);
+}
+
+.confirm-dialog::backdrop {
+  background: rgb(15 23 42 / 45%);
+}
+
+.confirm-dialog__content {
+  padding: 1.25rem;
+}
+
+.confirm-dialog h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
+}
+
+.confirm-dialog p {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.confirm-dialog__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1.1rem;
+}
+
 /* Onboarding */
 .onboarding {
   padding: 2rem;
@@ -835,6 +874,17 @@ kbd {
   color: var(--text-soft);
   font-size: 0.87rem;
   margin: 0.35rem 0 0;
+}
+
+.onboarding__note {
+  margin: 0.6rem 0 0;
+  padding: 0.5rem 0.75rem;
+  border-left: 3px solid color-mix(in srgb, var(--brand) 45%, var(--border));
+  background: color-mix(in srgb, var(--brand) 5%, var(--surface));
+  border-radius: var(--radius-sm);
+  color: var(--text-soft);
+  font-size: 0.82rem;
+  line-height: 1.5;
 }
 
 .choices {
@@ -1004,6 +1054,15 @@ kbd {
   background: var(--brand-soft);
   border: 1px solid color-mix(in srgb, var(--brand) 26%, var(--border));
   color: var(--brand);
+}
+
+.turn__avatar--user svg {
+  width: 56%;
+  height: 56%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
 }
 
 .turn__avatar--app {
@@ -1694,6 +1753,10 @@ kbd {
   color: var(--text);
 }
 
+.empty__scope p + p {
+  margin-top: 0.45rem;
+}
+
 .empty__warning {
   background: var(--warn-bg);
   border-left: 4px solid var(--warn-border);
@@ -2268,6 +2331,10 @@ kbd {
 
 .evidence-card__proof p {
   margin: 0;
+}
+
+.evidence-card__proof p + p {
+  margin-top: 0.4rem;
 }
 
 .evidence-card__proof-icon {

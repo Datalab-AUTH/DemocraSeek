@@ -104,11 +104,15 @@ export function ChatPanel({
         {turns.map((turn, index) => (
           <article key={index} className="turn">
             <div className="turn__question">
+              {/* An icon fits the circle in every language; a word does not. */}
               <span
                 className="turn__avatar turn__avatar--user"
                 aria-hidden="true"
               >
-                {ui.chat.you}
+                <svg viewBox="0 0 24 24" focusable="false">
+                  <circle cx="12" cy="8" r="4" />
+                  <path d="M4.5 20.5a7.5 7.5 0 0 1 15 0" />
+                </svg>
               </span>
               <p>{turn.question}</p>
             </div>
