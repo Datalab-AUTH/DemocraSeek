@@ -199,3 +199,7 @@ Public production still requires authentication and authorization, shared rate l
 ## Acknowledgment
 
 This work was funded by the European Union under the Horizon Europe grant grant agreement No 101178306 (INNOVADE).
+
+## Disclaimer
+
+Funded by the European Union. Views and opinions expressed are however those of the author(s) only and do not necessarily reflect those of the European Union or European Research Executive Agency. Neither the European Union nor the granting authority can be held responsible for them.
