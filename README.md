@@ -195,3 +195,7 @@ The [documentation index](docs/index.md) routes readers by intent:
 DemocraSeek is not a general-purpose chatbot, an autonomous agent, a knowledge graph, an OCR platform, or a public multi-tenant SaaS product. Its current delivery boundary is a professional local demo and controlled single-host deployment.
 
 Public production still requires authentication and authorization, shared rate limiting, monitoring, backups, high availability, and deployment and legal review.
+
+## Acknowledgment
+
+This work was funded by the European Union under the Horizon Europe grant grant agreement No 101178306 (INNOVADE).
